@@ -1,0 +1,4 @@
+[console_scripts]
+listener = RobotController.Subscriber:main
+node = RobotController.SampleNode:main
+

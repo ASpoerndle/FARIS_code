@@ -1,0 +1,47 @@
+running egg_info
+creating build/RobotController/RobotController.egg-info
+writing build/RobotController/RobotController.egg-info/PKG-INFO
+writing dependency_links to build/RobotController/RobotController.egg-info/dependency_links.txt
+writing entry points to build/RobotController/RobotController.egg-info/entry_points.txt
+writing requirements to build/RobotController/RobotController.egg-info/requires.txt
+writing top-level names to build/RobotController/RobotController.egg-info/top_level.txt
+writing manifest file 'build/RobotController/RobotController.egg-info/SOURCES.txt'
+reading manifest file 'build/RobotController/RobotController.egg-info/SOURCES.txt'
+writing manifest file 'build/RobotController/RobotController.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/aidan/ros2_humble/src/RobotController/build/RobotController/build
+creating /home/aidan/ros2_humble/src/RobotController/build/RobotController/build/lib
+creating /home/aidan/ros2_humble/src/RobotController/build/RobotController/build/lib/RobotController
+copying RobotController/SampleNode.py -> /home/aidan/ros2_humble/src/RobotController/build/RobotController/build/lib/RobotController
+copying RobotController/MotorController.py -> /home/aidan/ros2_humble/src/RobotController/build/RobotController/build/lib/RobotController
+copying RobotController/Subscriber.py -> /home/aidan/ros2_humble/src/RobotController/build/RobotController/build/lib/RobotController
+copying RobotController/Motor.py -> /home/aidan/ros2_humble/src/RobotController/build/RobotController/build/lib/RobotController
+copying RobotController/__init__.py -> /home/aidan/ros2_humble/src/RobotController/build/RobotController/build/lib/RobotController
+running install
+running install_lib
+creating /home/aidan/ros2_humble/src/RobotController/install/RobotController/lib/python3.10/site-packages/RobotController
+copying /home/aidan/ros2_humble/src/RobotController/build/RobotController/build/lib/RobotController/SampleNode.py -> /home/aidan/ros2_humble/src/RobotController/install/RobotController/lib/python3.10/site-packages/RobotController
+copying /home/aidan/ros2_humble/src/RobotController/build/RobotController/build/lib/RobotController/MotorController.py -> /home/aidan/ros2_humble/src/RobotController/install/RobotController/lib/python3.10/site-packages/RobotController
+copying /home/aidan/ros2_humble/src/RobotController/build/RobotController/build/lib/RobotController/Subscriber.py -> /home/aidan/ros2_humble/src/RobotController/install/RobotController/lib/python3.10/site-packages/RobotController
+copying /home/aidan/ros2_humble/src/RobotController/build/RobotController/build/lib/RobotController/Motor.py -> /home/aidan/ros2_humble/src/RobotController/install/RobotController/lib/python3.10/site-packages/RobotController
+copying /home/aidan/ros2_humble/src/RobotController/build/RobotController/build/lib/RobotController/__init__.py -> /home/aidan/ros2_humble/src/RobotController/install/RobotController/lib/python3.10/site-packages/RobotController
+byte-compiling /home/aidan/ros2_humble/src/RobotController/install/RobotController/lib/python3.10/site-packages/RobotController/SampleNode.py to SampleNode.cpython-310.pyc
+byte-compiling /home/aidan/ros2_humble/src/RobotController/install/RobotController/lib/python3.10/site-packages/RobotController/MotorController.py to MotorController.cpython-310.pyc
+byte-compiling /home/aidan/ros2_humble/src/RobotController/install/RobotController/lib/python3.10/site-packages/RobotController/Subscriber.py to Subscriber.cpython-310.pyc
+byte-compiling /home/aidan/ros2_humble/src/RobotController/install/RobotController/lib/python3.10/site-packages/RobotController/Motor.py to Motor.cpython-310.pyc
+byte-compiling /home/aidan/ros2_humble/src/RobotController/install/RobotController/lib/python3.10/site-packages/RobotController/__init__.py to __init__.cpython-310.pyc
+running install_data
+creating /home/aidan/ros2_humble/src/RobotController/install/RobotController/share/ament_index
+creating /home/aidan/ros2_humble/src/RobotController/install/RobotController/share/ament_index/resource_index
+creating /home/aidan/ros2_humble/src/RobotController/install/RobotController/share/ament_index/resource_index/packages
+copying resource/RobotController -> /home/aidan/ros2_humble/src/RobotController/install/RobotController/share/ament_index/resource_index/packages
+copying package.xml -> /home/aidan/ros2_humble/src/RobotController/install/RobotController/share/RobotController
+creating /home/aidan/ros2_humble/src/RobotController/install/RobotController/share/RobotController/launch
+copying launch/FARIS_launch.py -> /home/aidan/ros2_humble/src/RobotController/install/RobotController/share/RobotController/launch
+running install_egg_info
+Copying build/RobotController/RobotController.egg-info to /home/aidan/ros2_humble/src/RobotController/install/RobotController/lib/python3.10/site-packages/RobotController-0.0.0-py3.10.egg-info
+running install_scripts
+Installing listener script to /home/aidan/ros2_humble/src/RobotController/install/RobotController/lib/RobotController
+Installing node script to /home/aidan/ros2_humble/src/RobotController/install/RobotController/lib/RobotController
+writing list of installed files to '/home/aidan/ros2_humble/src/RobotController/build/RobotController/install.log'
