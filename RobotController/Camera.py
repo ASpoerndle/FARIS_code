@@ -29,7 +29,7 @@ def draw_boxes(image, results, depth_frame,score_threshold):
     # Ensure image is writeable for drawing
     image = image.copy()
     
-    
+        
     # YOLOv8 returns a list of Results objects
     # Assuming batch size of 1, we take the first result
     if results and len(results) > 0:
@@ -54,18 +54,18 @@ def draw_boxes(image, results, depth_frame,score_threshold):
                     text = f"{CLASS_NAMES[cls]}: {conf:.2f}"
                 else:
                     text = f"Class {cls}: {conf:.2f}" # Fallback if label index is out of bounds
+                print(text) 
                
-               
-                cv2.putText(image, text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+             #   cv2.putText(image, text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
                 centerx, centery = int((x2-x1) / 2), int((y2-y1)/2)
                 dis = depth_frame.get_distance(centerx, centery)
-               
+                        
                 if(dis < .26 and dis > 0):
                     print(x1)
                     adjustCam.setX1(x1)
                     adjustCam.adjustDir()
                 
-    return image
+    
 
 # --- Rest of your code ---
 # Start streaming
@@ -81,7 +81,7 @@ try:
             continue
 
         # Convert images to numpy arrays
-        depth_image = np.asanyarray(depth_frame.get_data())
+        #depth_image = np.asanyarray(depth_frame.get_data())
         original_color_image = np.asanyarray(color_frame.get_data())
 
         # Perform inference with YOLOv8 model
