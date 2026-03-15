@@ -1,4 +1,4 @@
-import rclpy
+"""import rclpy
 
 from rclpy.node import Node
 
@@ -73,4 +73,4 @@ def main(args = None):
     rclpy.shutdown()
      
 if __name__ == '__main__':
-    main()
+    main()"""
