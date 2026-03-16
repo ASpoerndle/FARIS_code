@@ -31,9 +31,16 @@ def generate_launch_description():
         name='listen',
         output='log'
     )
+    YOLO_node = Node(
+        package = 'RobotController',
+        executable='YOLO_node',
+        name='YOLO',
+        output = 'log'
+    )
 
     # 5. MUST RETURN the LaunchDescription so ROS knows what to run!
     return LaunchDescription([
         realsense_node,
-        listen_node
+        listen_node,
+        YOLO_node
     ])
