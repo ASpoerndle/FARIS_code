@@ -23,7 +23,8 @@
 #                      IMPORTS
 #----------------------------------------------------------------
 
-import smbus
+import board
+import Jetson.GPIO as GPIO
 import time
 import sys
 
@@ -121,8 +122,8 @@ def readVelocities():
 #----------------------------------------------------------------
 
 # Setup I2C peripheral
-i2c = smbus.SMBus(I2C_BUS_NUM)
-
+#i2c = smbus.SMBus(I2C_BUS_NUM)
+i2c = board.I2C()
 # Verify CHIP_ID
 print("Reading CHIP_ID")
 # Do a throwaway read; for some reason the first byte read sometimes reports 128 (Pi specific issue?)
