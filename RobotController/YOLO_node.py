@@ -10,10 +10,10 @@ import torch
 from ultralytics import YOLO
 from cv_bridge import CvBridge
 model = YOLO("./YOLOPencil.pt")
-CLASS_NAMES = ["Pencil"] # Adjust this based on your actual classes in YOLO.pt
+CLASS_NAMES = ["Pencil"] 
 
 """
-In the future, change so it doesn't sound out until the box is first generated
+In the future, change so it doesn't send out until the box is first generated
 """
 
 class YOLO_node(Node):
