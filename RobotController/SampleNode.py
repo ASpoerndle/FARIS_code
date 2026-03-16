@@ -21,8 +21,16 @@ class ExampleNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = ExampleNode()
-    rclpy.spin(node)
+     try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        
+        # Destroy the node explicitly
+        # (optional - otherwise it will be done automatically
+        # when the garbage collector destroys the node object)
+    node.destroy_node()
     rclpy.shutdown()
+
 
 if __name__ == '__main__':
         main()
