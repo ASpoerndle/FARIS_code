@@ -12,7 +12,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        # THIS IS THE MISSING PIECE:
+        
         (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*launch.[pxy][yma]*')))
     
     ],
@@ -31,6 +31,7 @@ setup(
         'console_scripts': [
             'node = RobotController.SampleNode:main',
             'listener = RobotController.Subscriber:main'
+            'YOLO_node = RobotController.YOLO_node:main'
 
         ],
     },
