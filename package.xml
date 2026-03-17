@@ -21,5 +21,6 @@
 	  <depend>rclcpp</depend>
 	  <depend>std_msgs</depend>
 	  <depend>bounding_box</depend>
+	  <depend>robot_interfaces</depend>
   </export>
 </package>

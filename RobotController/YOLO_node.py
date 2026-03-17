@@ -3,14 +3,14 @@ from rclpy.node import Node
 
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
-from RobotController.msg import bounding_box as BB
+from robot_interfaces.msg import BoundingBox as BB
 import cv2
 import numpy as np
 import torch
 from ultralytics import YOLO
 from cv_bridge import CvBridge
-model = YOLO("./YOLOPencil.pt")
-CLASS_NAMES = ["Pencil"] 
+#model = YOLO("YOLOPencil.pt")
+#CLASS_NAMES = ["Pencil"] 
 
 """
 In the future, change so it doesn't send out until the box is first generated
@@ -22,6 +22,8 @@ class YOLO_node(Node):
         super().__init__('YOLO_node')
         #sets the msg variable to be equal to my custom topic 
         self.msg = BB()
+        self.model = YOLO("/home/aidan/ros2_humble/src/RobotController/RobotController/YOLOPencil.pt")
+        CLASS_NAMES = ["Pencil"]
         #creates a topic that the node can publish to (bounding_box) with the bounding_box message type and sends a max of 10 at any one time
         self.publisher_ = self.create_publisher(BB, 'bounding_box', 10)
         timer_period = 0.5  # seconds
@@ -43,7 +45,7 @@ class YOLO_node(Node):
     def get_data_from_topic(self, image):
         cv2image = self.bridge.imgmsg_to_cv2(image, "bgr8")
        #np.asanyarray(color_frame.get_data())
-        results = model(cv2image, verbose=False) # verbose=False to suppress console output
+        results = self.model(cv2image, verbose=False, device = 'cpu') # verbose=False to suppress console output
         cords = self.draw_boxes(cv2image, results, score_threshold=0.66)
         if(cords == None):
             self.msg.x1 = 0
@@ -111,8 +113,8 @@ def main(args=None):
         # Destroy the node explicitly
         # (optional - otherwise it will be done automatically
         # when the garbage collector destroys the node object)
-    yolo_node.destroy_node()
-    rclpy.shutdown()
+        yolo_node.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':
