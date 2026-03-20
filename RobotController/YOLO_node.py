@@ -7,6 +7,7 @@ from robot_interfaces.msg import BoundingBox as BB
 import cv2
 import numpy as np
 import torch
+torch.backends.cudnn.benchmark = False
 from ultralytics import YOLO
 from cv_bridge import CvBridge
 #model = YOLO("YOLOPencil.pt")
@@ -45,7 +46,7 @@ class YOLO_node(Node):
     def get_data_from_topic(self, image):
         cv2image = self.bridge.imgmsg_to_cv2(image, "bgr8")
        #np.asanyarray(color_frame.get_data())
-        results = self.model(cv2image, verbose=False, device = 'cpu') # verbose=False to suppress console output
+        results = self.model(cv2image, verbose=False, device = 'cpu') # verbose=False to suppress console output  device = 'cpu')
         cords = self.draw_boxes(cv2image, results, score_threshold=0.66)
         if(cords == None):
             self.msg.x1 = 0

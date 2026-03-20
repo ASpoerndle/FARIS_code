@@ -27,7 +27,9 @@ import board
 import Jetson.GPIO as GPIO
 import time
 import sys
-
+import smbus2
+import busio
+#import board
 #----------------------------------------------------------------
 #                      CONSTANTS
 #----------------------------------------------------------------
@@ -47,7 +49,7 @@ VEL_PAYLOAD_LEN = sizeof_vel*NUM_ENCODERS
 ENC_DATA_PAYLOAD_LEN = CNT_PAYLOAD_LEN + VEL_PAYLOAD_LEN
 FW_PAYLOAD_LEN = 3
 
-SUPPORTED_FW_VERSION_MAJ = 2
+SUPPORTED_FW_VERSION_MAJ = 3
 
 OCTOQUAD_CHIP_ID = 0x51
 OCTOQUAD_I2C_ADDR = 0x30
@@ -58,6 +60,7 @@ OCTOQUAD_REG_ENC0 = 0x0C
 OCTOQUAD_REG_VEL0 = 0x2C
 
 I2C_BUS_NUM = 1
+bus = smbus2.SMBus(1)
 
 #----------------------------------------------------------------
 #                      HELPER FUNCTIONS
@@ -103,18 +106,18 @@ def parseVelocityData(theBytes):
     return counts
 
 def readFwVersion():
-    fw = i2c.read_i2c_block_data(OCTOQUAD_I2C_ADDR, OCTOQUAD_REG_FW_MAJ, FW_PAYLOAD_LEN)
+    fw = bus.read_i2c_block_data(OCTOQUAD_I2C_ADDR, OCTOQUAD_REG_FW_MAJ, FW_PAYLOAD_LEN)
     return fw
     
 def readChipID():
-    return i2c.read_byte_data(OCTOQUAD_I2C_ADDR, OCTOQUAD_REG_CHIP_ID)    
+       return bus.read_byte_data(OCTOQUAD_I2C_ADDR, OCTOQUAD_REG_CHIP_ID)    
 
 def readCounts():
-    theBytes = i2c.read_i2c_block_data(OCTOQUAD_I2C_ADDR, OCTOQUAD_REG_ENC0, CNT_PAYLOAD_LEN)
+    theBytes = bus.read_i2c_block_data(OCTOQUAD_I2C_ADDR, OCTOQUAD_REG_ENC0, CNT_PAYLOAD_LEN)
     return parseCountData(theBytes)
 
 def readVelocities():
-    theBytes = i2c.read_i2c_block_data(OCTOQUAD_I2C_ADDR, OCTOQUAD_REG_VEL0, VEL_PAYLOAD_LEN)
+    theBytes = bus.read_i2c_block_data(OCTOQUAD_I2C_ADDR, OCTOQUAD_REG_VEL0, VEL_PAYLOAD_LEN)
     return parseVelocityData(theBytes)
 
 #----------------------------------------------------------------
@@ -123,7 +126,11 @@ def readVelocities():
 
 # Setup I2C peripheral
 #i2c = smbus.SMBus(I2C_BUS_NUM)
-i2c = board.I2C()
+#i2c = busio.I2C(28,27)
+
+i2c = busio.I2C(board.SCL_1, board.SDA_1)
+#
+
 # Verify CHIP_ID
 print("Reading CHIP_ID")
 # Do a throwaway read; for some reason the first byte read sometimes reports 128 (Pi specific issue?)
@@ -156,3 +163,4 @@ while True:
     counts = readCounts()
     velocities = readVelocities()
     print (counts, velocities)
+    time.sleep(1)
