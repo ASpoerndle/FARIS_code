@@ -10,6 +10,7 @@ from robot_interfaces.msg import BoundingBox as BB
 import cv2
 import numpy as np
 from cv_bridge import CvBridge
+from std_msgs.msg import Float32
 #model = YOLO("YOLOPencil.pt")
 #CLASS_NAMES = ["Pencil"] 
 
@@ -21,10 +22,11 @@ class DistanceFromObj_node(Node):
     
     def __init__(self):
         super().__init__('DistanceFromObj_node')
-        self.msg = 0.0
+        self.msg = Float32()
+        self.x1 = self.x2 = self.y1 = self.y2 = None
         #sets the msg variable to be equal to my custom topic 
         #creates a topic that the node can publish to (bounding_box) with the bounding_box message type and sends a max of 10 at any one time
-        self.publisher_ = self.create_publisher(float, 'distance_from_obj', 10)
+        self.publisher_ = self.create_publisher(Float32, 'distance_from_obj', 10)
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.publish_topic)
         #gets information from the /color/image_raw topic
@@ -46,7 +48,17 @@ class DistanceFromObj_node(Node):
     def get_data_from_topic(self, data):
       self.x1,self.x2,self.y1,self.y2 =  data.x1, data.x2, data.y1, data.y2
       
-    def retrieveDistance(self):
+    def retrieveDistance(self, depth):
+        if self.x1 is None:
+            return # Wait until we have a bounding box
+        cv_depth_image = self.bridge.imgmsg_to_cv2(depth, desired_encoding='passthrough')
+       
+        centerx = int((self.x2 + self.x1)/2)
+        centery = int((self.y2 + self.y1)/2)
+        depth_value = cv_depth_image[centery, centerx]
+        self.msg.data = float(depth_value/ 1000)
+        
+        
       #method
       
 
@@ -54,15 +66,15 @@ class DistanceFromObj_node(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    yolo_node = YOLO_node()
+    distance_node = DistanceFromObj_node()
     try:
-        rclpy.spin(yolo_node)
+        rclpy.spin(distance_node)
     except KeyboardInterrupt:
         
         # Destroy the node explicitly
         # (optional - otherwise it will be done automatically
         # when the garbage collector destroys the node object)
-        yolo_node.destroy_node()
+        distance_node.destroy_node()
         rclpy.shutdown()
 
 
