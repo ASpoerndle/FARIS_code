@@ -31,7 +31,8 @@ setup(
         'console_scripts': [
             'node = RobotController.SampleNode:main',
             'listener = RobotController.Subscriber:main',
-            'YOLO_node = RobotController.YOLO_node:main'
+            'YOLO_node = RobotController.YOLO_node:main',
+            'distance_node = RobotController.distanceFromObjNode.py:main'
 
         ],
     },
