@@ -11,15 +11,17 @@ class RotationalMotor():
     self.motor = WheelMotor(pca,pin,side)
     self.enc = enc
 
-
+  #Returns T/F based on if it's off-centered, put a while loop in MotorController class so it can adjust all motors at once
   def adjustForward(self):
       read_octoquad()
       currentPos = RotationalMotor.positions[self.enc]
       if(currentPos > RotationalMotor.forwardVal - 5 and currentPos < RotationalMotor.forwardVal + 5):
-         return
+         return False
       elif(currentPos < RotationalMotor.forwardVal):
         print("rotate left for center")
+        return True
       else:
+        return True
         print("rotate right for center")
   def rotateLeft(self):
     #TODO - if current Pos > forward - 90, rotate left
