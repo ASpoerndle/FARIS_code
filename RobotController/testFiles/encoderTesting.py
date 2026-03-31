@@ -157,10 +157,18 @@ for i in range(5,0,-1):
     time.sleep(1)
 
 print("")
-
+prevNum = 0
 # Start asking for the counts and printing to console in a tight loop
 while True:
     counts = readCounts()
     velocities = readVelocities()
-    print (counts, velocities)
+    if(counts[4] < -8 and counts[4] > -18):
+        print("forward")
+
+    elif(counts[4] > -13):
+        print("right")
+    else:
+        print("left")
+
+    #print (counts, velocities)
     time.sleep(1)
