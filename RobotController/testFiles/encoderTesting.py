@@ -162,9 +162,10 @@ prevNum = 0
 while True:
     counts = readCounts()
     velocities = readVelocities()
+    print(counts)
     if(counts[4] < -8 and counts[4] > -18):
         print("forward")
-
+    
     elif(counts[4] > -13):
         print("right")
     else:

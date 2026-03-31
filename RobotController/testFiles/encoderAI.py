@@ -1,4 +1,5 @@
 import struct
+import time
 from smbus2 import SMBus
 
 # OctoQuad default settings
@@ -15,10 +16,10 @@ def read_octoquad():
         # Unpack into a list of 8 integers
         # '<8i' means 8 little-endian signed integers
         velocities = struct.unpack('<8h', bytes(all_velocities))
-        positions = struct.unpack('<8i', bytes(all_positions))
+        position = struct.unpack('<8i', bytes(all_positions))
         
-        # for i, val in enumerate(positions):
-        #     channels[i] = val
+        for i, val in enumerate(position):
+            positions[i] = val
 
         # return position, velocity
 #Ideal position is -13
@@ -27,5 +28,6 @@ try:
         read_octoquad()
         print(positions)
         print(velocities)
+        time.sleep(1)
 except Exception as e:
     print(f"Error reading from OctoQuad: {e}")

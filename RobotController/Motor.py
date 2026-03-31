@@ -69,6 +69,7 @@ class WheelMotor:
         self.motor = pca.channels[pin]
         self.motor.duty_cycle = 5200
         self.side = side
+        print("New Motor Added")
     def move_motor(self, speed):
         if(speed > 0 and speed <= 1):
             if(self.side == 'r'):
