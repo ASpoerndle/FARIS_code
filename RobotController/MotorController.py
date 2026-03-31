@@ -1,5 +1,6 @@
 import time
 from .Motor import WheelMotor
+from .RotationalMotor import RotationalMotor
 import board
 from adafruit_pca9685 import PCA9685
 
@@ -30,14 +31,19 @@ class MotorController():
         pca = PCA9685(i2c)
         pca.frequency = 50
 
-        self.motor_list = []
-        pin_list = [[11, 'l'],[10,'l'],[13,'r'],[15,'r']]
-
-        print("readying motor...")
-        for i in pin_list:
+        self.wheel_motor_list = []
+        self.rotational_motor_list = []
+        pin_list_wheel = [[11, 'l'],[10,'l'],[13,'r'],[15,'r']]
+        pin_list_rotational = [["pin","side"]]
+        print("readying wheel motors...")
+        for i in pin_list_wheel:
             motor = WheelMotor(pca,i[0], i[1])
-            self.motor_list.append(motor)
-
+            self.wheel_motor_list.append(motor)
+        print("readying rotational motors...")
+        for i in pin_list_rotational:
+            motor = RotationalMotor(pca, i[0],i[1])
+            self.rotational_motor_list.append(motor)
+        
     def moveWheels(self, i):
         print("moving forward")
         if(i < -1 or i > 1):
