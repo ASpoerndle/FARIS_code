@@ -1,6 +1,11 @@
 import struct
 from smbus2 import SMBus
 from Motor import WheelMotor
+import board
+from adafruit_pca9685 import PCA9685
+
+import Jetson.GPIO as GPIO
+import time
 class RotationalMotor():
   I2C_ADDR = 0x30
   I2C_BUS = 1
@@ -44,3 +49,20 @@ class RotationalMotor():
 
         # return position, velocity
 #Ideal position is -13
+
+"""
+TESTING GROUND FOR ROTATIONAL MOTOR
+
+given a pca address, pin value, and a side
+"""
+i2c = board.I2C()
+pca = PCA9685(i2c)
+pca.frequency = 50
+pin = 2
+side = "l"
+rotMotor = RotationalMotor(pca,pin,side,0)
+val = rotMotor.adjustForward()
+while(val):
+  val = rotMotor.adjustForward()
+
+
