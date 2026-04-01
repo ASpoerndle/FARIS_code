@@ -23,24 +23,52 @@ class RotationalMotor():
             
       currentPos = RotationalMotor.positions[self.enc]
       if(currentPos > self.fVal - 5 and currentPos < self.fVal + 5):
-         # self.motor.move_motor(0)
+         self.motor.move_motor(0)
           return False
       elif(currentPos < self.fVal):
-        #self.motor.move_motor(.1)
+        self.motor.move_motor(.1)
         print("rotate left for center")
         return True
       else:
-          #self.motor.move_motor(-.1)
+          self.motor.move_motor(-.1)
           print("rotate right for center")
           return True
+  #right is neg, left is pos
+  def rotate(self, angle):
+    self.read_octoquad()
+    currentPos = RotationalMotor.positions[self.enc]
+    if(angle > 0):
+      cond = self.rotateLeft(angle, currentPos)
+    if(angle < 0):
+      cond = self.rotateRight(angle, currentPos)
+    else:
+      self.adjustForward()
+    if(cond):
+      return False
+    else:
+      return True
+    
   def stopMotor(self):
       self.motor.move_motor(0)
-  def rotateLeft(self):
+  def rotateLeft(self, angle, current_count):
+    new_pos = (angle * 1024)/45 + current_count)
+    if(current_count < new_pos):
+      self.motor.move_motor(.1)
+      return False
+    else:
+      self.motor.move_motor(0)
+      return True
     #TODO - if current Pos > forward - 90, rotate left
-    return
-  def rotateRight(self):
+    
+  def rotateRight(self, angle, current_count):
+    new_pos = (angle * 1024)/45 + current_count
+    if(current_count > new_pos):
+      self.motor.move_motor(-.1)
+      return False
+    else:
+      self.motor.move_motor(0)
+      return True
     #TODO - if current Pos < forward + 90, rotate right
-    return
   def getCurrentPosition(self):
       return RotationalMotor.positions[self.enc]
   # OctoQuad default settings
@@ -48,8 +76,8 @@ class RotationalMotor():
     with SMBus(RotationalMotor.I2C_BUS) as bus:
         addr = RotationalMotor.I2C_ADDR
         # Read all 8 channels (32 bytes total) starting from register 0x00
-        all_positions = bus.read_i2c_block_data(addr, 0x00, 32)
-        all_velocities = bus.read_i2c_block_data(addr, 0x20,16)
+        all_positions = bus.read_i2c_block_data(addr, 0x1C, 32)
+        all_velocities = bus.read_i2c_block_data(addr, 0x2C,16)
         
         # Unpack into a list of 8 integers
         # '<8i' means 8 little-endian signed integers
@@ -58,7 +86,7 @@ class RotationalMotor():
         print(RotationalMotor.positions) 
         # for i, val in enumerate(positions):
         #     channels[i] = val
-    time.sleep(1)
+    time.sleep(.01)
         # return position, velocity
 #Ideal position is -13
 
@@ -73,14 +101,18 @@ try:
     pca.frequency = 50
     pin = 2
     side = "l"
-    idealfVal = -777
+    idealfVal = -265
     channel = 0
     rotMotor = RotationalMotor(pca,pin,side,channel,idealfVal)
     val = rotMotor.adjustForward()
+    # while(val):
+    #     val = rotMotor.adjustForward()
+    #     print(rotMotor.getCurrentPosition())
+    # print("finshed")
     while(val):
-        val = rotMotor.adjustForward()
-        print(rotMotor.getCurrentPosition())
-    print("finshed")
-
+      val = rotMotor.adjustForward()
+    val = rotMotor.rotate(90)
+    while(val):
+      val = rotMotor.rotate(90)
 except KeyboardInterrupt:
     rotMotor.stopMotor()
