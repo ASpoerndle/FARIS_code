@@ -36,13 +36,14 @@ class RotationalMotor():
           print("rotate right for center")
           return True
   #right is neg, left is pos
-  def rotate(self, angle):
+  def rotate(self, angle, speed):
+    speed = abs(speed)
     self.read_octoquad()
     currentPos = RotationalMotor.positions[self.enc]
     if(angle > 0):
-      cond = self.rotateLeft(angle, currentPos)
+      cond = self.rotateLeft(angle, currentPos, speed)
     if(angle < 0):
-      cond = self.rotateRight(angle, currentPos)
+      cond = self.rotateRight(angle, currentPos, speed)
     else:
       self.adjustForward()
     if(cond):
@@ -52,20 +53,20 @@ class RotationalMotor():
     
   def stopMotor(self):
       self.motor.move_motor(0)
-  def rotateLeft(self, angle, current_count):
+  def rotateLeft(self, angle, current_count, speed):
     new_pos = (angle * 1024)/45 + current_count)
     if(current_count < new_pos):
-      self.motor.move_motor(.1)
+      self.motor.move_motor(speed)
       return False
     else:
       self.motor.move_motor(0)
       return True
     #TODO - if current Pos > forward - 90, rotate left
     
-  def rotateRight(self, angle, current_count):
+  def rotateRight(self, angle, current_count, speed):
     new_pos = (angle * 1024)/45 + current_count
     if(current_count > new_pos):
-      self.motor.move_motor(-.1)
+      self.motor.move_motor(-speed)
       return False
     else:
       self.motor.move_motor(0)
@@ -77,17 +78,14 @@ class RotationalMotor():
   #input distance in m, speed -1.0 to 1.0
   def move(self,distance,speed, startPos):
     rev_dis = distance / RotationalMotor.WHEELC
-    count_dis = rev_dis * 8192 + startPos
-    self.read_octoquad()
-    current_pos = self.getCurrentPosition()
+    degree_dis = rev_dis * 360
     if(count_dis > current_pos and distance > 0):
-      self.motor.move_motor(speed)
+      self.rotate(degree_dis, speed)
       return True
     elif(count_dis < current_pos and distance < 0):
-      self.motor.move_motor(-speed)
+      self.motor.move_motor(degree_dis, speed)
       return True
     else:
-      self.motor.move_motor(0)
       return False
   # OctoQuad default settings
   def read_octoquad(self):
@@ -135,7 +133,7 @@ try:
     time.sleep(1)
     print("Rotating Motor 90 degrees...")
     while(val):
-      val = rotMotor.rotate(90)
+      val = rotMotor.rotate(90,.1)
     print("Rotation complete!")  
     # startPos = rotMotor.getCurrentPosition()
     # val = rotMotor.move(0.5,.1,startPos)
