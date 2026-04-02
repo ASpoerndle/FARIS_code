@@ -19,6 +19,7 @@ class RotationalMotor():
     self.motor = WheelMotor(pca,pin,side)
     self.enc = enc
     self.fVal = fVal
+    self.currentCount = fVal
   #Returns T/F based on if it's off-centered, put a while loop in MotorController class so it can adjust all motors at once
   def adjustForward(self):
       self.read_octoquad()
@@ -26,7 +27,7 @@ class RotationalMotor():
       currentPos = RotationalMotor.positions[self.enc]
       if(currentPos > self.fVal - 5 and currentPos < self.fVal + 5):
          self.motor.move_motor(0)
-          return False
+         return False
       elif(currentPos < self.fVal):
         self.motor.move_motor(.1)
         print("rotate left for center")
@@ -36,37 +37,42 @@ class RotationalMotor():
           print("rotate right for center")
           return True
   #right is neg, left is pos
+  def setMotorSpeed(self,speed):
+      self.motor.move_motor(speed)
   def rotate(self, angle, speed):
     speed = abs(speed)
     self.read_octoquad()
-    currentPos = RotationalMotor.positions[self.enc]
-    if(angle > 0):
-      cond = self.rotateLeft(angle, currentPos, speed)
     if(angle < 0):
-      cond = self.rotateRight(angle, currentPos, speed)
-    else:
-      self.adjustForward()
+      cond = self.rotateLeft(angle, speed)
+    if(angle > 0):
+        #true = True
+        cond = self.rotateRight(angle , speed)
+    #else:
+      #self.adjustForward()
     if(cond):
+      self.currentCount = self.getCurrentPosition()
       return False
     else:
       return True
     
   def stopMotor(self):
       self.motor.move_motor(0)
-  def rotateLeft(self, angle, current_count, speed):
-    new_pos = (angle * 1024)/45 + current_count)
-    if(current_count < new_pos):
-      self.motor.move_motor(speed)
-      return False
+  def rotateLeft(self, angle,  speed):
+    new_pos = (angle * 1024)/45 + self.currentCount
+    if(self.getCurrentPosition() > new_pos):
+        self.motor.move_motor(-speed)
+        return False
     else:
       self.motor.move_motor(0)
       return True
     #TODO - if current Pos > forward - 90, rotate left
     
-  def rotateRight(self, angle, current_count, speed):
-    new_pos = (angle * 1024)/45 + current_count
-    if(current_count > new_pos):
-      self.motor.move_motor(-speed)
+  def rotateRight(self, angle, speed):
+    new_pos = (angle * 1024)/45 + self.currentCount
+    print("CC: " + str(self.currentCount))
+    print("NP: " + str(new_pos))
+    if(self.getCurrentPosition() < new_pos):
+      self.motor.move_motor(speed)
       return False
     else:
       self.motor.move_motor(0)
@@ -86,6 +92,7 @@ class RotationalMotor():
       self.motor.move_motor(degree_dis, speed)
       return True
     else:
+      self.currentCount = self.getCurrentPosition
       return False
   # OctoQuad default settings
   def read_octoquad(self):
@@ -111,7 +118,7 @@ TESTING GROUND FOR ROTATIONAL MOTOR
 
 given a pca address, pin value, and a side
 """
-try:
+"""try:
     i2c = board.I2C()
     pca = PCA9685(i2c)
     pca.frequency = 50
@@ -128,17 +135,21 @@ try:
     print("Adjusting forward...")
     while(val):
       val = rotMotor.adjustForward()
-    val = rotMotor.rotate(90)
     print("Forward adjustment complete!")
     time.sleep(1)
     print("Rotating Motor 90 degrees...")
+    val = True
+    #rotMotor.setMotorSpeed(-.2)
     while(val):
-      val = rotMotor.rotate(90,.1)
+           
+        val = rotMotor.rotate(-90,.1)
+    val = True
+    while(val):
+        val = rotMotor.adjustForward()
     print("Rotation complete!")  
     # startPos = rotMotor.getCurrentPosition()
     # val = rotMotor.move(0.5,.1,startPos)
     # while(val):
     #   val = rotMotor.move(0.5,.1)
-    print("Finished protocol!")
 except KeyboardInterrupt:
-    rotMotor.stopMotor()
+    rotMotor.stopMotor()"""

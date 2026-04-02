@@ -1,6 +1,6 @@
 import time
-from .Motor import WheelMotor
-from .RotationalMotor import RotationalMotor
+from Motor import WheelMotor
+from RotationalMotor import RotationalMotor
 import board
 from adafruit_pca9685 import PCA9685
 
@@ -34,14 +34,14 @@ class MotorController():
         self.wheel_motor_list = []
         self.rotational_motor_list = []
         pin_list_wheel = [[11, 'l'],[10,'l'],[13,'r'],[15,'r']]
-        pin_list_rotational = [["pin","side"]]
+        pin_list_rotational = [[2,"l",0,-265],[3,"l",1,-165]]
         print("readying wheel motors...")
         for i in pin_list_wheel:
             motor = WheelMotor(pca,i[0], i[1])
             self.wheel_motor_list.append(motor)
         print("readying rotational motors...")
         for i in pin_list_rotational:
-            motor = RotationalMotor(pca, i[0],i[1])
+            motor = RotationalMotor(pca, i[0],i[1],i[2],i[3])
             self.rotational_motor_list.append(motor)
         
     def moveWheels(self, i):
@@ -49,15 +49,29 @@ class MotorController():
         if(i < -1 or i > 1):
             print("ERR: invalid input")
             return
-        for motor in self.motor_list:
+        for motor in self.wheel_motor_list:
             motor.move_motor(i)
-
+    def adjustForward(self):
+        cond1 = True
+        cond2 = False
+        while(cond1 or cond2):
+            if(self.rotational_motor_list[0].getCurrentPosition() != 265):
+                cond1 = self.rotational_motor_list[0].adjustForward()
+            if(cond2 != True):
+                cond2 = self.rotational_motor_list[1].adjustForward()
+    def stopMotors(self):
+        for motor in self.rotational_motor_list:
+            motor.stopMotor()
     def __del__(self):
-        for motor in self.motor_list:
+        for motor in self.wheel_motor_list:
             motor.move_motor(0)
+        for motor in self.rotational_motor_list:
+            motor.stopMotor()
         time.sleep(3)
         print("finished")
    
-        
-
-
+#try:       
+mc = MotorController()
+mc.adjustForward()
+#except KeyboardInterrupt:
+ #   mc.stopMotors()
