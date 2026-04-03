@@ -55,15 +55,15 @@ class WheelMotor:
         #for i in range(WheelMotor.current_duty, WheelMotor.default_f,-5):
          #   self.motor.duty_cycle = i
           #  time.sleep(0.05)
-        self.motor.duty_cycle = WheelMotor.default_f
-        WheelMotor.current_duty = WheelMotor.default_f
+        self.motor.duty_cycle = 5200
+        WheelMotor.current_duty = 5200
 
     def zero_from_backward(self):
         #for i in range(WheelMotor.current_duty, WheelMotor.default_r,5):
          #   self.motor.duty_cycle = i
           #  time.sleep(0.05)
-        self.motor.duty_cycle = WheelMotor.default_r
-        WheelMotor.current_duty = WheelMotor.default_r
+        self.motor.duty_cycle = 5200
+        WheelMotor.current_duty = 5200
 
     def __init__(self,pca, pin,side):
         self.motor = pca.channels[pin]
