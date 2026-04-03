@@ -56,14 +56,31 @@ class MotorController():
         cond2 = False
         isMotorAligned1 = False
         isMotorAligned2 = False
+        stopCond = False
         motor1 = self.rotational_motor_list[0]
         motor2 = self.rotational_motor_list[1]
-        while((cond1 and cond2) or ( not isMotorAligned1 and not isMotorAligned2)):
+        while(not stopCond):
             if(not isMotorAligned1):
                 cond1 = motor1.adjustForward()
                 isMotorAligned1 = cond1
             if(not isMotorAligned2):
                 cond2 = motor2.adjustForward()
+                isMotorAligned2 = cond2
+            stopCond = isMotorAligned2 and isMotorAligned1
+        self.stopMotors()
+    def rotate(self,angle,speed):
+        cond1 = True
+        cond2 = False
+        isMotorAligned1 = False
+        isMotorAligned2 = False
+        motor1 = self.rotational_motor_list[0]
+        motor2 = self.rotational_motor_list[1]
+        while(cond1 and cond2):
+            if(not isMotorAligned1):
+                cond1 = motor1.rotate(angle,speed)
+                isMotorAligned1 = cond1
+            if(not isMotorAligned2):
+                cond2 = motor2.adjustForward(angle,speed)
                 isMotorAligned2 = cond2
         self.stopMotors()
     def stopMotors(self):
