@@ -34,7 +34,7 @@ class MotorController():
         self.wheel_motor_list = []
         self.rotational_motor_list = []
         pin_list_wheel = [[11, 'l'],[10,'l'],[13,'r'],[15,'r']]
-        pin_list_rotational = [[2,"l",0,0],[3,"r",1,-165]]
+        pin_list_rotational = [[2,"l",0,0],[3,"r",1,0]]
         print("readying wheel motors...")
         for i in pin_list_wheel:
             motor = WheelMotor(pca,i[0], i[1])
