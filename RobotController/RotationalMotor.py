@@ -27,15 +27,15 @@ class RotationalMotor():
       currentPos = RotationalMotor.positions[self.enc]
       if(currentPos > self.fVal - 5 and currentPos < self.fVal + 5):
          self.motor.move_motor(0)
-         return False
+         return True
       elif(currentPos < self.fVal):
         self.motor.move_motor(.1)
         print("rotate left for center")
-        return True
+        return False
       else:
           self.motor.move_motor(-.1)
           print("rotate right for center")
-          return True
+          return False
   #right is neg, left is pos
   def setMotorSpeed(self,speed):
       self.motor.move_motor(speed)
