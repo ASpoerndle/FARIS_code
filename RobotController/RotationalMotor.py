@@ -18,14 +18,18 @@ class RotationalMotor():
   def __init__(self, pca, pin, side, enc, fVal):
     self.motor = WheelMotor(pca,pin,side)
     self.enc = enc
+    if(side == "r"):
+        self.polarity = -1
+    else:
+        self.polarity = 1
     self.fVal = fVal
     self.currentCount = fVal
   #Returns T/F based on if it's off-centered, put a while loop in MotorController class so it can adjust all motors at once
   def adjustForward(self):
       self.read_octoquad()
-            
+      
       currentPos = RotationalMotor.positions[self.enc]
-      if(currentPos > self.fVal - 5 and currentPos < self.fVal + 5):
+      if(currentPos > self.fVal - 3 and currentPos < self.fVal + 3):
          self.motor.move_motor(0)
          return True
       elif(currentPos < self.fVal):
@@ -40,7 +44,7 @@ class RotationalMotor():
   def setMotorSpeed(self,speed):
       self.motor.move_motor(speed)
   def rotate(self, angle, speed):
-    speed = abs(speed)
+    speed = abs(speed) * self.polarity
     self.read_octoquad()
     if(angle < 0):
       cond = self.rotateLeft(angle, speed)

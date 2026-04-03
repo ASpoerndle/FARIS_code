@@ -34,7 +34,7 @@ class MotorController():
         self.wheel_motor_list = []
         self.rotational_motor_list = []
         pin_list_wheel = [[11, 'l'],[10,'l'],[13,'r'],[15,'r']]
-        pin_list_rotational = [[2,"l",0,-265],[3,"l",1,-165]]
+        pin_list_rotational = [[2,"l",0,0],[3,"r",1,-165]]
         print("readying wheel motors...")
         for i in pin_list_wheel:
             motor = WheelMotor(pca,i[0], i[1])
@@ -58,13 +58,14 @@ class MotorController():
         isMotorAligned2 = False
         motor1 = self.rotational_motor_list[0]
         motor2 = self.rotational_motor_list[1]
-        while((cond1 or cond2) and (!isMotorAligned1 or !isMotorAligned2)):
-            if(!isMotorAligned1):
+        while((cond1 and cond2) or ( not isMotorAligned1 and not isMotorAligned2)):
+            if(not isMotorAligned1):
                 cond1 = motor1.adjustForward()
                 isMotorAligned1 = cond1
-            if(cond2 != True):
+            if(not isMotorAligned2):
                 cond2 = motor2.adjustForward()
                 isMotorAligned2 = cond2
+        self.stopMotors()
     def stopMotors(self):
         for motor in self.rotational_motor_list:
             motor.stopMotor()
