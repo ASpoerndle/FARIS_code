@@ -54,15 +54,9 @@ class MotorController():
     def adjustForward(self):
         cond1 = True
         cond2 = False
-        isMotorAligned1 = False
-        isMotorAligned2 = False
+        isMotorAligned1 = isMotorAligned2 = isMotorAligned3 = isMotorAligned4 = False
         stopCond = False
-        motor1 = self.rotational_motor_list[0]
-        motor2 = self.rotational_motor_list[1]
-        motor3 = self.rotational_motor_list[2]
-        motor4 = self.rotational_motor_list[3]
-        isMotorAligned3 = False
-        isMotorAligned4 = False
+        motor1,motor2,motor3,motor4 = self.rotational_motor_list[0:4]
         while(not stopCond):
             if(not isMotorAligned1):
                 cond1 = motor1.adjustForward()
@@ -77,29 +71,19 @@ class MotorController():
             stopCond = isMotorAligned2 and isMotorAligned1 and isMotorAligned3 and isMotorAligned4
         self.stopMotors()
     def rotate(self,angle,speed, whichMotor):
-        isMotorAligned1 = False
-        isMotorAligned2 = False
-        isMotorAligned3 = False
-        isMotorAligned4 = False
+        isMotorAligned1 = isMotorAligned2 = isMotorAligned3 = isMotorAligned4 = False
+
         stopCond = False
         if(whichMotor == "w"):
-            motor1 = self.rotational_motor_list[4]
-            motor2 = self.rotational_motor_list[5]
-            motor3 = self.rotational_motor_list[6]
-            motor4 = self.rotational_motor_list[7]
+            motor1,motor2,motor3,motor4 = self.rotational_motor_list[4:8]
             angle = angle + (motor3.getCurrentPosition()/8192)*360
         else:
-            motor1 = self.rotational_motor_list[0]
-            motor2 = self.rotational_motor_list[1]
-            motor3 = self.rotational_motor_list[2]
-            motor4 = self.rotational_motor_list[3]
+            motor1,motor2,motor3,motor4 = self.rotational_motor_list[0:4]
         while(not stopCond):
             if(not isMotorAligned1):
-                cond1 = motor1.rotate(angle,speed)
-                isMotorAligned1 = cond1
+                isMotorAligned1 = motor1.rotate(angle,speed)
             if(not isMotorAligned2):
-                cond2 = motor2.rotate(angle,speed)
-                isMotorAligned2 = cond2
+                isMotorAligned2 = motor2.rotate(angle,speed)
             if(not isMotorAligned3):
                 isMotorAligned3 = motor3.rotate(angle,speed)
             if(not isMotorAligned4):
@@ -111,6 +95,7 @@ class MotorController():
     def moveDistance(self, distance,speed):
         rev_dis = distance / .144
         degree_dis = rev_dis *360
+        print(degree_dis)
         self.rotate(degree_dis,speed,"w")
     def stopMotors(self):
         for motor in self.rotational_motor_list:
