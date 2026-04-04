@@ -34,21 +34,21 @@ class WheelMotor:
     default_r = 5000
     current_duty = 5200
     def forward_motion(self, speed):
-        print("f")
+        #print("f")
         new_speed = WheelMotor.default_f + (1300 * speed)
         #for i in range(WheelMotor.default_f, int(new_speed),5):
          #   self.motor.duty_cycle = i
           #  time.sleep(0.05)
-        print("new FC: ", new_speed)
+        #print("new FC: ", new_speed)
         self.motor.duty_cycle = int(new_speed)
         WheelMotor.current_duty = int(new_speed)
     def backward_motion(self,speed):
-        print("r")
+        #print("r")
         new_speed = WheelMotor.default_r + (1300 * speed)
         #for i in range(WheelMotor.default_r, int(new_speed), -5):
          #   self.motor.duty_cycle = i
           #  time.sleep(0.05)
-        print("new DC: ", new_speed)
+        #print("new DC: ", new_speed)
         self.motor.duty_cycle = int(new_speed)
         WheelMotor.current_duty = int(new_speed)
     def zero_from_forward(self):
