@@ -29,7 +29,7 @@ class RotationalMotor():
       self.read_octoquad()
       
       currentPos = RotationalMotor.positions[self.enc]
-      if(currentPos > self.fVal - 3 and currentPos < self.fVal + 3):
+      if(currentPos > self.fVal - 10 and currentPos < self.fVal + 10):
          self.motor.move_motor(0)
          return True
       elif(currentPos < self.fVal):
@@ -44,7 +44,7 @@ class RotationalMotor():
   def setMotorSpeed(self,speed):
       self.motor.move_motor(speed)
   def rotate(self, angle, speed):
-    speed = abs(speed) * self.polarity
+    speed = abs(speed)
     self.read_octoquad()
     if(angle < 0):
       cond = self.rotateLeft(angle, speed)
@@ -55,9 +55,9 @@ class RotationalMotor():
       #self.adjustForward()
     if(cond):
       self.currentCount = self.getCurrentPosition()
-      return False
-    else:
       return True
+    else:
+      return False
     
   def stopMotor(self):
       self.motor.move_motor(0)
@@ -73,9 +73,11 @@ class RotationalMotor():
     
   def rotateRight(self, angle, speed):
     new_pos = (angle * 1024)/45 + self.currentCount
-    print("CC: " + str(self.currentCount))
-    print("NP: " + str(new_pos))
+    #print("CC: " + str(self.currentCount))
+    #print("NP: " + str(new_pos))
+    #print("Encoder: " + str(self.enc) + "has speed of: " + str(speed*self.polarity))
     if(self.getCurrentPosition() < new_pos):
+     # print("moving motor...")
       self.motor.move_motor(speed)
       return False
     else:
@@ -86,18 +88,19 @@ class RotationalMotor():
       return RotationalMotor.positions[self.enc]
 
   #input distance in m, speed -1.0 to 1.0
-  def move(self,distance,speed, startPos):
+  def move(self,distance,speed):
     rev_dis = distance / RotationalMotor.WHEELC
     degree_dis = rev_dis * 360
-    if(count_dis > current_pos and distance > 0):
+    
+    if(count_dis > self.current_count and distance > 0):
       self.rotate(degree_dis, speed)
       return True
-    elif(count_dis < current_pos and distance < 0):
-      self.motor.move_motor(degree_dis, speed)
+    elif(count_dis < self.current_count and distance < 0):
+      self.rotate(degree_dis,speed)
       return True
     else:
-      self.currentCount = self.getCurrentPosition
-      return False
+        self.current_count = self.getCurrentPosition()
+        return False
   # OctoQuad default settings
   def read_octoquad(self):
     with SMBus(RotationalMotor.I2C_BUS) as bus:
@@ -126,10 +129,10 @@ given a pca address, pin value, and a side
     i2c = board.I2C()
     pca = PCA9685(i2c)
     pca.frequency = 50
-    pin = 2
+    pin = 11
     side = "l"
-    idealfVal = -265
-    channel = 0
+    idealfVal = 0
+    channel = 6
     rotMotor = RotationalMotor(pca,pin,side,channel,idealfVal)
     val = rotMotor.adjustForward()
     # while(val):
@@ -154,6 +157,7 @@ given a pca address, pin value, and a side
     # startPos = rotMotor.getCurrentPosition()
     # val = rotMotor.move(0.5,.1,startPos)
     # while(val):
+    rotMotor.stopMotor()
     #   val = rotMotor.move(0.5,.1)
 except KeyboardInterrupt:
     rotMotor.stopMotor()"""
