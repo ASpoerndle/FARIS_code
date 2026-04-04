@@ -51,12 +51,15 @@ class MotorController():
             return
         for motor in self.wheel_motor_list:
             motor.move_motor(i)
-    def adjustForward(self):
+    def adjustForward(self, resetWheels):
         cond1 = True
         cond2 = False
         isMotorAligned1 = isMotorAligned2 = isMotorAligned3 = isMotorAligned4 = False
         stopCond = False
-        motor1,motor2,motor3,motor4 = self.rotational_motor_list[0:4]
+        if(resetWheels):
+            motor1,motor2,motor3,motor4 = self.rotational_motor_list[4:8]
+        else:
+            motor1,motor2,motor3,motor4 = self.rotational_motor_list[0:4]
         while(not stopCond):
             if(not isMotorAligned1):
                 cond1 = motor1.adjustForward()
@@ -105,17 +108,18 @@ class MotorController():
             motor.move_motor(0)
         for motor in self.rotational_motor_list:
             motor.stopMotor()
-        time.sleep(3)
+        time.sleep(2)
         print("finished")
    
 #try:       
 mc = MotorController()
 time.sleep(3)
-mc.adjustForward()
+mc.adjustForward(False)
+mc.adjustForward(True)
 time.sleep(1)
 mc.rotate(-45,.1,"r")
 time.sleep(1)
-mc.adjustForward()
+mc.adjustForward(False)
 time.sleep(1)
 #mc.moveDistance(0.5,0.1)
 #mc.rotate(-45,.3,"w")
