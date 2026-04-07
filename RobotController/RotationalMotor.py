@@ -24,6 +24,8 @@ class RotationalMotor():
         self.polarity = 1
     self.fVal = fVal
     self.currentCount = fVal
+    self.read_octoquad()
+
   #Returns T/F based on if it's off-centered, put a while loop in MotorController class so it can adjust all motors at once
   def adjustForward(self):
       self.read_octoquad()
@@ -46,24 +48,62 @@ class RotationalMotor():
   def rotate(self, angle, speed):
     speed = abs(speed)
     self.read_octoquad()
-    if(angle < 0):
-      cond = self.rotateLeft(angle, speed)
-    if(angle > 0):
+    if(self.polarity > 0):
+        if(angle < 0):
+            cond = self.rotateLeft(angle, speed)
+        if(angle > 0):
         #true = True
-        cond = self.rotateRight(angle , speed)
+            cond = self.rotateRight(angle , speed)
     #else:
       #self.adjustForward()
+        if(angle == 0):
+            cond = True
+    else:
+        if(angle > 0):
+            cond = self.rotateLeft(angle,speed)
+        if(angle < 0):
+            
+            cond = self.rotateRight(angle,speed)
+        if(angle == 0):
+            cond = True
     if(cond):
       self.currentCount = self.getCurrentPosition()
       return True
     else:
       return False
-    
+  def rotateForward(self,angle,speed):
+        speed = abs(speed)
+        self.read_octoquad()
+        self.currentCount = 0
+        if(self.polarity > 0):
+            if(angle < 0):
+                cond = self.rotateLeft(angle, speed)
+            if(angle > 0):
+                cond = self.rotateRight(angle , speed)
+            if(angle == 0):
+                cond = True
+        else:
+            if(angle < 0):
+                cond = self.rotateLeft(angle,speed)
+            if(angle > 0):
+            
+                cond = self.rotateRight(angle,speed)
+            if(angle == 0):
+                cond = True
+        if(cond):
+            self.currentCount = self.getCurrentPosition()
+            return True
+        else:
+            return False
+
   def stopMotor(self):
       self.motor.move_motor(0)
   def rotateLeft(self, angle,  speed):
-    new_pos = (angle * 1024)/45 + self.currentCount
-    if(self.getCurrentPosition() > new_pos):
+    new_pos = (angle * 1024)/45  + self.currentCount
+    if(self.getCurrentPosition() < new_pos and self.polarity > 0):
+        self.motor.move_motor(-speed)
+        return False
+    elif(self.getCurrentPosition() < new_pos and self.polarity < 0):
         self.motor.move_motor(-speed)
         return False
     else:
@@ -73,13 +113,17 @@ class RotationalMotor():
     
   def rotateRight(self, angle, speed):
     new_pos = (angle * 1024)/45 + self.currentCount
-    #print("CC: " + str(self.currentCount))
-    #print("NP: " + str(new_pos))
-    #print("Encoder: " + str(self.enc) + "has speed of: " + str(speed*self.polarity))
-    if(self.getCurrentPosition() < new_pos):
+    print("CC: " + str(self.getCurrentPosition()))
+    print("NP: " + str(new_pos))
+    print("Encoder: " + str(self.enc) + "has speed of: " + str(speed*self.polarity))
+    if(self.getCurrentPosition() < new_pos and self.polarity > 0):
      # print("moving motor...")
       self.motor.move_motor(speed)
       return False
+    elif(self.getCurrentPosition() > new_pos and self.polarity < 0):
+        print("please work")
+        self.motor.move_motor(speed)
+        return False
     else:
       self.motor.move_motor(0)
       return True

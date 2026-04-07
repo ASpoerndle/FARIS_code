@@ -34,7 +34,7 @@ class MotorController():
         self.wheel_motor_list = []
         self.rotational_motor_list = []
         #pin_list_wheel = [[11, 'l'],[10,'l'],[13,'r'],[15,'r']]
-        pin_list_rotational = [[2,"l",0,0],[3,"l",1,-200],[4, "l",2,0],[6,"l",3,0],[11,'l',6,0],[10,'l',5,0],[13,'r',4,0],[15,'r',7,0]]
+        pin_list_rotational = [[2,"l",0,0],[3,"l",1,0],[4, "l",2,0],[6,"l",3,0],[11,'l',6,0],[10,'l',5,0],[13,'r',4,0],[15,'r',7,0]]
         #print("readying wheel motors...")
         #for i in pin_list_wheel:
         #    motor = WheelMotor(pca,i[0], i[1])
@@ -79,18 +79,24 @@ class MotorController():
         stopCond = False
         if(whichMotor == "w"):
             motor1,motor2,motor3,motor4 = self.rotational_motor_list[4:8]
-            angle = angle + (motor3.getCurrentPosition()/8192)*360
+            angle1 = angle + (motor1.getCurrentPosition()/8192)*360
+            angle2 = angle + (motor2.getCurrentPosition()/8192)*360
+            angle3 = angle + (motor3.getCurrentPosition()/8192)*360
+            angle4 = angle + (motor4.getCurrentPosition()/8192)*360
+            print(str(motor4.getCurrentPosition()) + "CP")
         else:
+            angle1=angle2=angle3=angle4=angle
             motor1,motor2,motor3,motor4 = self.rotational_motor_list[0:4]
         while(not stopCond):
             if(not isMotorAligned1):
-                isMotorAligned1 = motor1.rotate(angle,speed)
+                isMotorAligned1 = motor1.rotateForward(angle1,-speed)
             if(not isMotorAligned2):
-                isMotorAligned2 = motor2.rotate(angle,speed)
+                isMotorAligned2 = motor2.rotateForward(angle2,speed)
             if(not isMotorAligned3):
-                isMotorAligned3 = motor3.rotate(angle,speed)
+                isMotorAligned3 = motor3.rotateForward(angle3,speed)
             if(not isMotorAligned4):
-                isMotorAligned4 = motor4.rotate(angle,speed)
+                print(angle4)
+                isMotorAligned4 = motor4.rotateForward(angle4,speed)
             stopCond = isMotorAligned1 and isMotorAligned2 and isMotorAligned3 and isMotorAligned4
             #if(whichMotor == "w"):
              #   stopCond = isMotorAligned1 or isMotorAligned2 or isMotorAligned3 or isMotorAligned4
@@ -114,16 +120,18 @@ class MotorController():
 #try:       
 mc = MotorController()
 time.sleep(3)
-mc.adjustForward(False)
-mc.adjustForward(True)
-time.sleep(1)
-mc.rotate(-45,.1,"r")
-time.sleep(1)
-mc.adjustForward(False)
-time.sleep(1)
+#mc.adjustForward(False)
+#mc.adjustForward(True)
+#time.sleep(1)
+#mc.rotate(-45,.1,"r")
+#time.sleep(1)
+#mc.adjustForward(False)
+#time.sleep(1)
 #mc.moveDistance(0.5,0.1)
 #mc.rotate(-45,.3,"w")
 #time.sleep(1)
-mc.rotate(-90,0.3,"w")
+while True:
+    rot = input("To which degree")
+    mc.rotate(int(rot),0.3,"w")
 #except KeyboardInterrupt:
  #   mc.stopMotors()
