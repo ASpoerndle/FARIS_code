@@ -132,7 +132,7 @@ class RotationalMotor():
         return False
     else:
       print(f"Right Motor {self.enc}: Cur {current} | Target {new_pos}")
-      if(current > new_pos):
+      if(current < new_pos):
         self.motor.move_motor(speed)
         return False
     self.motor.move_motor(0)
