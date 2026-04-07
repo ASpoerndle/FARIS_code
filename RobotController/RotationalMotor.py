@@ -74,7 +74,8 @@ class RotationalMotor():
   def rotateForward(self,angle,speed):
         speed = abs(speed)
         self.read_octoquad()
-        self.currentCount = 0
+        if self.currentCount == 0: 
+          self.currentCount = self.getCurrentPosition()
         if(self.polarity > 0):
             if(angle < 0):
                 cond = self.rotateLeft(angle, speed)
