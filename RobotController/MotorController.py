@@ -151,9 +151,9 @@ class MotorController():
 
             angle2 = angle + (motor2.getCurrentPosition()/8192)*360
 
-            angle3 = angle + (motor3.getCurrentPosition()/8192)*360
+            angle3 = (motor3.getCurrentPosition()/8192)*360 - angle
 
-            angle4 = angle + (motor4.getCurrentPosition()/8192)*360
+            angle4 = (motor4.getCurrentPosition()/8192)*360 - angle
             print(angle1,angle2,angle3,angle4)
             print(str(motor4.getCurrentPosition()) + "CP")
 
