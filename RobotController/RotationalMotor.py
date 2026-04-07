@@ -113,14 +113,17 @@ class RotationalMotor():
     
   def rotateRight(self, angle, speed):
     new_pos = (angle * 1024)/45 + self.currentCount
-    print("CC: " + str(self.getCurrentPosition()))
+    current = self.getCurrentPosition()
+    print("CC: " + str(current))
     print("NP: " + str(new_pos))
     print("Encoder: " + str(self.enc) + "has speed of: " + str(speed*self.polarity))
-    if(self.getCurrentPosition() < new_pos and self.polarity > 0):
+    if polarity > 0:
+      if(current < new_pos):
      # print("moving motor...")
-      self.motor.move_motor(speed)
-      return False
-    elif(self.getCurrentPosition() > new_pos and self.polarity < 0):
+        self.motor.move_motor(speed)
+        return False
+    else:
+      if(current > new_pos):
         print("please work")
         self.motor.move_motor(speed)
         return False
