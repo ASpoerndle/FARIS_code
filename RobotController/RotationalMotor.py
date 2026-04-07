@@ -83,9 +83,9 @@ class RotationalMotor():
             if(angle == 0):
                 cond = True
         else:
-            if(angle < 0):
-                cond = self.rotateLeft(angle,speed)
             if(angle > 0):
+                cond = self.rotateLeft(angle,speed)
+            if(angle < 0):
             
                 cond = self.rotateRight(angle,speed)
             if(angle == 0):
@@ -99,25 +99,32 @@ class RotationalMotor():
   def stopMotor(self):
       self.motor.move_motor(0)
   def rotateLeft(self, angle,  speed):
-    new_pos = (angle * 1024)/45  + self.currentCount
-    if(self.getCurrentPosition() < new_pos and self.polarity > 0):
-        self.motor.move_motor(-speed)
-        return False
-    elif(self.getCurrentPosition() < new_pos and self.polarity < 0):
-        self.motor.move_motor(-speed)
-        return False
+    current = self.getCurrentPosition()
+    new_pos = ((angle * 1024)/45)*self.polarity  + self.currentCount
+    if(self.polarity > 0):
+
+        if(current > new_pos):
+            self.motor.move_motor(-speed)
+            return False
     else:
-      self.motor.move_motor(0)
-      return True
+        if(current < new_pos):
+
+            self.motor.move_motor(-speed)
+            return False
+    
+    self.motor.move_motor(0)
+    return True
     #TODO - if current Pos > forward - 90, rotate left
     
   def rotateRight(self, angle, speed):
-    new_pos = (angle * 1024)/45 + self.currentCount
+    new_pos = ((angle * 1024)/45) * self.polarity + self.currentCount
     current = self.getCurrentPosition()
     print("CC: " + str(current))
     print("NP: " + str(new_pos))
     print("Encoder: " + str(self.enc) + "has speed of: " + str(speed*self.polarity))
-    if polarity > 0:
+
+
+    if self.polarity > 0:
       if(current < new_pos):
      # print("moving motor...")
         self.motor.move_motor(speed)
@@ -127,9 +134,8 @@ class RotationalMotor():
         print("please work")
         self.motor.move_motor(speed)
         return False
-    else:
-      self.motor.move_motor(0)
-      return True
+    self.motor.move_motor(0)
+    return True
     #TODO - if current Pos < forward + 90, rotate right
   def getCurrentPosition(self):
       return RotationalMotor.positions[self.enc]
