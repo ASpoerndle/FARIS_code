@@ -1,4 +1,4 @@
- import struct
+import struct
 
 from smbus2 import SMBus
 
@@ -149,7 +149,7 @@ class RotationalMotor():
         self.read_octoquad()
 
         self.currentCount = 0
-
+        current = self.getCurrentPosition()
         if(self.polarity > 0):
 
             if(angle < 0):
@@ -165,17 +165,18 @@ class RotationalMotor():
                 cond = True
 
         else:
+            
 
-            if(angle < 0):
-
+            if(-current+(angle/360) *8192 + 100 < 0):
+                print("left")
                 cond = self.rotateLeft(angle,speed)
-
-            if(angle > 0):
-
+                return cond
+            if(-current+(angle/360)*8192 + 100> 0):
+                print("right")
             
 
                 cond = self.rotateRight(angle,speed)
-
+                return cond
             if(angle == 0):
 
                 cond = True
@@ -196,33 +197,42 @@ class RotationalMotor():
       self.motor.move_motor(0)
 
   def rotateLeft(self, angle,  speed):
-
-    new_pos = (angle * 1024)/45  + self.currentCount
-
-    if(self.getCurrentPosition() < new_pos and self.polarity > 0):
+    
+    current = self.getCurrentPosition()
+    if(self.polarity > 0):
+        new_pos = (angle * 1024)/45  + self.currentCount
+    if(self.polarity < 0):
+        new_pos = (angle * 1024)/45
+    
+    print(f'Current position {current} | target {new_pos} speed {speed}')
+    if(current < new_pos and self.polarity > 0):
 
         self.motor.move_motor(-speed)
 
         return False
+    if(self.polarity < 0):
 
-    elif(self.getCurrentPosition() < new_pos and self.polarity < 0):
+        
+            if(current > new_pos):
+                
 
-        self.motor.move_motor(-speed)
+                self.motor.move_motor(speed)
 
-        return False
+                return False
 
-    else:
+    
 
-      self.motor.move_motor(0)
+    self.motor.move_motor(0)
 
-      return True
+    return True
 
     #TODO - if current Pos > forward - 90, rotate left
 
     
 
   def rotateRight(self, angle, speed):
-
+      
+    
     new_pos = (angle * 1024)/45 + self.currentCount
 
     print("CC: " + str(self.getCurrentPosition()))
@@ -239,11 +249,11 @@ class RotationalMotor():
 
       return False
 
-    elif(self.getCurrentPosition() > new_pos and self.polarity < 0):
+    elif(self.getCurrentPosition() < new_pos and self.polarity < 0):
 
         print("please work")
 
-        self.motor.move_motor(speed)
+        self.motor.move_motor(-speed)
 
         return False
 
@@ -331,14 +341,14 @@ TESTING GROUND FOR ROTATIONAL MOTOR
 
 given a pca address, pin value, and a side
 """
-"""try:
+try:
     i2c = board.I2C()
     pca = PCA9685(i2c)
     pca.frequency = 50
-    pin = 11
-    side = "l"
+    pin = 13
+    side = "r"
     idealfVal = 0
-    channel = 6
+    channel = 4
     rotMotor = RotationalMotor(pca,pin,side,channel,idealfVal)
     val = rotMotor.adjustForward()
     # while(val):
@@ -346,19 +356,26 @@ given a pca address, pin value, and a side
     #     print(rotMotor.getCurrentPosition())
     # print("finshed")
     print("Adjusting forward...")
-    while(val):
+    """while(val):
       val = rotMotor.adjustForward()
     print("Forward adjustment complete!")
-    time.sleep(1)
+    time.sleep(1)"""
     print("Rotating Motor 90 degrees...")
-    val = True
+    val = False
     #rotMotor.setMotorSpeed(-.2)
-    while(val):
+    target = (rotMotor.getCurrentPosition()/8192)*360
+    print("current degrees", target)
+    
+    target += 10 
+    print("new degrees",target)
+    while(not val):
            
-        val = rotMotor.rotate(-90,.1)
+        val = rotMotor.rotateForward(target,.1)
+        if(val):
+            break
     val = True
-    while(val):
-        val = rotMotor.adjustForward()
+    #while(val):
+     #   val = rotMotor.adjustForward()
     print("Rotation complete!")  
     # startPos = rotMotor.getCurrentPosition()
     # val = rotMotor.move(0.5,.1,startPos)
@@ -366,4 +383,4 @@ given a pca address, pin value, and a side
     rotMotor.stopMotor()
     #   val = rotMotor.move(0.5,.1)
 except KeyboardInterrupt:
-    rotMotor.stopMotor()"""
+    rotMotor.stopMotor()

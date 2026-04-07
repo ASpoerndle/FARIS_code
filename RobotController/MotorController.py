@@ -1,4 +1,4 @@
- import time
+import time
 
 from Motor import WheelMotor
 
@@ -154,7 +154,7 @@ class MotorController():
             angle3 = angle + (motor3.getCurrentPosition()/8192)*360
 
             angle4 = angle + (motor4.getCurrentPosition()/8192)*360
-
+            print(angle1,angle2,angle3,angle4)
             print(str(motor4.getCurrentPosition()) + "CP")
 
         else:
