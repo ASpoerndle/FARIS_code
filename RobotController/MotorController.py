@@ -88,6 +88,7 @@ class MotorController():
             angle3 = self.calculateRelativeAngle(angle,global3)
             angle4 = self.calculateRelativeAngle(angle,global4)
             print(str(motor4.getCurrentPosition()) + "CP")
+            print(angle1,angle2,angle3,angle4)
         else:
             angle1=angle2=angle3=angle4=angle
             motor1,motor2,motor3,motor4 = self.rotational_motor_list[0:4]
@@ -99,7 +100,7 @@ class MotorController():
             if(not isMotorAligned3):
                 isMotorAligned3 = motor3.rotateForward(angle3,speed)
             if(not isMotorAligned4):
-                print(angle4)
+                
                 isMotorAligned4 = motor4.rotateForward(angle4,speed)
             stopCond = isMotorAligned1 and isMotorAligned2 and isMotorAligned3 and isMotorAligned4
             #if(whichMotor == "w"):
