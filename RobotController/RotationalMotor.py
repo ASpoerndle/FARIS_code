@@ -100,7 +100,7 @@ class RotationalMotor():
       self.motor.move_motor(0)
   def rotateLeft(self, angle,  speed):
     current = self.getCurrentPosition()
-    new_pos = ((angle * 1024)/45)*self.polarity  + self.currentCount
+    new_pos = ((angle * 1024)/45)  + self.currentCount
     if(self.polarity > 0):
 
         if(current > new_pos):
@@ -117,7 +117,7 @@ class RotationalMotor():
     #TODO - if current Pos > forward - 90, rotate left
     
   def rotateRight(self, angle, speed):
-    new_pos = ((angle * 1024)/45) * self.polarity + self.currentCount
+    new_pos = ((angle * 1024)/45) + self.currentCount
     current = self.getCurrentPosition()
     print("CC: " + str(current))
     print("NP: " + str(new_pos))
@@ -131,7 +131,7 @@ class RotationalMotor():
         return False
     else:
       print(f"Right Motor {self.enc}: Cur {current} | Target {new_pos}")
-      if(current < new_pos):
+      if(current > new_pos):
         self.motor.move_motor(speed)
         return False
     self.motor.move_motor(0)

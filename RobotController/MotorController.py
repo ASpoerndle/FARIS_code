@@ -108,7 +108,7 @@ class MotorController():
         self.stopMotors()
     def calculateRelativeAngle(self,target,current):
         relative = target-current
-        relative = (relative+180) % 360 - 180
+        relative = (relative-180) % 360 + 180
         return relative
     def moveDistance(self, distance,speed):
         rev_dis = distance / .144
