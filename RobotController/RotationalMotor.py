@@ -96,48 +96,39 @@ class RotationalMotor():
     current = self.getCurrentPosition()
     self.read_octoquad()
 
-    if(self.polarity > 0):
+    #if(self.polarity > 0):
+    target = (angle/360) * 8192
+    
+    if(current > target - 10 and current < target + 10):
 
-        if(angle < 0):
+         self.motor.move_motor(0)
 
-            cond = self.rotateLeft(angle, speed)
+         return True
 
-        if(angle > 0):
+
+    if(current > target):
+            self.motor.move_motor(-.1)
+            return False
+    else:
+        self.motor.move_motor(0.1)
+        return False
+            #cond = self.rotateLeft(angle, speed)
+    if(currentPos > target - 10 and currentPos < target + 10):
+
+         self.motor.move_motor(0)
+
+         return True
+
+
+    #if(angle < 0):
 
         #true = True
 
-            cond = self.rotateRight(angle , speed)
+     #   cond = self.rotateRight(angle , speed)
         
-    #else:
+    if(angle == 0):
 
-      #self.adjustForward()
-
-        if(angle == 0):
-
-            cond = True
-
-    else:
-
-        if(angle > 0):
-
-            cond = self.rotateLeft(angle,speed)
-
-        if(angle < 0):
-
-            
-
-            cond = self.rotateRight(angle,speed)
-
-        if(angle == 0):
-
-            cond = True
-
-    if(cond):
-
-      self.currentCount = self.getCurrentPosition()
-
-      return True
-
+        cond = True
     else:
 
       return False

@@ -12,7 +12,7 @@ from adafruit_pca9685 import PCA9685
 import Jetson.GPIO as GPIO
 
 import time
-
+import math
 
 
 class MotorController():
@@ -92,7 +92,7 @@ class MotorController():
 
             motor.move_motor(i)
 
-    def adjustForward(self, resetWheels):
+    def adjustForward(self):
 
         cond1 = True
 
@@ -102,13 +102,7 @@ class MotorController():
 
         stopCond = False
 
-        if(resetWheels):
-
-            motor1,motor2,motor3,motor4 = self.rotational_motor_list[4:8]
-
-        else:
-
-            motor1,motor2,motor3,motor4 = self.rotational_motor_list[0:4]
+        motor1,motor2,motor3,motor4 = self.rotational_motor_list[0:4]
 
         while(not stopCond):
 
@@ -136,13 +130,13 @@ class MotorController():
 
         self.stopMotors()
 
-    def rotate(self,angle,speed, whichMotor):
+    def rotateForward(self,angle,speed):
 
         isMotorAligned1 = isMotorAligned2 = isMotorAligned3 = isMotorAligned4 = False
 
 
         stopCond = False
-
+        whichMotor = "w"
         if(whichMotor == "w"):
 
             motor1,motor2,motor3,motor4 = self.rotational_motor_list[4:8]
@@ -189,18 +183,57 @@ class MotorController():
              #   stopCond = isMotorAligned1 or isMotorAligned2 or isMotorAligned3 or isMotorAligned4
 
         self.stopMotors()
-    
+        self.adjustForward()
+    def rotatePods(self, angle,speed):
+
+        cond1 = True
+
+        cond2 = False
+
+        isMotorAligned1 = isMotorAligned2 = isMotorAligned3 = isMotorAligned4 = False
+
+        stopCond = False
+
+
+
+        motor1,motor2,motor3,motor4 = self.rotational_motor_list[0:4]
+
+        while(not stopCond):
+
+            if(not isMotorAligned1):
+
+                cond1 = motor1.rotate(angle,speed)
+
+                isMotorAligned1 = cond1
+
+            if(not isMotorAligned2):
+
+                cond2 = motor2.rotate(angle,speed)
+
+                isMotorAligned2 = cond2
+
+            if(not isMotorAligned3):
+
+                isMotorAligned3 = motor3.rotate(angle,speed)
+
+            if(not isMotorAligned4):
+
+                isMotorAligned4 = motor4.rotate(angle,speed)
+
+            stopCond = isMotorAligned2 and isMotorAligned1 and isMotorAligned3 and isMotorAligned4
+
+        self.stopMotors()
+
     def moveDistance(self, distance,speed):
 
-        rev_dis = distance / .144
+        rev_dis = distance / (.144 * math.pi)
 
         degree_dis = rev_dis *360
 
-        print(degree_dis)
+        self.rotateForward(degree_dis,speed)
 
-        self.rotate(degree_dis,speed,"w")
     def horizontalMode(self):
-        self.rotate(90,0.1,"x")
+        self.rotatePods(90,0.1)
     def stopMotors(self):
 
         for motor in self.rotational_motor_list:
@@ -224,37 +257,43 @@ class MotorController():
    
 
 #try:       
-
+distance = .01
 mc = MotorController()
 
 time.sleep(3)
 
-mc.adjustForward(False)
+mc.adjustForward()
+mc.moveDistance(.1,0.25)
+mc.horizontalMode()
+mc.moveDistance(-.1,0.25)
+mc.moveDistance(-.1,0.25)
+mc.horizontalMode()
+mc.moveDistance(.1,0.25)
+print("complete")
+
+
 
 #mc.adjustForward(True)
 
 time.sleep(1)
-mc.horizontalMode()
+#mc.horizontalMode()
 #mc.rotate(-45,.1,"r")
 
 #time.sleep(1)
 
+
+#time.sleep(1)
+
+#while True:
+
+#    rot = input("To which degree")
+#    if(rot == "x"):
+#        break
+#    mc.rotateForward(int(rot),.25,"w")
+
+
 #mc.adjustForward(False)
-
 #time.sleep(1)
-
-#mc.moveDistance(0.5,0.1)
-
-#mc.rotate(-45,.3,"w")
-
-#time.sleep(1)
-
-while True:
-
-    rot = input("To which degree")
-
-    mc.rotate(int(rot),.25,"w")
-
 #except KeyboardInterrupt:
 
  #   mc.stopMotors() 
