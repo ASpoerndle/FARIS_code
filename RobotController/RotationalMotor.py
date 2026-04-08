@@ -93,7 +93,7 @@ class RotationalMotor():
   def rotate(self, angle, speed):
 
     speed = abs(speed)
-
+    current = self.getCurrentPosition()
     self.read_octoquad()
 
     if(self.polarity > 0):
@@ -107,7 +107,7 @@ class RotationalMotor():
         #true = True
 
             cond = self.rotateRight(angle , speed)
-
+        
     #else:
 
       #self.adjustForward()
@@ -147,16 +147,16 @@ class RotationalMotor():
         speed = abs(speed)
 
         self.read_octoquad()
-
+        angle_offset = 228
         self.currentCount = 0
         current = self.getCurrentPosition()
         if(self.polarity > 0):
 
-            if(angle < 0):
+            if(current - (angle/360) * 8192 - 228 < 0):
                 print("left")
                 cond = self.rotateLeft(angle, speed)
 
-            if(angle > 0):
+            if(current - (angle/360) * 8192 + 228 > 0):
                 print("right")
                 cond = self.rotateRight(angle , speed)
 
@@ -200,13 +200,16 @@ class RotationalMotor():
     
     current = self.getCurrentPosition()
     new_pos = (angle * 1024)/45  + self.currentCount
-    
+    if(current >0):
+        new_pos *= -1
     print(f'Current position {current} | target {new_pos} speed {speed} | encoder: {self.enc}')
-    if(current > new_pos and self.polarity > 0):
+    if(current < new_pos and self.polarity > 0):
 
-        self.motor.move_motor(-speed)
+        self.motor.move_motor(speed)
 
         return False
+    if(current > new_pos and angle > 0 and self.polarity >0):
+        self.motor.move_motor(speed)
     if(self.polarity < 0):
 
         
@@ -238,11 +241,11 @@ class RotationalMotor():
 
     print("Encoder: " + str(self.enc) + "has speed of: " + str(speed*self.polarity))
 
-    if(self.getCurrentPosition() < new_pos and self.polarity > 0):
+    if(self.getCurrentPosition() > new_pos and self.polarity > 0):
 
      # print("moving motor...")
 
-      self.motor.move_motor(speed)
+      self.motor.move_motor(-speed)
 
       return False
 
@@ -329,7 +332,6 @@ class RotationalMotor():
 
         # return position, velocity
 
-# #Ideal position is -13
 
 
 
@@ -338,7 +340,7 @@ TESTING GROUND FOR ROTATIONAL MOTOR
 
 given a pca address, pin value, and a side
 """
-try:
+"""try:
     i2c = board.I2C()
     pca = PCA9685(i2c)
     pca.frequency = 50
@@ -353,10 +355,12 @@ try:
     #     print(rotMotor.getCurrentPosition())
     # print("finshed")
     print("Adjusting forward...")
-    """while(val):
-      val = rotMotor.adjustForward()
+    
+
+    while(val):
+    val = rotMotor.adjustForward()
     print("Forward adjustment complete!")
-    time.sleep(1)"""
+    time.sleep(1)""""""
     print("Rotating Motor 90 degrees...")
     val = False
     #rotMotor.setMotorSpeed(-.2)
@@ -365,11 +369,8 @@ try:
     
     target += 10 
     print("new degrees",target)
-    while(not val):
-           
+    while(not val): 
         val = rotMotor.rotateForward(target,.1)
-        if(val):
-            break
     val = True
     #while(val):
      #   val = rotMotor.adjustForward()
@@ -378,6 +379,6 @@ try:
     # val = rotMotor.move(0.5,.1,startPos)
     # while(val):
     rotMotor.stopMotor()
-      val = rotMotor.move(0.5,.1)
+    #val = rotMotor.move(0.5,.1)
 except KeyboardInterrupt:
-    rotMotor.stopMotor()
+    rotMotor.stopMotor()"""

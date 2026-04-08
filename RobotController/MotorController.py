@@ -179,7 +179,6 @@ class MotorController():
 
             if(not isMotorAligned4):
 
-                print(angle4)
 
                 isMotorAligned4 = motor4.rotateForward(angle4,speed)
 
@@ -229,11 +228,11 @@ mc = MotorController()
 
 time.sleep(3)
 
-#mc.adjustForward(False)
+mc.adjustForward(False)
 
 #mc.adjustForward(True)
 
-#time.sleep(1)
+time.sleep(1)
 
 #mc.rotate(-45,.1,"r")
 
@@ -253,7 +252,7 @@ while True:
 
     rot = input("To which degree")
 
-    mc.rotate(int(rot),0.3,"w")
+    mc.rotate(int(rot),.25,"w")
 
 #except KeyboardInterrupt:
 
