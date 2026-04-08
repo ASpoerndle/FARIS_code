@@ -1,20 +1,12 @@
 import struct
-
 from smbus2 import SMBus
-
 from Motor import WheelMotor
-
 import board
-
 from adafruit_pca9685 import PCA9685
-
-
 import Jetson.GPIO as GPIO
-
 import time
-
 import math
-
+from simple_pid import PID
 class RotationalMotor():
 
   I2C_ADDR = 0x30
@@ -28,7 +20,15 @@ class RotationalMotor():
   WHEELDIAMETER = .144
 
   WHEELC = WHEELDIAMETER * math.pi
-
+  Kp = 1.2
+  Ki = 0.5
+  Kd = 0.01
+  pid_ch0 = PID(Kp, Ki, Kd, setpoint=0) 
+  pid_ch0.output_limits = (-1.0, 1.0)
+  #=========
+  #pip install simple-pid
+  #=========
+  
   #left is more pos, right is more neg
 
   def __init__(self, pca, pin, side, enc, fVal):
@@ -51,37 +51,34 @@ class RotationalMotor():
 
     self.read_octoquad()
 
-
+  
   #Returns T/F based on if it's off-centered, put a while loop in MotorController class so it can adjust all motors at once
-
+  
   def adjustForward(self):
-
       self.read_octoquad()
-
+      currentPos = RotationalMotor.positions[self.enc] 
+      current_degrees = (currentPos / 8192) * 360
+    
+    # 2. THINK: Calculate new power output
+      control_signal = RotationalMotor.pid_ch0(current_degrees)
+    # 3. ACT: Update the motor
+    
       
-
-      currentPos = RotationalMotor.positions[self.enc]
-
       if(currentPos > self.fVal - 10 and currentPos < self.fVal + 10):
-
          self.motor.move_motor(0)
-
          return True
-
       elif(currentPos < self.fVal):
-
-        self.motor.move_motor(.1)
-
+        self.motor.move_motor(control_signal) #0.1
+        print(f"Target: 0° | Current: {current_degrees:.2f}° | Power: {control_signal:.2f}")
+        time.sleep(0.02) # Run at 50Hz
         print("rotate left for center")
-
         return False
 
       else:
-
-          self.motor.move_motor(-.1)
-
+          print(f"Target: 0° | Current: {current_degrees:.2f}° | Power: {control_signal:.2f}")
+          time.sleep(0.02) # Run at 50Hz
+          self.motor.move_motor(control_signal) #-0.1
           print("rotate right for center")
-
           return False
 
   #right is neg, left is pos
