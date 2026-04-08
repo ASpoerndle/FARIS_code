@@ -189,7 +189,7 @@ class MotorController():
              #   stopCond = isMotorAligned1 or isMotorAligned2 or isMotorAligned3 or isMotorAligned4
 
         self.stopMotors()
-
+    
     def moveDistance(self, distance,speed):
 
         rev_dis = distance / .144
@@ -199,7 +199,8 @@ class MotorController():
         print(degree_dis)
 
         self.rotate(degree_dis,speed,"w")
-
+    def horizontalMode(self):
+        self.rotate(90,0.1,"x")
     def stopMotors(self):
 
         for motor in self.rotational_motor_list:
@@ -233,7 +234,7 @@ mc.adjustForward(False)
 #mc.adjustForward(True)
 
 time.sleep(1)
-
+mc.horizontalMode()
 #mc.rotate(-45,.1,"r")
 
 #time.sleep(1)
