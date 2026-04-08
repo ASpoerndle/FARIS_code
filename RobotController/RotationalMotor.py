@@ -333,51 +333,51 @@ class RotationalMotor():
 
 
 
-# """
-# TESTING GROUND FOR ROTATIONAL MOTOR
+"""
+TESTING GROUND FOR ROTATIONAL MOTOR
 
-# given a pca address, pin value, and a side
-# """
-# try:
-#     i2c = board.I2C()
-#     pca = PCA9685(i2c)
-#     pca.frequency = 50
-#     pin = 13
-#     side = "r"
-#     idealfVal = 0
-#     channel = 4
-#     rotMotor = RotationalMotor(pca,pin,side,channel,idealfVal)
-#     val = rotMotor.adjustForward()
-#     # while(val):
-#     #     val = rotMotor.adjustForward()
-#     #     print(rotMotor.getCurrentPosition())
-#     # print("finshed")
-#     print("Adjusting forward...")
-#     """while(val):
-#       val = rotMotor.adjustForward()
-#     print("Forward adjustment complete!")
-#     time.sleep(1)"""
-#     print("Rotating Motor 90 degrees...")
-#     val = False
-#     #rotMotor.setMotorSpeed(-.2)
-#     target = (rotMotor.getCurrentPosition()/8192)*360
-#     print("current degrees", target)
+given a pca address, pin value, and a side
+"""
+try:
+    i2c = board.I2C()
+    pca = PCA9685(i2c)
+    pca.frequency = 50
+    pin = 11
+    side = "l"
+    idealfVal = 0
+    channel = 6
+    rotMotor = RotationalMotor(pca,pin,side,channel,idealfVal)
+    val = rotMotor.adjustForward()
+    # while(val):
+    #     val = rotMotor.adjustForward()
+    #     print(rotMotor.getCurrentPosition())
+    # print("finshed")
+    print("Adjusting forward...")
+    """while(val):
+      val = rotMotor.adjustForward()
+    print("Forward adjustment complete!")
+    time.sleep(1)"""
+    print("Rotating Motor 90 degrees...")
+    val = False
+    #rotMotor.setMotorSpeed(-.2)
+    target = (rotMotor.getCurrentPosition()/8192)*360
+    print("current degrees", target)
     
-#     target += 10 
-#     print("new degrees",target)
-#     while(not val):
+    target += 10 
+    print("new degrees",target)
+    while(not val):
            
-#         val = rotMotor.rotateForward(target,.1)
-#         if(val):
-#             break
-#     val = True
-#     #while(val):
-#      #   val = rotMotor.adjustForward()
-#     print("Rotation complete!")  
-#     # startPos = rotMotor.getCurrentPosition()
-#     # val = rotMotor.move(0.5,.1,startPos)
-#     # while(val):
-#     rotMotor.stopMotor()
-    #   val = rotMotor.move(0.5,.1)
-# except KeyboardInterrupt:
-#     rotMotor.stopMotor()
+        val = rotMotor.rotateForward(target,.1)
+        if(val):
+            break
+    val = True
+    #while(val):
+     #   val = rotMotor.adjustForward()
+    print("Rotation complete!")  
+    # startPos = rotMotor.getCurrentPosition()
+    # val = rotMotor.move(0.5,.1,startPos)
+    # while(val):
+    rotMotor.stopMotor()
+      val = rotMotor.move(0.5,.1)
+except KeyboardInterrupt:
+    rotMotor.stopMotor()
