@@ -167,7 +167,7 @@ class MotorController():
 
             if(not isMotorAligned1):
 
-                isMotorAligned1 = motor1.rotateForward(angle1,-speed)
+                isMotorAligned1 = motor1.rotateForward(angle1,speed)
 
             if(not isMotorAligned2):
 

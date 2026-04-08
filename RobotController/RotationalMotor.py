@@ -153,11 +153,11 @@ class RotationalMotor():
         if(self.polarity > 0):
 
             if(angle < 0):
-
+                print("left")
                 cond = self.rotateLeft(angle, speed)
 
             if(angle > 0):
-
+                print("right")
                 cond = self.rotateRight(angle , speed)
 
             if(angle == 0):
@@ -199,13 +199,10 @@ class RotationalMotor():
   def rotateLeft(self, angle,  speed):
     
     current = self.getCurrentPosition()
-    if(self.polarity > 0):
-        new_pos = (angle * 1024)/45  + self.currentCount
-    if(self.polarity < 0):
-        new_pos = (angle * 1024)/45
+    new_pos = (angle * 1024)/45  + self.currentCount
     
-    print(f'Current position {current} | target {new_pos} speed {speed}')
-    if(current < new_pos and self.polarity > 0):
+    print(f'Current position {current} | target {new_pos} speed {speed} | encoder: {self.enc}')
+    if(current > new_pos and self.polarity > 0):
 
         self.motor.move_motor(-speed)
 
