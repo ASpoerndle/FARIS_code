@@ -345,7 +345,6 @@ class RotationalMotor():
 
         #     channels[i] = val
 
-    time.sleep(.01)
 
         # return position, velocity
 
@@ -356,7 +355,8 @@ class RotationalMotor():
 TESTING GROUND FOR ROTATIONAL MOTOR
 
 given a pca address, pin value, and a side
-""""""
+"""
+"""
 try:
     i2c = board.I2C()
     pca = PCA9685(i2c)
