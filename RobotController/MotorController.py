@@ -58,7 +58,7 @@ class MotorController():
 
         #pin_list_wheel = [[11, 'l'],[10,'l'],[13,'r'],[15,'r']]
 
-        pin_list_rotational = [[2,"l",0,0],[3,"l",1,0],[4, "l",2,0],[6,"l",3,0],[11,'l',6,0],[10,'l',5,0],[13,'r',4,0],[15,'r',7,0]]
+        pin_list_rotational = [[2,"l",0,265],[3,"l",1,0],[4, "l",2,207],[6,"l",3,0],[11,'l',6,0],[10,'l',5,0],[13,'r',4,0],[15,'r',7,0]]
 
         #print("readying wheel motors...")
 
@@ -127,7 +127,7 @@ class MotorController():
                 isMotorAligned4 = motor4.adjustForward()
 
             stopCond = isMotorAligned2 and isMotorAligned1 and isMotorAligned3 and isMotorAligned4
-
+            time.sleep(0.02)
         self.stopMotors()
 
     def rotateForward(self,angle,speed):
@@ -260,16 +260,16 @@ class MotorController():
 distance = .01
 mc = MotorController()
 
-time.sleep(3)
+#time.sleep(3)
 
 mc.adjustForward()
-mc.moveDistance(.1,0.25)
+#mc.moveDistance(.1,0.25)
+time.sleep(5)
 mc.horizontalMode()
-mc.moveDistance(-.1,0.25)
-mc.moveDistance(-.1,0.25)
-mc.horizontalMode()
-mc.moveDistance(.1,0.25)
-print("complete")
+#mc.moveDistance(-.1,0.25)
+#mc.moveDistance(-.1,0.25)
+#mc.horizontalMode()
+
 
 
 

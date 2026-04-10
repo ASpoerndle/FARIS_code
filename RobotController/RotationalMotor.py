@@ -20,11 +20,6 @@ class RotationalMotor():
   WHEELDIAMETER = .144
 
   WHEELC = WHEELDIAMETER * math.pi
-  Kp = 1.2
-  Ki = 0.5
-  Kd = 0.01
-  pid_ch0 = PID(Kp, Ki, Kd, setpoint=0) 
-  pid_ch0.output_limits = (-1.0, 1.0)
   #=========
   #pip install simple-pid
   #=========
@@ -48,9 +43,13 @@ class RotationalMotor():
     self.fVal = fVal
 
     self.currentCount = fVal
+    Kp = 0.005
+    Ki = 0.00001
+    Kd = 0.00001
 
     self.read_octoquad()
-
+    self.pid_ch0 = PID(Kp, Ki, Kd, setpoint=(fVal/8192)*360) 
+    self.pid_ch0.output_limits=(-0.8,0.8)
   
   #Returns T/F based on if it's off-centered, put a while loop in MotorController class so it can adjust all motors at once
   
@@ -59,12 +58,24 @@ class RotationalMotor():
       currentPos = RotationalMotor.positions[self.enc] 
       current_degrees = (currentPos / 8192) * 360
     
-    # 2. THINK: Calculate new power output
-      control_signal = RotationalMotor.pid_ch0(current_degrees)
+    
+      control_signal = self.pid_ch0(current_degrees)
     # 3. ACT: Update the motor
     
-      
-      if(currentPos > self.fVal - 10 and currentPos < self.fVal + 10):
+      error = (self.fVal/8192)*360 - current_degrees
+      if abs(error) < 0.25:
+          self.motor.move_motor(0)
+          print(f"Centered at {current_degrees}")
+          return True
+      else:
+          self.motor.move_motor(control_signal)
+          # Log status
+          direction = "Left" if control_signal > 0 else "Right"
+          print(f"Target: 0° | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
+          return False
+
+      """
+      if(currentPos > self.fVal - 0 and currentPos < self.fVal + 0):
          self.motor.move_motor(0)
          return True
       elif(currentPos < self.fVal):
@@ -80,7 +91,7 @@ class RotationalMotor():
           self.motor.move_motor(control_signal) #-0.1
           print("rotate right for center")
           return False
-
+"""
   #right is neg, left is pos
 
   def setMotorSpeed(self,speed):
@@ -327,42 +338,43 @@ class RotationalMotor():
 TESTING GROUND FOR ROTATIONAL MOTOR
 
 given a pca address, pin value, and a side
-"""
-"""try:
+""""""
+try:
     i2c = board.I2C()
     pca = PCA9685(i2c)
     pca.frequency = 50
-    pin = 11
+    pin = 6
     side = "l"
     idealfVal = 0
-    channel = 6
+    channel = 3
     rotMotor = RotationalMotor(pca,pin,side,channel,idealfVal)
-    val = rotMotor.adjustForward()
+    #val = rotMotor.adjustForward()
     # while(val):
     #     val = rotMotor.adjustForward()
     #     print(rotMotor.getCurrentPosition())
     # print("finshed")
     print("Adjusting forward...")
     
-
-    while(val):
-    val = rotMotor.adjustForward()
+    val = False
+    while(not val):
+        val = rotMotor.adjustForward()
+        time.sleep(0.02)
     print("Forward adjustment complete!")
-    time.sleep(1)""""""
+    time.sleep(1)
     print("Rotating Motor 90 degrees...")
     val = False
     #rotMotor.setMotorSpeed(-.2)
-    target = (rotMotor.getCurrentPosition()/8192)*360
-    print("current degrees", target)
+    #target = (rotMotor.getCurrentPosition()/8192)*360
+    #print("current degrees", target)
     
-    target += 10 
-    print("new degrees",target)
-    while(not val): 
-        val = rotMotor.rotateForward(target,.1)
-    val = True
+    #target += 10 
+    #print("new degrees",target)
+    #while(not val): 
+    #    val = rotMotor.rotateForward(target,.1)
+    #val = True
     #while(val):
-     #   val = rotMotor.adjustForward()
-    print("Rotation complete!")  
+    #    val = rotMotor.adjustForward()
+    #print("Rotation complete!")  
     # startPos = rotMotor.getCurrentPosition()
     # val = rotMotor.move(0.5,.1,startPos)
     # while(val):
