@@ -125,7 +125,8 @@ class RotationalMotor():
     
 
         speed = abs(speed)
-
+        self.rotate(angle,speed)
+        """
         self.read_octoquad()
         angle_offset = 228
         self.currentCount = 0
@@ -171,7 +172,7 @@ class RotationalMotor():
 
             return False
 
-
+  """
   def stopMotor(self):
 
       self.motor.move_motor(0)
@@ -319,15 +320,15 @@ TESTING GROUND FOR ROTATIONAL MOTOR
 
 given a pca address, pin value, and a side
 """
-"""
+
 try:
     i2c = board.I2C()
     pca = PCA9685(i2c)
     pca.frequency = 50
-    pin = 6
+    pin = 11
     side = "l"
     idealfVal = 0
-    channel = 3
+    channel = 6
     rotMotor = RotationalMotor(pca,pin,side,channel,idealfVal)
     #val = rotMotor.adjustForward()
     # while(val):
@@ -338,8 +339,9 @@ try:
     
     val = False
     while(not val):
-        val = rotMotor.adjustForward()
-        time.sleep(0.02)
+        #val = rotMotor.adjustForward()
+      val = rotMotor.rotateForward(90,0.4)  
+      time.sleep(0.02)
     print("Forward adjustment complete!")
     time.sleep(1)
     print("Rotating Motor 90 degrees...")
@@ -362,4 +364,4 @@ try:
     rotMotor.stopMotor()
     #val = rotMotor.move(0.5,.1)
 except KeyboardInterrupt:
-    rotMotor.stopMotor()"""
+    rotMotor.stopMotor()
