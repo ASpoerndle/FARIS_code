@@ -95,15 +95,31 @@ class RotationalMotor():
   #right is neg, left is pos
 
   def setMotorSpeed(self,speed):
-
-      self.motor.move_motor(speed)
+        self.motor.move_motor(speed)
 
   def rotate(self, angle, speed):
+     speed = abs(speed)
+     current = self.getCurrentPosition()
+     self.read_octoquad()
+     current_degrees = (currentPos / 8192) * 360
+     pid.setpoint = angle
+    
+     control_signal = self.pid_ch0(current_degrees)
+     # 3. ACT: Update the motor
+    
+     error = (current+self.fVal/8192)*360 - angle
+     if abs(error) < 0.25:
+         self.motor.move_motor(0)
+         print(f"Centered at {current_degrees}")
+         return True
+     else:
+         self.motor.move_motor(control_signal)
+           # Log status
+         direction = "Left" if control_signal > 0 else "Right"
+         print(f"Target: 0° | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
+         return False
 
-    speed = abs(speed)
-    current = self.getCurrentPosition()
-    self.read_octoquad()
-
+"""
     #if(self.polarity > 0):
     target = (angle/360) * 8192
     
@@ -140,8 +156,10 @@ class RotationalMotor():
     else:
 
       return False
+"""
 
   def rotateForward(self,angle,speed):
+    
 
         speed = abs(speed)
 

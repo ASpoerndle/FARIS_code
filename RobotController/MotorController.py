@@ -221,7 +221,7 @@ class MotorController():
                 isMotorAligned4 = motor4.rotate(angle,speed)
 
             stopCond = isMotorAligned2 and isMotorAligned1 and isMotorAligned3 and isMotorAligned4
-
+            time.sleep(0.02)
         self.stopMotors()
 
     def moveDistance(self, distance,speed):
