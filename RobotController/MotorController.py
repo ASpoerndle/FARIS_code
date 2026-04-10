@@ -263,16 +263,16 @@ mc = MotorController()
 #time.sleep(3)
 
 mc.adjustForward()
-#mc.moveDistance(.1,0.25)
-time.sleep(5)
+mc.moveDistance(.1,0.25)
+time.sleep(1)
 mc.horizontalMode()
+mc.moveDistance(-.1,0.25)
 #mc.moveDistance(-.1,0.25)
-#mc.moveDistance(-.1,0.25)
-#mc.horizontalMode()
+mc.horizontalMode()
 
 
 
-
+print("complete")
 #mc.adjustForward(True)
 
 time.sleep(1)

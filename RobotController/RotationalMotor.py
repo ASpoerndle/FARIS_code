@@ -43,13 +43,13 @@ class RotationalMotor():
     self.fVal = fVal
 
     self.currentCount = fVal
-    Kp = 0.005
-    Ki = 0.00001
-    Kd = 0.00001
+    Kp = 0.007
+    Ki = 0.00004
+    Kd = 0.0001
 
     self.read_octoquad()
-    self.pid_ch0 = PID(Kp, Ki, Kd, setpoint=(fVal/8192)*360) 
-    self.pid_ch0.output_limits=(-0.8,0.8)
+    self.pid = PID(Kp, Ki, Kd, setpoint=(fVal/8192)*360) 
+    self.pid.output_limits=(-0.8,0.8)
   
   #Returns T/F based on if it's off-centered, put a while loop in MotorController class so it can adjust all motors at once
   
@@ -59,11 +59,11 @@ class RotationalMotor():
       current_degrees = (currentPos / 8192) * 360
     
     
-      control_signal = self.pid_ch0(current_degrees)
+      control_signal = self.pid(current_degrees)
     # 3. ACT: Update the motor
     
       error = (self.fVal/8192)*360 - current_degrees
-      if abs(error) < 0.25:
+      if abs(error) < 0.5:
           self.motor.move_motor(0)
           print(f"Centered at {current_degrees}")
           return True
@@ -101,14 +101,15 @@ class RotationalMotor():
      speed = abs(speed)
      current = self.getCurrentPosition()
      self.read_octoquad()
-     current_degrees = (currentPos / 8192) * 360
-     pid.setpoint = angle
-    
-     control_signal = self.pid_ch0(current_degrees)
+     current_degrees = (current / 8192) * 360
+     angle += 2*(self.fVal/8192)*360
+     self.pid.setpoint = angle
+     fDegree = (self.fVal/8192)*360   
+     control_signal = self.pid(current_degrees)
      # 3. ACT: Update the motor
     
-     error = (current+self.fVal/8192)*360 - angle
-     if abs(error) < 0.25:
+     error = current_degrees - angle
+     if abs(error)-fDegree < 0.5:
          self.motor.move_motor(0)
          print(f"Centered at {current_degrees}")
          return True
@@ -116,47 +117,9 @@ class RotationalMotor():
          self.motor.move_motor(control_signal)
            # Log status
          direction = "Left" if control_signal > 0 else "Right"
-         print(f"Target: 0° | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
+         print(f"{self.enc} + {error} Target: {angle}° | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
          return False
 
-"""
-    #if(self.polarity > 0):
-    target = (angle/360) * 8192
-    
-    if(current > target - 10 and current < target + 10):
-
-         self.motor.move_motor(0)
-
-         return True
-
-
-    if(current > target):
-            self.motor.move_motor(-.1)
-            return False
-    else:
-        self.motor.move_motor(0.1)
-        return False
-            #cond = self.rotateLeft(angle, speed)
-    if(currentPos > target - 10 and currentPos < target + 10):
-
-         self.motor.move_motor(0)
-
-         return True
-
-
-    #if(angle < 0):
-
-        #true = True
-
-     #   cond = self.rotateRight(angle , speed)
-        
-    if(angle == 0):
-
-        cond = True
-    else:
-
-      return False
-"""
 
   def rotateForward(self,angle,speed):
     
