@@ -43,7 +43,7 @@ class RotationalMotor():
     self.fVal = fVal
 
     self.currentCount = fVal
-    Kp = 0.009
+    Kp = 0.005
     Ki = 0.000004
     Kd = 0.0000001
 

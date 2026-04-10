@@ -1,0 +1,5 @@
+[console_scripts]
+YOLO_node = RobotController.YOLO_node:main
+distance_node = RobotController.distanceFromObjNode.py:main
+listener = RobotController.Subscriber:main
+node = RobotController.SampleNode:main

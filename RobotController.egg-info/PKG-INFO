@@ -1,0 +1,8 @@
+Metadata-Version: 2.1
+Name: RobotController
+Version: 0.0.0
+Summary: TODO: Package description
+Maintainer: aidan
+Maintainer-email: aidan@todo.todo
+License: Apache License 2.0
+Provides-Extra: test
