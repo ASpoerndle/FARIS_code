@@ -57,8 +57,8 @@ class MotorController():
         self.rotational_motor_list = []
 
         #pin_list_wheel = [[11, 'l'],[10,'l'],[13,'r'],[15,'r']]
-
-        pin_list_rotational = [[2,"l",0,265],[3,"l",1,0],[4, "l",2,207],[6,"l",3,0],[11,'l',6,0],[10,'l',5,0],[13,'r',4,0],[15,'r',7,0]]
+        #265 207
+        pin_list_rotational = [[2,"l",0,0],[3,"l",1,0],[4, "l",2,-200],[6,"l",3,-100],[11,'l',6,0],[10,'l',5,0],[13,'r',4,0],[15,'r',7,0]]
 
         #print("readying wheel motors...")
 
@@ -169,21 +169,21 @@ class MotorController():
 
             if(not isMotorAligned3):
 
-                isMotorAligned3 = motor3.rotateForward(angle3,speed)
+                isMotorAligned3 = motor3.rotateForward(-angle3,speed)
 
             if(not isMotorAligned4):
 
 
-                isMotorAligned4 = motor4.rotateForward(angle4,speed)
+                isMotorAligned4 = motor4.rotateForward(-angle4,speed)
 
             stopCond = isMotorAligned1 and isMotorAligned2 and isMotorAligned3 and isMotorAligned4
 
             #if(whichMotor == "w"):
-
+            time.sleep(0.02)
              #   stopCond = isMotorAligned1 or isMotorAligned2 or isMotorAligned3 or isMotorAligned4
 
         self.stopMotors()
-        self.adjustForward()
+ #       self.adjustForward()
     def rotatePods(self, angle,speed):
 
         cond1 = True
@@ -263,13 +263,16 @@ mc = MotorController()
 #time.sleep(3)
 
 mc.adjustForward()
+time.sleep(3)
 mc.moveDistance(.1,0.25)
 time.sleep(1)
 mc.horizontalMode()
 mc.moveDistance(-.1,0.25)
-#mc.moveDistance(-.1,0.25)
+mc.adjustForward()
+mc.moveDistance(-.1,0.25)
 mc.horizontalMode()
-
+mc.moveDistance(.1,0.25)
+mc.adjustForward()
 
 
 print("complete")
