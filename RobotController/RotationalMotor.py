@@ -43,18 +43,19 @@ class RotationalMotor():
     self.fVal = fVal
 
     self.currentCount = fVal
-    Kp = 0.005
-    Ki = 0.000004
-    Kd = 0.0000001
+    #Kp = 0.006
+    #Ki = 0.000008
+    #Kd = 0.000001
 
     self.read_octoquad()
-    self.pid = PID(Kp, Ki, Kd, setpoint=(fVal/8192)*360) 
-    self.pid.output_limits=(-0.5,0.5)
+    self.pid = PID(0.05,0.00002,0.001, setpoint=(fVal/8192)*360) 
+    self.pid.output_limits=(-.6,.6)
   
   #Returns T/F based on if it's off-centered, put a while loop in MotorController class so it can adjust all motors at once
   
   def adjustForward(self):
       self.read_octoquad()
+      self.pid.setpoint = (self.fVal/8192)*360
       currentPos = RotationalMotor.positions[self.enc] 
       current_degrees = (currentPos / 8192) * 360
     
@@ -71,7 +72,7 @@ class RotationalMotor():
           self.motor.move_motor(control_signal)
           # Log status
           direction = "Left" if control_signal > 0 else "Right"
-          print(f"Target: 0° | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
+          print(f"Target: 0° + {error} | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
           return False
 
       """
@@ -111,7 +112,7 @@ class RotationalMotor():
      error = abs(current_degrees - angle)
      if abs(error) < 0.5:
          self.motor.move_motor(0)
-         print(f"Centered at {current_degrees}")
+         print(f"Centered at {current_degrees} kP: {self.pid.Kp} kI: {self.pid.Ki} kD: {self.pid.Kd}")
          return True
      else:
          self.motor.move_motor(self.polarity * control_signal)
@@ -125,8 +126,9 @@ class RotationalMotor():
     
 
         speed = abs(speed)
-        self.pid.Kp = 0.25
-        self.pid.Kd = 0.00006
+        self.pid.Kp = 0.05
+        self.pid.Kd = 0.0001
+        self.pid.Ki = 0.0004
         return self.rotate(self.polarity * angle,speed)
         
         """
@@ -283,7 +285,10 @@ class RotationalMotor():
         return False
 
   # OctoQuad default settings
-
+  def setValue(self,value,value2,value3):
+      self.pid.Kp = value
+      self.pid.Ki = value2
+      self.pid.Kd = value3
   def read_octoquad(self):
 
     with SMBus(RotationalMotor.I2C_BUS) as bus:
@@ -316,7 +321,7 @@ class RotationalMotor():
         # return position, velocity
 
 
-
+    
 
 """
 TESTING GROUND FOR ROTATIONAL MOTOR
@@ -328,10 +333,10 @@ try:
     i2c = board.I2C()
     pca = PCA9685(i2c)
     pca.frequency = 50
-    pin = 15
-    side = "r"
+    pin = 6
+    side = "l"
     idealfVal = 0
-    channel = 7
+    channel = 3
     rotMotor = RotationalMotor(pca,pin,side,channel,idealfVal)
     #val = rotMotor.adjustForward()
     # while(val):
@@ -339,12 +344,29 @@ try:
     #     print(rotMotor.getCurrentPosition())
     # print("finshed")
     print("Adjusting forward...")
-    
+    d = 0
     val = False
-    while(not val):
-        #val = rotMotor.adjustForward()
-      val = rotMotor.rotateForward(90-90,0.4)  
-      time.sleep(0.02)
+    while True:
+        value = float(input("gimme a Kp"))
+        value2 = float(input("gimme a Kp"))
+        value3 = float(input("gimme a Kp"))
+         
+        rotMotor.setValue(value,value2,value3)
+
+
+
+
+
+        val = False
+        d+= 90
+        while(not val):
+      
+            val = rotMotor.adjustForward()  
+            time.sleep(0.02)
+            val = False
+        while(not val):
+            val = rotMotor.rotate(90,.1)
+            time.sleep(0.02)
     print("Forward adjustment complete!")
     time.sleep(1)
     print("Rotating Motor 90 degrees...")
@@ -352,7 +374,7 @@ try:
     #rotMotor.setMotorSpeed(-.2)
     #target = (rotMotor.getCurrentPosition()/8192)*360
     #print("current degrees", target)
-    
+     
     #target += 10 
     #print("new degrees",target)
     #while(not val): 
