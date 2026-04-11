@@ -48,7 +48,7 @@ class RotationalMotor():
     #Kd = 0.000001
 
     self.read_octoquad()
-    self.pid = PID(0.05,0.00002,0.001, setpoint=(fVal/8192)*360) 
+    self.pid = PID(0.05,0.000019,0.001, setpoint=(fVal/8192)*360) 
     self.pid.output_limits=(-.6,.6)
   
   #Returns T/F based on if it's off-centered, put a while loop in MotorController class so it can adjust all motors at once
@@ -127,8 +127,8 @@ class RotationalMotor():
 
         speed = abs(speed)
         self.pid.Kp = 0.05
-        self.pid.Kd = 0.0001
-        self.pid.Ki = 0.0004
+        self.pid.Kd = 0.0002
+        self.pid.Ki = 0.000175
         return self.rotate(self.polarity * angle,speed)
         
         """

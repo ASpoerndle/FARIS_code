@@ -150,7 +150,7 @@ class MotorController():
             if (not isMotorAligned4):
                 isMotorAligned4 = motor4.rotateForward(-angle4, speed)
 
-            stopCond = (isMotorAligned1 and isMotorAligned2) or (isMotorAligned3 and isMotorAligned4)
+            stopCond = (isMotorAligned1 or isMotorAligned2) or (isMotorAligned3 or isMotorAligned4)
 
             # if(whichMotor == "w"):
             time.sleep(0.02)
