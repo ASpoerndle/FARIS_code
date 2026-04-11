@@ -223,7 +223,7 @@ class MotorController():
 
 
 # try:
-distance = .01
+"""distance = .01
 mc = MotorController()
 
 # time.sleep(3)
@@ -254,7 +254,7 @@ time.sleep(1)
 # mc.rotate(-45,.1,"r")
 
 # time.sleep(1)
-
+"""
 
 # time.sleep(1)
 

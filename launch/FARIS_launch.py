@@ -35,13 +35,13 @@ def generate_launch_description():
         package = 'RobotController',
         executable='YOLO_node',
         name='YOLO',
-        output = 'log'
+        output = 'screen'
     )
     distance_node = Node(
         package = 'RobotController',
         executable = 'distance_node',
         name = 'Distance',
-        output = 'log'
+        output = 'screen'
     )
 
     # 5. MUST RETURN the LaunchDescription so ROS knows what to run!
