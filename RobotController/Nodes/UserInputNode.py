@@ -3,7 +3,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 class ExampleNode(Node):
     def __init__(self):
-        super().__init__("first_node")
+        super().__init__("User Input")
         self.get_logger().info("Hello from ROS2")
         self.publisher_ = self.create_publisher(String, 'topic', 10)
         timer_period = 0.5  # seconds
@@ -11,7 +11,7 @@ class ExampleNode(Node):
         self.i = 0
     def timer_callback(self):
         msg = String()
-        msg.data = input("what speed?")
+        msg.data = input("what distance?")
         self.publisher_.publish(msg)
         self.get_logger().info('Publishing: "%s"' % msg.data)
         self.i += 1

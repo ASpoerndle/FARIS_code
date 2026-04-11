@@ -79,7 +79,7 @@ class YOLO_node(Node):
                 if conf > score_threshold:
                     x1, y1, x2, y2 = map(int, xyxy)
                     return(x1,x2,y1,y2)
-        return None
+        return 0,1,0,1
                  #    # Draw rectangle
                  #    color = (0, 255, 0) # Green color for bounding box
                  #    cv2.rectangle(image, (x1, y1), (x2, y2), color, 2)

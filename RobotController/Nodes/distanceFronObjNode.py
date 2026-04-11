@@ -50,13 +50,14 @@ class DistanceFromObj_node(Node):
       
     def retrieveDistance(self, depth):
         if self.x1 is None:
-            return # Wait until we have a bounding box
+            return 0# Wait until we have a bounding box
         cv_depth_image = self.bridge.imgmsg_to_cv2(depth, desired_encoding='passthrough')
        
         centerx = int((self.x2 + self.x1)/2)
         centery = int((self.y2 + self.y1)/2)
-        depth_value = cv_depth_image[centery, centerx]
-        self.msg.data = float(depth_value/ 1000)
+        if(centerx < 848 and centery < 480):
+            depth_value = cv_depth_image[centery, centerx]
+            self.msg.data = float(depth_value/ 1000)
         
         
       #method

@@ -29,10 +29,10 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'node = RobotController.SampleNode:main',
-            'listener = RobotController.Subscriber:main',
-            'YOLO_node = RobotController.YOLO_node:main',
-            'distance_node = RobotController.distanceFromObjNode.py:main'
+            'node = RobotController.Nodes.UserInputNode:main',
+            'listener = RobotController.Nodes.Subscriber:main',
+            'YOLO_node = RobotController.Nodes.YOLO_node:main',
+            'distance_node = RobotController.Nodes.distanceFronObjNode:main'
 
         ],
     },
