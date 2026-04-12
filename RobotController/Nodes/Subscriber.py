@@ -16,7 +16,9 @@ class MinimalSubscriber(Node):
         self.subscription  # prevent unused variable warning
         self.motors = MotorController()
     def listener_callback(self, msg):
-        self.get_logger().info('I heard: "%d"' % msg.data)
+        msg = msg.data
+        if(msg[0] == "C"):
+            
         self.motors.adjustForward()
         self.motors.moveDistance(float(msg.data))
     def move_forward(self, distance):
