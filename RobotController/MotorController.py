@@ -15,33 +15,19 @@ import math
 
 
 class MotorController():
-
     def __init__(self):
-
         pin1 = 31
-
         pin2 = 29
-
         GPIO.cleanup()
-
         GPIO.setmode(GPIO.BOARD)  # Use physical pin numbering
-
         GPIO.setup(pin1, GPIO.IN)  # pin 31
-
         GPIO.setup(pin2, GPIO.IN)  # pin 29
-
         input1 = GPIO.input(pin1)  # Read input
-
         input2 = GPIO.input(pin2)
-
         i2c = board.I2C()
-
         pca = PCA9685(i2c)
-
         pca.frequency = 50
-
         self.wheel_motor_list = []
-
         self.rotational_motor_list = []
 
         # pin_list_wheel = [[11, 'l'],[10,'l'],[13,'r'],[15,'r']]
@@ -57,55 +43,36 @@ class MotorController():
 
         #    self.wheel_motor_list.append(motor)
 
-        print("readying rotational motors...")
-
+        print("readying motors...")
         for i in pin_list_rotational:
             motor = RotationalMotor(pca, i[0], i[1], i[2], i[3])
-
             self.rotational_motor_list.append(motor)
-
+        print("motors ready!")
     def moveWheels(self, i):
-
         print("moving forward")
-
         if (i < -1 or i > 1):
             print("ERR: invalid input")
-
             return
-
         for motor in self.wheel_motor_list:
             motor.move_motor(i)
 
     def adjustForward(self):
-
         cond1 = True
-
         cond2 = False
-
         isMotorAligned1 = isMotorAligned2 = isMotorAligned3 = isMotorAligned4 = False
-
         stopCond = False
-
         motor1, motor2, motor3, motor4 = self.rotational_motor_list[0:4]
-
         while (not stopCond):
-
             if (not isMotorAligned1):
                 cond1 = motor1.adjustForward()
-
                 isMotorAligned1 = cond1
-
             if (not isMotorAligned2):
                 cond2 = motor2.adjustForward()
-
                 isMotorAligned2 = cond2
-
             if (not isMotorAligned3):
                 isMotorAligned3 = motor3.adjustForward()
-
             if (not isMotorAligned4):
                 isMotorAligned4 = motor4.adjustForward()
-
             stopCond = isMotorAligned2 and isMotorAligned1 and isMotorAligned3 and isMotorAligned4
             time.sleep(0.02)
         self.stopMotors()
