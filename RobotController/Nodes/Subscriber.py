@@ -11,13 +11,17 @@ class MinimalSubscriber(Node):
     def __init__(self):
         super().__init__('UserInputSub')
         self.subscription = self.create_subscription(String,'topic',self.listener_callback,10)
+        self.sub2 = self.create_subscription(Float32, 'distance_from_obj',self.move_forward,10)
+        self.sub3 = self.create_subscription(Float32, 'auto_move',self.move_forward,10)
         self.subscription  # prevent unused variable warning
         self.motors = MotorController()
     def listener_callback(self, msg):
-        self.get_logger().info('I heard: "%s"' % msg.data)
+        self.get_logger().info('I heard: "%d"' % msg.data)
         self.motors.adjustForward()
-        self.motors.rotateForward(float(msg.data))
-
+        self.motors.moveDistance(float(msg.data))
+    def move_forward(self, distance):
+        if(distance != 0):
+            self.motors.moveDistance(distance)
 def main(args=None):
     rclpy.init(args=args)
 
