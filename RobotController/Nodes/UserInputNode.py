@@ -11,6 +11,16 @@ class ExampleNode(Node):
         self.i = 0
     def timer_callback(self):
         msg = String()
+        print("Farming Automaton for Row-Intercopping Systems")
+        choice = input("Input a for auto_move | Input c for camera move | Input m for manual move")
+        if(choice[0].upper == "A"):
+            msg.data = "A"
+        if(choice[0].upper == "M"):
+            data = input("How far? (m)")
+            msg.data = "M" + data
+        if(choice[0].upper == "C"):
+            msg.data = "C"
+            
         msg.data = input("what distance?")
         self.publisher_.publish(msg)
         self.get_logger().info('Publishing: "%s"' % msg.data)
