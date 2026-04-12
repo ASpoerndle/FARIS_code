@@ -1,30 +1,38 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
+from std_msgs.msg import Float32
 class ExampleNode(Node):
     def __init__(self):
-        super().__init__("User Input")
+        super().__init__("UserInput")
         self.get_logger().info("Hello from ROS2")
-        self.publisher_ = self.create_publisher(String, 'topic', 10)
+        self.manual = self.create_publisher(Float32, 'manual_mode', 10)
+        self.auto = self.create_publisher(Float32,'auto_mode',10)
+        self.vision = self.create_publisher(Float32, 'vision',10)
+
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
     def timer_callback(self):
-        msg = String()
+        msg = Float32()
         print("Farming Automaton for Row-Intercopping Systems")
         choice = input("Input a for auto_move | Input c for camera move | Input m for manual move")
         if(choice[0].upper == "A"):
-            msg.data = "A"
-        if(choice[0].upper == "M"):
+            msg.data = 1
+            self.auto.publish(msg)
+
+        if(choice == "m"):
             data = input("How far? (m)")
-            msg.data = "M" + data
+            msg.data = float(data)
+            self.manual.publish(msg)
         if(choice[0].upper == "C"):
-            msg.data = "C"
+            msg.data = 1
+            self.vision.publish(msg)
             
-        msg.data = input("what distance?")
-        self.publisher_.publish(msg)
-        self.get_logger().info('Publishing: "%s"' % msg.data)
-        self.i += 1
+        #msg.data = input("what distance?")
+        #self.publisher_.publish(msg)
+        #self.get_logger().info('Publishing: "%s"' % msg.data)
+        #self.i += 1
 
 
 

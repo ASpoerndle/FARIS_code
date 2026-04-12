@@ -42,12 +42,20 @@ def generate_launch_description():
         executable = 'distance_node',
         name = 'Distance',
         output = 'screen'
-    )
+    
+        )
+    move_auto = Node(
+        package = 'RobotController',
+        executable = 'move_auto',
+        name = 'MoveWithCamera',
+        output = 'screen'
+            )
 
     # 5. MUST RETURN the LaunchDescription so ROS knows what to run!
     return LaunchDescription([
         realsense_node,
         listen_node,
         YOLO_node,
-        distance_node
+        distance_node,
+        move_auto
     ])

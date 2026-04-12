@@ -3,7 +3,7 @@ from rclpy.node import Node
 
 from std_msgs.msg import String
 from .MotorController import MotorController
-
+from std_msgs.msg import Float32
 
 class MinimalSubscriber(Node):
 
@@ -18,10 +18,18 @@ class MinimalSubscriber(Node):
         self.subscription = self.create_subscription(String,'topic',self.listener_callback,10)
         self.sub2 = self.create_subscription(Float32, 'distance_from_obj',self.move_forward,10)
         self.sub3 = self.create_subscription(Float32, 'auto_move',self.move_forward,10)
+        self.manual = self.create_subscription(Float32, 'manual_mode',self.manual_mode,10)
+
         self.subscription  # prevent unused variable warning
         self.motors = MotorController()
+
+    def manual_mode(self,msg):
+        print(msg.data)
+        print(msg)
+        self.move_forward(msg.data)
     def listener_callback(self, msg):
         msg = msg.data
+        print(msg)
         if(msg[0] == "C"):
             self.allowC = True
         if(msg[0] == "M"):

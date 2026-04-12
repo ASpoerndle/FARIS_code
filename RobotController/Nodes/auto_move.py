@@ -24,8 +24,8 @@ class move_auto(Node):
        
         self.subscription2 = self.create_subscription(Image,
             '/camera/camera/depth/image_rect_raw', self.retrieveDistance, 10)
-        self.subscription  # prevent unused variable warning
-       
+        self.subscription2  # prevent unused variable warning
+        self.bridge = CvBridge() 
        
     #method to publishes the bounding box outwards
     # def publish_topic(self):
@@ -36,8 +36,6 @@ class move_auto(Node):
     #   self.x1,self.x2,self.y1,self.y2 =  data.x1, data.x2, data.y1, data.y2
       
     def retrieveDistance(self, depth):
-        if self.x1 is None:
-            return 0# Wait until we have a bounding box
         cv_depth_image = self.bridge.imgmsg_to_cv2(depth, desired_encoding='passthrough')
        
         centerx = int(848/2)

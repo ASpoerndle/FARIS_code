@@ -1,6 +1,6 @@
 import struct
 from smbus2 import SMBus
-from Motor import WheelMotor
+from .Motor import WheelMotor
 import board
 from adafruit_pca9685 import PCA9685
 import Jetson.GPIO as GPIO

@@ -1,8 +1,8 @@
 import time
 
-from Motor import WheelMotor
+from .Motor import WheelMotor
 
-from RotationalMotor import RotationalMotor
+from .RotationalMotor import RotationalMotor
 
 import board
 
