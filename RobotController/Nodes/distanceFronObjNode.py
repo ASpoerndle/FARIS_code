@@ -27,8 +27,8 @@ class DistanceFromObj_node(Node):
         #sets the msg variable to be equal to my custom topic 
         #creates a topic that the node can publish to (bounding_box) with the bounding_box message type and sends a max of 10 at any one time
         self.publisher_ = self.create_publisher(Float32, 'distance_from_obj', 10)
-        timer_period = 0.5  # seconds
-        self.timer = self.create_timer(timer_period, self.publish_topic)
+        # timer_period = 0.5  # seconds
+        # self.timer = self.create_timer(timer_period, self.publish_topic)
         #gets information from the /color/image_raw topic
         self.subscription = self.create_subscription(
             BB,
@@ -58,6 +58,7 @@ class DistanceFromObj_node(Node):
         if(centerx < 848 and centery < 480):
             depth_value = cv_depth_image[centery, centerx]
             self.msg.data = float(depth_value/ 1000)
+            self.publisher_.publish(self.msg)
         
         
       #method
