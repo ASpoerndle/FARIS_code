@@ -9,6 +9,11 @@ class MinimalSubscriber(Node):
 
 
     def __init__(self):
+        #Allow methods to run
+        self.allowC = False
+        self.allowM = False
+        self.allowA = False
+        self.manualDis = 0
         super().__init__('UserInputSub')
         self.subscription = self.create_subscription(String,'topic',self.listener_callback,10)
         self.sub2 = self.create_subscription(Float32, 'distance_from_obj',self.move_forward,10)
@@ -18,12 +23,28 @@ class MinimalSubscriber(Node):
     def listener_callback(self, msg):
         msg = msg.data
         if(msg[0] == "C"):
+            self.allowC = True
+        if(msg[0] == "M"):
+            self.allowM = True
+            self.manualDis = int(msg[1:])
+            self.move_forward(self.manualDis)
+        if(msg[0] == "A"):
+            self.allowA = True
+
+
             
-        self.motors.adjustForward()
-        self.motors.moveDistance(float(msg.data))
+        # self.motors.adjustForward()
+        # self.motors.moveDistance(float(msg.data))
     def move_forward(self, distance):
-        if(distance != 0):
+
+        if(distance != 0 and (self.allowC or self.allowA or self.allowM)):
+            self.get_logger().info('Moving "%d"' % distance)
             self.motors.moveDistance(distance)
+            self.allowC = False
+            self.allowA = False
+            self.allowM = False
+            self.manualDis = 0
+
 def main(args=None):
     rclpy.init(args=args)
 
