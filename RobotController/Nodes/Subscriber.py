@@ -17,16 +17,29 @@ class MinimalSubscriber(Node):
         super().__init__('UserInputSub')
         self.subscription = self.create_subscription(String,'topic',self.listener_callback,10)
         self.sub2 = self.create_subscription(Float32, 'distance_from_obj',self.move_forward,10)
-        self.sub3 = self.create_subscription(Float32, 'auto_move',self.move_forward,10)
+        self.sub3 = self.create_subscription(Float32, 'auto_move',self.setAutoMove,10)
+        #Modes
         self.manual = self.create_subscription(Float32, 'manual_mode',self.manual_mode,10)
+        self.auto = self.create_subcription(Float32, 'auto_mode',self.auto_mode,10)
 
+        self.autoDis = 0
         self.subscription  # prevent unused variable warning
         self.motors = MotorController()
-
+    def auto_mode(self,msg):
+        print(msg.data)
+        print(msg)
+        if(self.autoDis != 0):
+            self.move_forward(self.autoDis)
+            self.autoDis = 0
+    def vision_mode(self,msg):
+        print(msg.data)
+        print(msg)
     def manual_mode(self,msg):
         print(msg.data)
         print(msg)
         self.move_forward(msg.data)
+    def setAutoMove(self,msg):
+        self.autoDis = msg.data
     def listener_callback(self, msg):
         msg = msg.data
         print(msg)
@@ -45,12 +58,9 @@ class MinimalSubscriber(Node):
         # self.motors.moveDistance(float(msg.data))
     def move_forward(self, distance):
 
-        if(distance != 0 and (self.allowC or self.allowA or self.allowM)):
+        if(distance != 0 ):
             self.get_logger().info('Moving "%d"' % distance)
             self.motors.moveDistance(distance)
-            self.allowC = False
-            self.allowA = False
-            self.allowM = False
             self.manualDis = 0
 
 def main(args=None):
