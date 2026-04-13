@@ -21,6 +21,7 @@ class MinimalSubscriber(Node):
         #Modes
         self.manual = self.create_subscription(Float32, 'manual_mode',self.manual_mode,10)
         self.auto = self.create_subcription(Float32, 'auto_mode',self.auto_mode,10)
+        self.vision = self.create_subscription(Float32, 'vision_mode',self.vision_mode,10)
 
         self.autoDis = 0
         self.subscription  # prevent unused variable warning
