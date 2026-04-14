@@ -115,7 +115,7 @@ class RotationalMotor():
          print(f"Centered at {current_degrees} kP: {self.pid.Kp} kI: {self.pid.Ki} kD: {self.pid.Kd}")
          return True
      else:
-         self.motor.move_motor(self.polarity * control_signal)
+         self.motor.move_motor(self.polarity * control_signal*speed)
            # Log status
          direction = "Left" if control_signal > 0 else "Right"
          print(f"{self.enc} + {error} Target: {angle}° | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")

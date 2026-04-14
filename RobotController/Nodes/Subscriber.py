@@ -24,8 +24,9 @@ class MinimalSubscriber(Node):
         self.vision = self.create_subscription(Float32, 'vision_mode',self.vision_mode,10)
 
         self.autoDis = 0
-        self.subscription  # prevent unused variable warning
+        #self.subscription  # prevent unused variable warning
         self.motors = MotorController()
+        self.motors.adjustForward()
     def auto_mode(self,msg):
         print(msg.data)
         print(msg)
@@ -36,9 +37,15 @@ class MinimalSubscriber(Node):
         print(msg.data)
         print(msg)
     def manual_mode(self,msg):
-        print(msg.data)
-        print(msg)
-        self.move_forward(msg.data,.1)
+        data = msg.data
+        if(data <= 1 and data >= -1):
+            self.move_forward(data,.1)
+        elif(data >= 2 and data <=3):
+            self.motors.horizontalMode()
+        elif(data > 3):
+            self.motors.boxDrill(0.1)
+        elif(data <= -3):
+            self.motors.adjustForward()
     def setAutoMove(self,msg):
         self.autoDis = msg.data
     def listener_callback(self, msg):
