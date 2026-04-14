@@ -16,7 +16,7 @@ import math
 
 class MotorController():
     def __init__(self):
-                GPIO.cleanup()
+        GPIO.cleanup()
         GPIO.setmode(GPIO.BOARD)  # Use physical pin numbering
         
         i2c = board.I2C()

@@ -20,7 +20,7 @@ class MinimalSubscriber(Node):
         self.sub3 = self.create_subscription(Float32, 'auto_move',self.setAutoMove,10)
         #Modes
         self.manual = self.create_subscription(Float32, 'manual_mode',self.manual_mode,10)
-        self.auto = self.create_subcription(Float32, 'auto_mode',self.auto_mode,10)
+        self.auto = self.create_subscription(Float32, 'auto_mode',self.auto_mode,10)
         self.vision = self.create_subscription(Float32, 'vision_mode',self.vision_mode,10)
 
         self.autoDis = 0
@@ -38,7 +38,7 @@ class MinimalSubscriber(Node):
     def manual_mode(self,msg):
         print(msg.data)
         print(msg)
-        self.move_forward(msg.data)
+        self.move_forward(msg.data,.1)
     def setAutoMove(self,msg):
         self.autoDis = msg.data
     def listener_callback(self, msg):
@@ -57,11 +57,11 @@ class MinimalSubscriber(Node):
             
         # self.motors.adjustForward()
         # self.motors.moveDistance(float(msg.data))
-    def move_forward(self, distance):
+    def move_forward(self, distance,speed):
 
         if(distance != 0 ):
             self.get_logger().info('Moving "%d"' % distance)
-            self.motors.moveDistance(distance)
+            self.motors.moveDistance(distance,speed)
             self.manualDis = 0
 
 def main(args=None):
