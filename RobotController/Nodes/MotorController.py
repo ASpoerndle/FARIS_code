@@ -16,14 +16,9 @@ import math
 
 class MotorController():
     def __init__(self):
-        pin1 = 31
-        pin2 = 29
-        GPIO.cleanup()
+                GPIO.cleanup()
         GPIO.setmode(GPIO.BOARD)  # Use physical pin numbering
-        GPIO.setup(pin1, GPIO.IN)  # pin 31
-        GPIO.setup(pin2, GPIO.IN)  # pin 29
-        input1 = GPIO.input(pin1)  # Read input
-        input2 = GPIO.input(pin2)
+        
         i2c = board.I2C()
         pca = PCA9685(i2c)
         pca.frequency = 50
@@ -175,6 +170,24 @@ class MotorController():
 
         for motor in self.rotational_motor_list:
             motor.stopMotor()
+    def boxDrill(self,dis):
+        mc.adjustForward()
+        mc.moveDistance(.1, dis)
+        time.sleep(1)
+        mc.horizontalMode()
+        time.sleep(1)
+        mc.moveDistance(-.1, dis)
+        time.sleep(1)
+        mc.adjustForward()
+        time.sleep(1)
+        mc.moveDistance(-.1, dis)
+        time.sleep(1)
+        mc.horizontalMode()
+        time.sleep(1)
+        mc.moveDistance(.1, dis)
+        mc.adjustForward()
+
+        print("complete")
 
     def __del__(self):
 
