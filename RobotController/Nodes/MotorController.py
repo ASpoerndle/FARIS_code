@@ -121,7 +121,7 @@ class MotorController():
             stopCond = (isMotorAligned1 or isMotorAligned2) or (isMotorAligned3 or isMotorAligned4)
             if(ticks <=halfTicks and speed <= 1):
                 speed += 1/halfTicks
-            elif(speed > 0):
+            elif(speed > 0.2):
                 speed -=1/halfTicks
             
             # if(whichMotor == "w"):
