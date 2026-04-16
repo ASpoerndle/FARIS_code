@@ -39,7 +39,7 @@ class MinimalSubscriber(Node):
     def manual_mode(self,msg):
         data = msg.data
         if(data <= 1 and data >= -1):
-            self.move_forward(data,.1)
+            self.move_forward(data,1)
         elif(data >= 2 and data <=3):
             self.motors.horizontalMode()
         elif(data > 3):

@@ -75,10 +75,13 @@ class MotorController():
     def rotateForward(self, angle,distance, speed):
         #117 rpm
         #y ticks = distance (m) * 355 ticks/m
-        ticks = distance * 355
-        halfTicks = ticks // 2
-        if(distance <= .1):
-            ticks = halfTicks = -1
+        speed = 0.1
+        #max_ticks = distance * 144
+        max_ticks = (91 * abs(distance))/.2
+        ticks = 0
+        halfTicks = max_ticks // 2
+        if(distance <= .2 and distance >= -0.2):
+            ticks = halfTicks = max_ticks = -1
 
         
         isMotorAligned1 = isMotorAligned2 = isMotorAligned3 = isMotorAligned4 = False
@@ -118,13 +121,14 @@ class MotorController():
 
             if (not isMotorAligned4):
                 isMotorAligned4 = motor4.rotateForward(-angle4, speed)
-
+            print(f'Ticks: {ticks}')
             stopCond = (isMotorAligned1 or isMotorAligned2) or (isMotorAligned3 or isMotorAligned4)
-            if(ticks <=halfTicks and speed <= 1 and ticks != -1):
-                speed += 1/halfTicks
-            elif(speed > 0.2 and ticks != -1):
+            if(ticks <= halfTicks and speed <= 1 and max_ticks != -1):
+                print("increase speed")
+                speed += (1/halfTicks)
+            elif(ticks > halfTicks and speed > 0.2 and max_ticks != -1):
                 speed -=1/halfTicks
-            
+            ticks+= 1
             # if(whichMotor == "w"):
             time.sleep(0.02)
             #   stopCond = isMotorAligned1 or isMotorAligned2 or isMotorAligned3 or isMotorAligned4
@@ -214,28 +218,29 @@ class MotorController():
 
 
 # try:
-"""distance = .01
-mc = MotorController()
+#distance = .01
+
+#mc = MotorController()
 
 # time.sleep(3)
 
-mc.adjustForward()
+#mc.adjustForward()
 #time.sleep(3)
-mc.moveDistance(.1, 0.25)
+#mc.moveDistance(.2, 0.25)
 #time.sleep(1)
-time.sleep(1)
-mc.horizontalMode()
-time.sleep(1)
-mc.moveDistance(-.1, 0.25)
-time.sleep(1)
-mc.adjustForward()
-time.sleep(1)
-mc.moveDistance(-.1, 0.25)
-time.sleep(1)
-mc.horizontalMode()
-time.sleep(1)
-mc.moveDistance(.1, 0.25)
-mc.adjustForward()
+#time.sleep(1)
+#mc.horizontalMode()
+#time.sleep(1)
+#mc.moveDistance(-.1, 0.25)
+#time.sleep(1)
+#mc.adjustForward()
+#time.sleep(1)
+#mc.moveDistance(-.1, 0.25)
+#time.sleep(1)
+#mc.horizontalMode()
+#time.sleep(1)
+#mc.moveDistance(.1, 0.25)
+#mc.adjustForward()
 
 print("complete")
 # mc.adjustForward(True)
@@ -245,7 +250,7 @@ time.sleep(1)
 # mc.rotate(-45,.1,"r")
 
 # time.sleep(1)
-"""
+
 
 # time.sleep(1)
 
