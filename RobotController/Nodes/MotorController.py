@@ -13,7 +13,7 @@ import Jetson.GPIO as GPIO
 import time
 import math
 
-
+#50.9:1 and 71.2:1
 class MotorController():
     def __init__(self):
         GPIO.cleanup()
@@ -72,8 +72,14 @@ class MotorController():
             time.sleep(0.02)
         self.stopMotors()
 
-    def rotateForward(self, angle, speed):
+    def rotateForward(self, angle,distance, speed):
+        #117 rpm
+        #y ticks = distance (m) * 355 ticks/m
+        ticks = distance * 355
+        halfTicks = ticks // 2
 
+
+        
         isMotorAligned1 = isMotorAligned2 = isMotorAligned3 = isMotorAligned4 = False
 
         stopCond = False
@@ -113,7 +119,11 @@ class MotorController():
                 isMotorAligned4 = motor4.rotateForward(-angle4, speed)
 
             stopCond = (isMotorAligned1 or isMotorAligned2) or (isMotorAligned3 or isMotorAligned4)
-
+            if(ticks <=halfTicks and speed <= 1):
+                speed += 1/halfTicks
+            elif(speed > 0):
+                speed -=1/halfTicks
+            
             # if(whichMotor == "w"):
             time.sleep(0.02)
             #   stopCond = isMotorAligned1 or isMotorAligned2 or isMotorAligned3 or isMotorAligned4
@@ -161,7 +171,7 @@ class MotorController():
 
         degree_dis = rev_dis * 360
 
-        self.rotateForward(degree_dis, speed)
+        self.rotateForward(degree_dis,distance, speed)
 
     def horizontalMode(self):
         self.rotatePods(90, 0.1)
