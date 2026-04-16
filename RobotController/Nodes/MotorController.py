@@ -77,7 +77,8 @@ class MotorController():
         #y ticks = distance (m) * 355 ticks/m
         ticks = distance * 355
         halfTicks = ticks // 2
-
+        if(distance <= .1):
+            ticks = halfTicks = -1
 
         
         isMotorAligned1 = isMotorAligned2 = isMotorAligned3 = isMotorAligned4 = False
@@ -119,9 +120,9 @@ class MotorController():
                 isMotorAligned4 = motor4.rotateForward(-angle4, speed)
 
             stopCond = (isMotorAligned1 or isMotorAligned2) or (isMotorAligned3 or isMotorAligned4)
-            if(ticks <=halfTicks and speed <= 1):
+            if(ticks <=halfTicks and speed <= 1 and ticks != -1):
                 speed += 1/halfTicks
-            elif(speed > 0.2):
+            elif(speed > 0.2 and ticks != -1):
                 speed -=1/halfTicks
             
             # if(whichMotor == "w"):
