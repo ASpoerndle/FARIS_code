@@ -106,10 +106,10 @@ class RotationalMotor():
       control_signal = self.pid(feedback_val)
   
     # 3. Deadzone and Action
-    if abs(error) < 0.5: # 0.5 degrees or 0.5 ticks
+      if abs(error) < 0.5: # 0.5 degrees or 0.5 ticks
         self.motor.move_motor(0)
         return True
-    else:
+      else:
         self.motor.move_motor(control_signal * 0.01)
         return False
 
