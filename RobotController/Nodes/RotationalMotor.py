@@ -31,13 +31,13 @@ class RotationalMotor():
     self.motor = WheelMotor(pca,pin,side)
     self.mType = mType
     self.enc = enc
-    with SMBus(self.I2C_BUS) as bus:
+    with SMBus(RotationalMotor.I2C_BUS) as bus:
             # Set Bank 0 to PWM (Absolute), Bank 1 to Quad
-            bus.write_i2c_block_data(self.I2C_ADDR, 0x04, [0x01, 0x02, 2])
+            bus.write_i2c_block_data(RotationalMotor.I2C_ADDR, 0x04, [0x01, 0x02, 2])
             # Set Min/Max for absolute channels (1-1024)
-            bus.write_i2c_block_data(self.I2C_ADDR, 0x04, [0x01, 0x04, self.enc, 1, 0, 0, 4])
+            bus.write_i2c_block_data(RotationalMotor.I2C_ADDR, 0x04, [0x01, 0x04, self.enc, 1, 0, 0, 4])
             # Enable Wrap Tracking for absolute channels
-            bus.write_i2c_block_data(self.I2C_ADDR, 0x04, [0x01, 0x05, 0x0F])
+            # bus.write_i2c_block_data(RotationalMotor.I2C_ADDR, 0x04, [0x01, 0x05, 0x0F])
             # Save to Flash ONCE
             bus.write_byte_data(self.I2C_ADDR, 0x04, 0x03)
             time.sleep(0.1) # Give it time to save
@@ -91,8 +91,11 @@ class RotationalMotor():
       currentPos = self.getCurrentPosition() 
       
       if self.enc <= 3:
-            # ABSOLUTE LOGIC (1024 range)
-            #currentDegrees = ((currentPos - 1) / 1023.0) * 360.0
+            #Convert pwm to degrees
+            self.fVal = ((self.fVal-1)/1023)*360
+            #convert current pos to degrees
+            currentPos = ((currentPos-1)/1023)*360
+        
             error = (self.fVal - currentPos + 180) % 360 - 180
             self.pid.setpoint = currentPos + error
             feedback = currentPos
