@@ -1,116 +1,89 @@
-import board
-import Jetson.GPIO as GPIO
-import time
-import sys
-import smbus2
-from smbus2 import i2c_msg # Atomic I2C fix
 import struct
-import busio
+import smbus2
+from smbus2 import i2c_msg
+import time
 
-#----------------------------------------------------------------
-#                       CONSTANTS & SETUP
-#----------------------------------------------------------------
-OCTOQUAD_I2C_ADDR = 0x30
-I2C_BUS_NUM = 1
-bus = smbus2.SMBus(I2C_BUS_NUM)
+# --- CONSTANTS ---
+OCTOQUAD_ADDR = 0x30
+REG_CMD = 0x04
+REG_ENC0 = 0x1C
 
-# Register Addresses
-OCTOQUAD_REG_CHIP_ID = 0x00
-OCTOQUAD_REG_FW_MAJ  = 0x01
-OCTOQUAD_REG_CMD     = 0x04
-OCTOQUAD_REG_ENC0    = 0x1C  # Data starts here for all modes
-OCTOQUAD_REG_VEL0    = 0x3C
+# --- GLOBAL BUS SETUP ---
+# Open the bus once and keep it open
+bus = smbus2.SMBus(1)
 
-# Command IDs
-CMD_SET_PARAM        = 0x01
-CMD_SAVE_PARAMS      = 0x03
-
-# Parameter IDs
-PARAM_BANK_MODE      = 0x02
-PARAM_PULSE_WIDTH    = 0x04
-PARAM_WRAP_TRACK     = 0x05
-
-#----------------------------------------------------------------
-#                      HELPER FUNCTIONS
-#----------------------------------------------------------------
-
-def init_hardware():
-    """Configures the OctoQuad once based on spec 3.0C"""
-    print("Configuring OctoQuad hardware...")
+def init_octoquad(channel):
+    print("--- Starting Slow-Motion Init ---")
     
-    # 1. Set Bank Mode: Bank 1 (0-3) = Absolute/PWM, Bank 2 (4-7) = Quad
-    # [Cmd, ParamID, Value]
-    bus.write_i2c_block_data(OCTOQUAD_I2C_ADDR, OCTOQUAD_REG_CMD, [CMD_SET_PARAM, PARAM_BANK_MODE, 2])
-    
-    # 2. Set Min/Max for Absolute Channels (Default 1us to 1024us)
-    # Necessary for correct degree math and velocity
-    for ch in range(4):
-        # [Cmd, ParamID, Channel, Min_L, Min_H, Max_L, Max_H]
-        bus.write_i2c_block_data(OCTOQUAD_I2C_ADDR, OCTOQUAD_REG_CMD, [CMD_SET_PARAM, PARAM_PULSE_WIDTH, ch, 1, 0, 0, 4])
-    
-    # 3. Save to Flash
-    bus.write_byte_data(OCTOQUAD_I2C_ADDR, OCTOQUAD_REG_CMD, CMD_SAVE_PARAMS)
-    time.sleep(0.1)
-    print("Hardware ready.")
+    # 1. Clear the bus
+    time.sleep(0.5)
 
-def read_octoquad_data():
-    """Uses atomic I2C transactions to prevent data byte-shifting"""
-    # Read 32 bytes (8 channels * 4 bytes each)
-    write = i2c_msg.write(OCTOQUAD_I2C_ADDR, [OCTOQUAD_REG_ENC0])
-    read = i2c_msg.read(OCTOQUAD_I2C_ADDR, 32)
+    # 2. Set Bank Mode 2 (PWM)
+    # Adding a longer sleep after this specific command
+    print("Setting Bank Mode 2...")
+    bus.write_i2c_block_data(OCTOQUAD_ADDR, REG_CMD, [0x01, 0x02, 2])
+    time.sleep(0.5) # Increased from 0.1
+
+    # 3. Configure Min/Max Pulse
+    print(f"Configuring Channel {channel}...")
+    bus.write_i2c_block_data(OCTOQUAD_ADDR, REG_CMD, [0x01, 0x04, channel, 1, 0, 0, 4])
+    time.sleep(0.5)
+
+    # 4. Save to Flash
+    print("Saving...")
+    bus.write_byte_data(OCTOQUAD_ADDR, REG_CMD, 0x03)
+    time.sleep(1.0) # Long wait for Flash write
+    
+    print("--- Init Finished. LED should be steady. ---")
+def read_all_channels():
+    """Atomic read of all 8 channels (32 bytes)"""
+    write = i2c_msg.write(OCTOQUAD_ADDR, [REG_ENC0])
+    read = i2c_msg.read(OCTOQUAD_ADDR, 32)
     bus.i2c_rdwr(write, read)
-    
-    # Unpack as 8 signed 32-bit integers
     return struct.unpack('<8i', bytes(list(read)))
 
-def get_degrees(channel, counts_list):
-    raw = counts_list[channel]
-    if channel <= 3:
-        # Absolute Mode (1-1024 range)
-        return ((raw - 1)/341.0) * 360.0
-    else:
-        # Relative Mode (8192 ticks/rev)
-        return (raw / 8192.0) * 360.0
+# --- TEST EXECUTION ---
+target_channel = 3 # Change this to the channel your WHITE wire is on
 
-#----------------------------------------------------------------
-#                            MAIN
-#----------------------------------------------------------------
+try:
+    init_octoquad(target_channel)
+    
+    print(f"Reading Channel {target_channel}. Rotate the wheel now.")
+    print("RAW_VAL | DEGREES")
+    print("-" * 20)
+    while True:
+    # Read just the low byte of Channel 2 (Register 0x1C + 8 bytes = 0x24)
+    # This is a very "light" request
+        try:
+            val = bus.read_byte_data(0x30, 0x24)
+            print(f"Simple Byte Read: {val}", end='\r')
+            time.sleep(0.1)
+        except:
+            print("Bus failure!")
+            break
+except:
+    print("bit")
+"""
+    while True:
+        # 1. Get fresh data
+        all_counts = read_all_channels()
+        raw_val = all_counts[target_channel]
 
-# 1. Verify Chip
-chip_id = bus.read_byte_data(OCTOQUAD_I2C_ADDR, OCTOQUAD_REG_CHIP_ID)
-if chip_id != 0x51:
-    print(f"Error: Chip ID {hex(chip_id)} not recognized.")
-    sys.exit()
+        # 2. Software Modulo Fix (Prevents negative numbers and wraps)
+        # This keeps the number between 1 and 1024
+        clean_raw = ((raw_val - 1) % 1024) + 1
 
-# 2. Initialize Parameters
-init_hardware()
+        # 3. Convert to Degrees
+        # Use 1023.0 to ensure floating point math
+        degrees = ((clean_raw - 1) / 1023.0) * 360.0
 
-print("\nStarting Control Loop. Press Ctrl+C to stop.\n")
-
-while True:
-    try:
-        # Get all channel data
-        all_counts = read_octoquad_data()
+        # 4. Print with formatting to catch oscillations
+        # If RAW_VAL only toggles 0 and 1, the Bank Mode didn't stick.
+        print(f"Raw: {raw_val:<6} | Clean: {clean_raw:<6} | Deg: {degrees:>6.2f}°", end='\r')
         
-        # Example: Analyze Absolute Encoder (Channel 0)
-        abs_deg = get_degrees(3, all_counts)
-        
-        # Example: Analyze Relative Encoder (Channel 4)
-        rel_deg = get_degrees(4, all_counts)
-        
-        # Your specific steering pod logic for Channel 4 (Relative)
-        # Using degrees instead of raw ticks for better accuracy
-        if -5.0 < rel_deg < 5.0:
-            status = "FORWARD"
-        elif rel_deg > 5.0:
-            status = "LEFT"
-        else:
-            status = "RIGHT"
-
-        print(f"Abs Ch0: {abs_deg:6.1f}° | Rel Ch4: {rel_deg:6.1f}° | Status: {status}", end='\r')
-        
-        time.sleep(0.05) # 20Hz loop
-
-    except KeyboardInterrupt:
-        print("\nStopping...")
-        break
+        time.sleep(0.05)
+"""
+"""except KeyboardInterrupt:
+    print("\nTest Stopped.")
+except Exception as e:
+    print(f"\nError: {e}")"""
