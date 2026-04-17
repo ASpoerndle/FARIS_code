@@ -31,16 +31,8 @@ class RotationalMotor():
     self.motor = WheelMotor(pca,pin,side)
     self.mType = mType
     self.enc = enc
-    with SMBus(RotationalMotor.I2C_BUS) as bus:
-            # Set Bank 0 to PWM (Absolute), Bank 1 to Quad
-            bus.write_i2c_block_data(RotationalMotor.I2C_ADDR, 0x04, [0x01, 0x02, 2])
-            # Set Min/Max for absolute channels (1-1024)
-            bus.write_i2c_block_data(RotationalMotor.I2C_ADDR, 0x04, [0x01, 0x04, self.enc, 1, 0, 0, 4])
-            # Enable Wrap Tracking for absolute channels
-            bus.write_i2c_block_data(RotationalMotor.I2C_ADDR, 0x04, [0x00, 0x05, 0x0F])
-            # Save to Flash ONCE
-            bus.write_byte_data(self.I2C_ADDR, 0x04, 0x03)
-            time.sleep(0.1) # Give it time to save
+    self.init_hardware()
+    
     if(side == "r"):
 
         self.polarity = -1
@@ -56,10 +48,29 @@ class RotationalMotor():
     #Ki = 0.000008
     #Kd = 0.000001
 
-    self.read_octoquad()
-    self.pid = PID(0.05,0.000019,0.001, setpoint=((self.fVal-1)/1023)*360) 
+    
+    self.pid = PID(0.05,0.000019,0.001, setpoint=((fVal-1)/1023)*360) 
     self.pid.output_limits=(-.6,.6)
-  
+  def init_hardware():
+    """Configures the OctoQuad once based on spec 3.0C"""
+    print("Configuring OctoQuad hardware...")
+    bus = smbus2.SMBus(1)
+
+    # 1. Set Bank Mode: Bank 1 (0-3) = Absolute/PWM, Bank 2 (4-7) = Quad
+    # [Cmd, ParamID, Value]
+    
+    
+    # 2. Set Min/Max for Absolute Channels (Default 1us to 1024us)
+    # Necessary for correct degree math and velocity
+    if(self.enc<4):
+        # [Cmd, ParamID, Channel, Min_L, Min_H, Max_L, Max_H]
+        bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x04, self.enc, 1, 0, 0, 4])
+    
+    # 3. Save to Flash
+    bus.write_byte_data(0x30, 0x04, 0x03)
+    time.sleep(0.1)
+    print("Hardware ready.")
+
   #Returns T/F based on if it's off-centered, put a while loop in MotorController class so it can adjust all motors at once
   
   # def adjustForward(self):
@@ -87,9 +98,9 @@ class RotationalMotor():
   #       self.motor.move_motor(0.1*control_signal)
   #       return False
   def adjustForward(self):
-      self.read_octoquad()
+      
       currentPos = self.getCurrentPosition() 
-      print(f"Current PWM: {currentPos} | target PWM: {self.fVal} | encoder: {self.enc}")      
+      
       if self.enc <= 3:
             #Convert pwm to degrees
             self.fVal = ((self.fVal-1)/1023)*360
@@ -274,7 +285,7 @@ class RotationalMotor():
     #TODO - if current Pos < forward + 90, rotate right
 
   def getCurrentPosition(self):
-
+      positions = self.read_octoquad()
       return RotationalMotor.positions[self.enc]
 
 
@@ -311,28 +322,15 @@ class RotationalMotor():
       self.pid.Kp = value
       self.pid.Ki = value2
       self.pid.Kd = value3
-  def read_octoquad(self):
-
-      addr = 0x30
-      with SMBus(RotationalMotor.I2C_BUS) as bus:
-        # Read all 8 channels (32 bytes total) starting from register 0x00
-        
-        all_positions = bus.read_i2c_block_data(addr, 0x1C, 32)
-
-        all_velocities = bus.read_i2c_block_data(addr, 0x3C,16)
-
-        
-
-        # Unpack into a list of 8 integers
-
-        # '<8i' means 8 little-endian signed integers
-
-        RotationalMotor.velocities = struct.unpack('<8h', bytes(all_velocities))
-
-        RotationalMotor.positions = struct.unpack('<8i', bytes(all_positions))
-
-        print(RotationalMotor.positions) 
-
+  def read_octoquad():
+    """Uses atomic I2C transactions to prevent data byte-shifting"""
+    # Read 32 bytes (8 channels * 4 bytes each)
+    write = i2c_msg.write(0x30, [0x1C])
+    read = i2c_msg.read(0x30, 32)
+    bus.i2c_rdwr(write, read)
+    
+    # Unpack as 8 signed 32-bit integers
+    return struct.unpack('<8i', bytes(list(read)))
         # for i, val in enumerate(positions):
 
         #     channels[i] = val
@@ -355,7 +353,7 @@ try:
     pca.frequency = 50
     pin = 4
     side = "r"
-    idealfVal = 0
+    idealfVal = 203
     channel = 2
     rotMotor = RotationalMotor(pca,pin,side,channel,idealfVal,"P")
     #val = rotMotor.adjustForward()
