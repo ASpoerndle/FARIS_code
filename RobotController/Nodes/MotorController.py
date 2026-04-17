@@ -27,7 +27,7 @@ class MotorController():
 
         # pin_list_wheel = [[11, 'l'],[10,'l'],[13,'r'],[15,'r']]
         # 265 207
-        pin_list_rotational = [[2, "l", 0, -203,"P"], [3, "l", 1, -229,"P"], [4, "l", 2, 132,"P"], [6, "l", 3, -147,"P"], [11, 'l', 6, 0,"W"],
+        pin_list_rotational = [[2, "l", 0, -90,"P"], [3, "l", 1, -53,"P"], [4, "l", 2, -53,"P"], [6, "l", 3, -3,"P"], [11, 'l', 6, 0,"W"],
                                [10, 'l', 5, 0,"W"], [13, 'r', 4, 0,"W"], [15, 'r', 7, 0,"W"]]
 
         # print("readying wheel motors...")
@@ -75,7 +75,7 @@ class MotorController():
     def rotateForward(self, angle,distance, speed):
         #117 rpm
         #y ticks = distance (m) * 355 ticks/m
-        speed = 0.1
+        speed = 0.5
         #max_ticks = distance * 144
         max_ticks = (91 * abs(distance))/.2
         ticks = 0

@@ -51,7 +51,7 @@ class RotationalMotor():
     #Kd = 0.000001
 
     
-    self.pid = PID(0.05,0.000019,0.001, setpoint=((fVal-1)/1023)*360) 
+    self.pid = PID(0.05,0.000019,0.001, setpoint=(fVal)) 
     self.pid.output_limits=(-.6,.6)
   def init_hardware(self):
     """Configures the OctoQuad once based on spec 3.0C"""
@@ -66,7 +66,7 @@ class RotationalMotor():
     if(self.enc<4):
         # [Cmd, ParamID, Channel, Min_L, Min_H, Max_L, Max_H]
         bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x04, self.enc, 1, 0, 0, 4])
-    
+        bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, self.enc, 0]) 
     # 3. Save to Flash
     bus.write_byte_data(0x30, 0x04, 0x03)
     time.sleep(0.1)
@@ -100,9 +100,10 @@ class RotationalMotor():
   #       return False
   def adjustForward(self):
       
-      currentPos = self.getCurrentPosition() 
+      rawPos = self.getCurrentPosition() 
       if self.enc <= 3:
-            #Convert pwm to degrees
+            currentPos = ((rawPos-1) %1024)+1  
+          #Convert pwm to degrees
             target = ((self.fVal-1)/1023.0)*360
             #convert current pos to degrees
             currentDeg = ((currentPos-1)/1023.0)*360
@@ -120,11 +121,13 @@ class RotationalMotor():
       print(f"Target: {target} | Current: {currentDeg} Encoder: {self.enc} | Error: {error} | Speed: {control_signal}")      
        
       if abs(error) < 0.5:
+            print(f"error: {error}")
             self.motor.move_motor(0)
             return True
       else:
             # Note: Negative sign here should match your motor polarity
-            self.motor.move_motor(control_signal * 0.1)
+            self.motor.move_motor(control_signal*.75)
+
             return False
 
   
@@ -152,7 +155,7 @@ class RotationalMotor():
          self.motor.move_motor(self.polarity * control_signal)
            # Log status
          direction = "Left" if control_signal > 0 else "Right"
-         print(f"{self.enc} + {error} Target: {angle}° | Current: {current:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
+         print(f"Enc: {self.enc} + Error {error} Target: {angle}° | Current: {current:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
          return False
 
 
@@ -350,14 +353,15 @@ TESTING GROUND FOR ROTATIONAL MOTOR
 
 given a pca address, pin value, and a side
 """
+
 try:
     i2c = board.I2C()
     pca = PCA9685(i2c)
     pca.frequency = 50
-    pin = 4
+    pin = 6
     side = "r"
-    idealfVal = 12
-    channel = 2
+    idealfVal =-50
+    channel = 3
     rotMotor = RotationalMotor(pca,pin,side,channel,idealfVal,"P")
     #val = rotMotor.adjustForward()
     # while(val):
@@ -365,8 +369,6 @@ try:
     #     print(rotMotor.getCurrentPosition())
     # print("finshed")
     print("Adjusting forward...")
-    d = 0
-    val = False
     """
     while True:
         value = float(input("gimme a Kp"))
@@ -389,11 +391,12 @@ try:
         while(not val):
             val = rotMotor.rotate(90,.1)
             time.sleep(0.02)
-    """
+    
 
     print("Forward adjustment complete!")
     time.sleep(1)
     print("Rotating Motor 90 degrees...")
+    """
     val = False
     #rotMotor.setMotorSpeed(-.2)
     #target = (rotMotor.getCurrentPosition()/8192)*360

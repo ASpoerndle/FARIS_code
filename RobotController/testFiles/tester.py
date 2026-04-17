@@ -67,7 +67,7 @@ def get_degrees(channel, counts_list):
     raw = counts_list[channel]
     if channel <= 3:
         # Absolute Mode (1-1024 range)
-        return ((raw - 1) / 1023.0) * 360.0
+        return ((raw - 1)/341.0) * 360.0
     else:
         # Relative Mode (8192 ticks/rev)
         return (raw / 8192.0) * 360.0
@@ -93,7 +93,7 @@ while True:
         all_counts = read_octoquad_data()
         
         # Example: Analyze Absolute Encoder (Channel 0)
-        abs_deg = get_degrees(2, all_counts)
+        abs_deg = get_degrees(3, all_counts)
         
         # Example: Analyze Relative Encoder (Channel 4)
         rel_deg = get_degrees(4, all_counts)
