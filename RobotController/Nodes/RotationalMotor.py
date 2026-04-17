@@ -57,7 +57,7 @@ class RotationalMotor():
     #Kd = 0.000001
 
     self.read_octoquad()
-    self.pid = PID(0.05,0.000019,0.001, setpoint=(fVal/8192)*360) 
+    self.pid = PID(0.05,0.000019,0.001, setpoint=(fVal)) 
     self.pid.output_limits=(-.6,.6)
   
   #Returns T/F based on if it's off-centered, put a while loop in MotorController class so it can adjust all motors at once
@@ -89,27 +89,27 @@ class RotationalMotor():
   def adjustForward(self):
       self.read_octoquad()
       currentPos = self.getCurrentPosition() 
-        
+      
       if self.enc <= 3:
             # ABSOLUTE LOGIC (1024 range)
-            currentDegrees = ((currentPos - 1) / 1023.0) * 360.0
-            error = (self.fVal - currentDegrees + 180) % 360 - 180
-            self.pid.setpoint = currentDegrees + error
-            feedback = currentDegrees
+            #currentDegrees = ((currentPos - 1) / 1023.0) * 360.0
+            error = (self.fVal - currentPos + 180) % 360 - 180
+            self.pid.setpoint = currentPos + error
+            feedback = currentPos
       else:
             # RELATIVE LOGIC (8192 range)
             feedback = (currentPos / 8192.0) * 360.0
             error = self.fVal - feedback
             self.pid.setpoint = self.fVal
 
-        control_signal = self.pid(feedback)
+      control_signal = self.pid(feedback)
 
       if abs(error) < 0.5:
             self.motor.move_motor(0)
             return True
       else:
             # Note: Negative sign here should match your motor polarity
-            self.motor.move_motor(-control_signal * 0.01)
+            self.motor.move_motor(control_signal * 0.1)
             return False
 
   
@@ -309,7 +309,9 @@ class RotationalMotor():
       self.pid.Ki = value2
       self.pid.Kd = value3
   def read_octoquad(self):
-    with SMBus(RotationalMotor.I2C_BUS) as bus:
+
+      addr = 0x30
+      with SMBus(RotationalMotor.I2C_BUS) as bus:
         # Read all 8 channels (32 bytes total) starting from register 0x00
         
         all_positions = bus.read_i2c_block_data(addr, 0x1C, 32)
@@ -343,16 +345,16 @@ TESTING GROUND FOR ROTATIONAL MOTOR
 
 given a pca address, pin value, and a side
 """
-"""
+
 try:
     i2c = board.I2C()
     pca = PCA9685(i2c)
     pca.frequency = 50
-    pin = 6
-    side = "l"
-    idealfVal = 0
-    channel = 3
-    rotMotor = RotationalMotor(pca,pin,side,channel,idealfVal)
+    pin = 4
+    side = "r"
+    idealfVal = 203
+    channel = 2
+    rotMotor = RotationalMotor(pca,pin,side,channel,idealfVal,"P")
     #val = rotMotor.adjustForward()
     # while(val):
     #     val = rotMotor.adjustForward()
@@ -361,6 +363,7 @@ try:
     print("Adjusting forward...")
     d = 0
     val = False
+    """
     while True:
         value = float(input("gimme a Kp"))
         value2 = float(input("gimme a Kp"))
@@ -382,6 +385,8 @@ try:
         while(not val):
             val = rotMotor.rotate(90,.1)
             time.sleep(0.02)
+    """
+
     print("Forward adjustment complete!")
     time.sleep(1)
     print("Rotating Motor 90 degrees...")
@@ -395,8 +400,8 @@ try:
     #while(not val): 
     #    val = rotMotor.rotateForward(target,.1)
     #val = True
-    #while(val):
-    #    val = rotMotor.adjustForward()
+    while(not val):
+        val = rotMotor.adjustForward()
     #print("Rotation complete!")  
     # startPos = rotMotor.getCurrentPosition()
     # val = rotMotor.move(0.5,.1,startPos)
@@ -404,4 +409,4 @@ try:
     rotMotor.stopMotor()
     #val = rotMotor.move(0.5,.1)
 except KeyboardInterrupt:
-    rotMotor.stopMotor()"""
+    rotMotor.stopMotor()
