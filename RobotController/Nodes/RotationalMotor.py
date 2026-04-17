@@ -53,31 +53,65 @@ class RotationalMotor():
   
   #Returns T/F based on if it's off-centered, put a while loop in MotorController class so it can adjust all motors at once
   
-  def adjustForward(self):
-    self.read_octoquad()
-    # currentPos is in raw microseconds (1 to 1024)
-    currentPos = self.getCurrentPosition() 
+  # def adjustForward(self):
+  #   self.read_octoquad()
+  #   # currentPos is in raw microseconds (1 to 1024)
+  #   currentPos = self.getCurrentPosition() 
     
-    # Ensure your target (fVal) is ALSO in microseconds
-    target_us = self.fVal 
-    total_range = 1023 # (Max - Min)
-    half_range = total_range / 2
+  #   # Ensure your target (fVal) is ALSO in microseconds
+  #   target_us = self.fVal 
+  #   total_range = 1023 # (Max - Min)
+  #   half_range = total_range / 2
 
-    # Normalize error to be within [-half_range, +half_range]
-    # This prevents the motor from spinning 359 degrees to move 1 degree
-    error = (target_us - currentPos + half_range) % total_range - half_range
-    #error = self.fVal - currentPos
-    # Pass the raw error-based setpoint to the PID
-    self.pid.setpoint = currentPos + error
-    control_signal = self.pid(0)
+  #   # Normalize error to be within [-half_range, +half_range]
+  #   # This prevents the motor from spinning 359 degrees to move 1 degree
+  #   error = (target_us - currentPos + half_range) % total_range - half_range
+  #   #error = self.fVal - currentPos
+  #   # Pass the raw error-based setpoint to the PID
+  #   self.pid.setpoint = currentPos + error
+  #   control_signal = self.pid(0)
 
-    if abs(error) < 1.5: # Equivalent to roughly 0.7 degrees
+  #   if abs(error) < 1.5: # Equivalent to roughly 0.7 degrees
+  #       self.motor.move_motor(0)
+  #       return True
+  #   else:
+  #       self.motor.move_motor(0.1*control_signal)
+  #       return False
+  def adjustForward(self):
+      self.read_octoquad()
+      
+      # currentPos is now the raw value from the 0x1C+ register range
+      currentPos = self.getCurrentPosition() 
+      
+      # LOGIC FOR ABSOLUTE ENCODERS (Channels 0-3)
+      if self.enc <= 3:
+          # 1. Convert to degrees based on the 1-1024us default range 
+          currentDegrees = ((currentPos - 1) / (1024 - 1)) * 360.0
+          
+          # 2. Normalize Error for Shortest Path (Circular Logic)
+          # This ensures the motor doesn't spin the long way around
+          error = (self.fVal - currentDegrees + 180) % 360 - 180
+          
+          # 3. Update PID Setpoint for smooth movement
+          self.pid.setpoint = currentDegrees + error
+          feedback_val = currentDegrees
+      
+      # LOGIC FOR RELATIVE ENCODERS (Channels 4-7)
+      else:
+          # Relative encoders usually don't need 360-degree normalization
+          feedback_val = currentPos
+          error = self.fVal - feedback_val
+          self.pid.setpoint = self.fVal
+  
+      control_signal = self.pid(feedback_val)
+  
+    # 3. Deadzone and Action
+    if abs(error) < 0.5: # 0.5 degrees or 0.5 ticks
         self.motor.move_motor(0)
         return True
     else:
-        self.motor.move_motor(0.1*control_signal)
+        self.motor.move_motor(control_signal * 0.01)
         return False
-
 
 
   def setMotorSpeed(self,speed):
