@@ -8,6 +8,7 @@ import Jetson.GPIO as GPIO
 import time
 import math
 from simple_pid import PID
+bus = smbus2.SMBus(1)
 class RotationalMotor():
 
   I2C_ADDR = 0x30
@@ -55,12 +56,11 @@ class RotationalMotor():
   def init_hardware(self):
     """Configures the OctoQuad once based on spec 3.0C"""
     print("Configuring OctoQuad hardware...")
-    bus = smbus2.SMBus(1)
 
     # 1. Set Bank Mode: Bank 1 (0-3) = Absolute/PWM, Bank 2 (4-7) = Quad
     # [Cmd, ParamID, Value]
     
-    
+    bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x02, 2]) 
     # 2. Set Min/Max for Absolute Channels (Default 1us to 1024us)
     # Necessary for correct degree math and velocity
     if(self.enc<4):
@@ -103,13 +103,13 @@ class RotationalMotor():
       currentPos = self.getCurrentPosition() 
       if self.enc <= 3:
             #Convert pwm to degrees
-            target = ((self.fVal-1)/1023)*360
+            target = ((self.fVal-1)/1023.0)*360
             #convert current pos to degrees
-            currentDeg = ((currentPos-1)/1023)*360
+            currentDeg = ((currentPos-1)/1023.0)*360
         
             error = (target - currentDeg + 180) % 360 - 180
             self.pid.setpoint = currentDeg + error
-            feedback = currentPos
+            feedback = currentDeg
       else:
             # RELATIVE LOGIC (8192 range)
             feedback = (currentPos / 8192.0) * 360.0
@@ -117,14 +117,14 @@ class RotationalMotor():
             self.pid.setpoint = self.fVal
 
       control_signal = self.pid(feedback)
-      print(f"Target: {self.fVal} | Current: {currentDeg} Encoder: {self.enc} | Error: {error} | Speed: {control_signal}")      
+      print(f"Target: {target} | Current: {currentDeg} Encoder: {self.enc} | Error: {error} | Speed: {control_signal}")      
        
       if abs(error) < 0.5:
             self.motor.move_motor(0)
             return True
       else:
             # Note: Negative sign here should match your motor polarity
-            self.motor.move_motor(control_signal )
+            self.motor.move_motor(control_signal * 0.1)
             return False
 
   
@@ -286,8 +286,8 @@ class RotationalMotor():
     #TODO - if current Pos < forward + 90, rotate right
 
   def getCurrentPosition(self):
-      positions = self.read_octoquad()
-      print(positions)
+      self.read_octoquad()
+      print(RotationalMotor.positions)
       
       return RotationalMotor.positions[self.enc]
 
@@ -331,11 +331,10 @@ class RotationalMotor():
     # Read 32 bytes (8 channels * 4 bytes each)
     write = i2c_msg.write(0x30, [0x1C])
     read = i2c_msg.read(0x30, 32) 
-    bus = smbus2.SMBus(1)
     bus.i2c_rdwr(write, read)
     
     # Unpack as 8 signed 32-bit integers
-    return struct.unpack('<8i', bytes(list(read)))
+    RotationalMotor.positions = struct.unpack('<8i', bytes(list(read)))
         # for i, val in enumerate(positions):
 
         #     channels[i] = val
@@ -351,14 +350,13 @@ TESTING GROUND FOR ROTATIONAL MOTOR
 
 given a pca address, pin value, and a side
 """
-
 try:
     i2c = board.I2C()
     pca = PCA9685(i2c)
     pca.frequency = 50
     pin = 4
     side = "r"
-    idealfVal = 13
+    idealfVal = 12
     channel = 2
     rotMotor = RotationalMotor(pca,pin,side,channel,idealfVal,"P")
     #val = rotMotor.adjustForward()
