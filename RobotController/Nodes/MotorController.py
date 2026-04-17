@@ -1,8 +1,8 @@
 import time
 
-from .Motor import WheelMotor
+from Motor import WheelMotor
 
-from .RotationalMotor import RotationalMotor
+from RotationalMotor import RotationalMotor
 
 import board
 
@@ -27,8 +27,8 @@ class MotorController():
 
         # pin_list_wheel = [[11, 'l'],[10,'l'],[13,'r'],[15,'r']]
         # 265 207
-        pin_list_rotational = [[2, "l", 0, 0], [3, "l", 1, 0], [4, "l", 2, 0], [6, "l", 3, 0], [11, 'l', 6, 0],
-                               [10, 'l', 5, 0], [13, 'r', 4, 0], [15, 'r', 7, 0]]
+        pin_list_rotational = [[2, "l", 0, -167,"P"], [3, "l", 1, -77,"P"], [4, "l", 2, -41,"P"], [6, "l", 3, 50,"P"], [11, 'l', 6, 0,"W"],
+                               [10, 'l', 5, 0,"W"], [13, 'r', 4, 0,"W"], [15, 'r', 7, 0,"W"]]
 
         # print("readying wheel motors...")
 
@@ -40,7 +40,7 @@ class MotorController():
 
         print("readying motors...")
         for i in pin_list_rotational:
-            motor = RotationalMotor(pca, i[0], i[1], i[2], i[3])
+            motor = RotationalMotor(pca, i[0], i[1], i[2], i[3],i[4])
             self.rotational_motor_list.append(motor)
         print("motors ready!")
     def moveWheels(self, i):
@@ -220,13 +220,13 @@ class MotorController():
 # try:
 #distance = .01
 
-#mc = MotorController()
+mc = MotorController()
 
 # time.sleep(3)
 
-#mc.adjustForward()
+mc.adjustForward()
 #time.sleep(3)
-#mc.moveDistance(.2, 0.25)
+mc.moveDistance(.2, 0.25)
 #time.sleep(1)
 #time.sleep(1)
 #mc.horizontalMode()

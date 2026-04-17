@@ -159,12 +159,11 @@ for i in range(5,0,-1):
 print("")
 prevNum = 0
 
-I2C_ADDR = 0x30
 # Register for Channel 0 Mode is 0x60 (Check your specific firmware version, 
 # but usually 0x60 is the start of the 'Channel Config' bank)
 # Mode 1 = Pulse Width (PWM)
-bus.write_byte_data(I2C_ADDR,0x04,1,1024)
-bus.write_byte_data(I2C_ADDR, 0x02, 1) 
+bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x02, 0x02])
+bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x04, 0x00, 0x01, 0x00, 0x00, 0x04])
 print("Channel 0 set to Absolute (PWM) mode.")
 # Start asking for the counts and printing to console in a tight loop
 while True:

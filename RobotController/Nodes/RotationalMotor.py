@@ -1,6 +1,6 @@
 import struct
 from smbus2 import SMBus
-from .Motor import WheelMotor
+from Motor import WheelMotor
 import board
 from adafruit_pca9685 import PCA9685
 import Jetson.GPIO as GPIO
@@ -26,10 +26,10 @@ class RotationalMotor():
   
   #left is more pos, right is more neg
 
-  def __init__(self, pca, pin, side, enc, fVal):
+  def __init__(self, pca, pin, side, enc, fVal,mType):
 
     self.motor = WheelMotor(pca,pin,side)
-
+    self.mType = mType
     self.enc = enc
 
     if(side == "r"):
@@ -54,46 +54,31 @@ class RotationalMotor():
   #Returns T/F based on if it's off-centered, put a while loop in MotorController class so it can adjust all motors at once
   
   def adjustForward(self):
-      self.read_octoquad()
-      self.pid.setpoint = (self.fVal/8192)*360
-      currentPos = RotationalMotor.positions[self.enc] 
-      current_degrees = (currentPos / 8192) * 360
+    self.read_octoquad()
+    # currentPos is in raw microseconds (1 to 1024)
+    currentPos = self.getCurrentPosition() 
     
-    
-      control_signal = self.pid(current_degrees)
-    # 3. ACT: Update the motor
-    
-      error = (self.fVal/8192)*360 - current_degrees
-      if abs(error) < 0.5:
-          self.motor.move_motor(0)
-          print(f"Centered at {current_degrees}")
-          return True
-      else:
-          self.motor.move_motor(control_signal)
-          # Log status
-          direction = "Left" if control_signal > 0 else "Right"
-          print(f"Target: 0° + {error} | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
-          return False
+    # Ensure your target (fVal) is ALSO in microseconds
+    target_us = self.fVal 
+    total_range = 1023 # (Max - Min)
+    half_range = total_range / 2
 
-      """
-      if(currentPos > self.fVal - 0 and currentPos < self.fVal + 0):
-         self.motor.move_motor(0)
-         return True
-      elif(currentPos < self.fVal):
-        self.motor.move_motor(control_signal) #0.1
-        print(f"Target: 0° | Current: {current_degrees:.2f}° | Power: {control_signal:.2f}")
-        time.sleep(0.02) # Run at 50Hz
-        print("rotate left for center")
+    # Normalize error to be within [-half_range, +half_range]
+    # This prevents the motor from spinning 359 degrees to move 1 degree
+    error = (target_us - currentPos + half_range) % total_range - half_range
+    #error = self.fVal - currentPos
+    # Pass the raw error-based setpoint to the PID
+    self.pid.setpoint = currentPos + error
+    control_signal = self.pid(0)
+
+    if abs(error) < 1.5: # Equivalent to roughly 0.7 degrees
+        self.motor.move_motor(0)
+        return True
+    else:
+        self.motor.move_motor(0.1*control_signal)
         return False
 
-      else:
-          print(f"Target: 0° | Current: {current_degrees:.2f}° | Power: {control_signal:.2f}")
-          time.sleep(0.02) # Run at 50Hz
-          self.motor.move_motor(control_signal) #-0.1
-          print("rotate right for center")
-          return False
-"""
-  #right is neg, left is pos
+
 
   def setMotorSpeed(self,speed):
         self.motor.move_motor(speed)
@@ -113,13 +98,13 @@ class RotationalMotor():
      error = abs(current_degrees - angle)
      if abs(error) < 0.5:
          self.motor.move_motor(0)
-         print(f"Centered at {current_degrees} kP: {self.pid.Kp} kI: {self.pid.Ki} kD: {self.pid.Kd}")
+         print(f"Centered at {current} kP: {self.pid.Kp} kI: {self.pid.Ki} kD: {self.pid.Kd}")
          return True
      else:
          self.motor.move_motor(self.polarity * control_signal)
            # Log status
          direction = "Left" if control_signal > 0 else "Right"
-         print(f"{self.enc} + {error} Target: {angle}° | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
+         print(f"{self.enc} + {error} Target: {angle}° | Current: {current:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
          return False
 
 
@@ -291,11 +276,15 @@ class RotationalMotor():
       self.pid.Ki = value2
       self.pid.Kd = value3
   def read_octoquad(self):
-
     with SMBus(RotationalMotor.I2C_BUS) as bus:
-
+        if(self.mType == "P"):        
+            bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x02, 2])
+    
+            bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x04, 0x00, 0x01, 0x00, 0x00, 0x04])
+        
         addr = RotationalMotor.I2C_ADDR
-
+        
+        bus.write_byte_data(0x30, 0x04, 0x03)
         # Read all 8 channels (32 bytes total) starting from register 0x00
 
         all_positions = bus.read_i2c_block_data(addr, 0x1C, 32)
