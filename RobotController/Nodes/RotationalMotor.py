@@ -110,7 +110,7 @@ class RotationalMotor():
         self.motor.move_motor(0)
         return True
       else:
-        self.motor.move_motor(control_signal * 0.01)
+        self.motor.move_motor(-1*control_signal * 0.01)
         return False
 
 
@@ -311,13 +311,16 @@ class RotationalMotor():
       self.pid.Kd = value3
   def read_octoquad(self):
     with SMBus(RotationalMotor.I2C_BUS) as bus:
-        if(self.mType == "P"):        
+        if(self.mType == "P"):
+            # Example: Setting Ch 0 to 1us min and 1024us max
+# Format: [SetParam, ParamID, Channel, Min_LSB, Min_MSB, Max_LSB, Max_MSB]
+            bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x04, 0, 1, 0, 0, 4])
             bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x02, 2])
-    
+            bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, 0x0F]) 
             bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x04, 0x00, 0x01, 0x00, 0x00, 0x04])
         
         addr = RotationalMotor.I2C_ADDR
-        
+         
         bus.write_byte_data(0x30, 0x04, 0x03)
         # Read all 8 channels (32 bytes total) starting from register 0x00
 
