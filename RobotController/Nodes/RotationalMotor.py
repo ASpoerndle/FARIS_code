@@ -37,7 +37,7 @@ class RotationalMotor():
             # Set Min/Max for absolute channels (1-1024)
             bus.write_i2c_block_data(RotationalMotor.I2C_ADDR, 0x04, [0x01, 0x04, self.enc, 1, 0, 0, 4])
             # Enable Wrap Tracking for absolute channels
-            # bus.write_i2c_block_data(RotationalMotor.I2C_ADDR, 0x04, [0x01, 0x05, 0x0F])
+            bus.write_i2c_block_data(RotationalMotor.I2C_ADDR, 0x04, [0x00, 0x05, 0x0F])
             # Save to Flash ONCE
             bus.write_byte_data(self.I2C_ADDR, 0x04, 0x03)
             time.sleep(0.1) # Give it time to save
@@ -57,7 +57,7 @@ class RotationalMotor():
     #Kd = 0.000001
 
     self.read_octoquad()
-    self.pid = PID(0.05,0.000019,0.001, setpoint=(fVal)) 
+    self.pid = PID(0.05,0.000019,0.001, setpoint=((self.fVal-1)/1023)*360) 
     self.pid.output_limits=(-.6,.6)
   
   #Returns T/F based on if it's off-centered, put a while loop in MotorController class so it can adjust all motors at once
@@ -89,7 +89,7 @@ class RotationalMotor():
   def adjustForward(self):
       self.read_octoquad()
       currentPos = self.getCurrentPosition() 
-      
+      print(f"Current PWM: {currentPos} | target PWM: {self.fVal} | encoder: {self.enc}")      
       if self.enc <= 3:
             #Convert pwm to degrees
             self.fVal = ((self.fVal-1)/1023)*360
@@ -355,7 +355,7 @@ try:
     pca.frequency = 50
     pin = 4
     side = "r"
-    idealfVal = 203
+    idealfVal = 0
     channel = 2
     rotMotor = RotationalMotor(pca,pin,side,channel,idealfVal,"P")
     #val = rotMotor.adjustForward()
