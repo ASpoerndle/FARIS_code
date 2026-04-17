@@ -170,6 +170,7 @@ while True:
     counts = readCounts()
     velocities = readVelocities()
     print(counts)
+    print((counts[0]-1)/1023 * 360)
     if(counts[4] < -8 and counts[4] > -18):
         print("forward")
     
