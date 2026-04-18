@@ -51,22 +51,23 @@ class RotationalMotor():
     #Kd = 0.000001
 
     
-    self.pid = PID(0.05,0.000019,0.001, setpoint=(fVal)) 
+    self.pid = PID(0.05,0.000003,0.000002, setpoint=(fVal)) 
     self.pid.output_limits=(-.6,.6)
   def init_hardware(self):
     """Configures the OctoQuad once based on spec 3.0C"""
     print("Configuring OctoQuad hardware...")
 # SetParam (0x01), WrapTrack ID (0x05), Bitfield (0x00 to disable all)
-    bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, 0x00])
+    bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, 0xF0])
+
     # 1. Set Bank Mode: Bank 1 (0-3) = Absolute/PWM, Bank 2 (4-7) = Quad
     # [Cmd, ParamID, Value]
-    
-    bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x02, 1]) 
+    bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x02, 2]) 
     # 2. Set Min/Max for Absolute Channels (Default 1us to 1024us)
     # Necessary for correct degree math and velocity
-    if(self.enc<4):
+    if(self.enc>=4):
         # [Cmd, ParamID, Channel, Min_L, Min_H, Max_L, Max_H]
         bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x04, self.enc, 1, 0, 0, 4])
+        bus.write_i2c_block_data(0x30,0x04, [0x01,0x05,0xF0])
         #bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, self.enc, 0]) 
     # 3. Save to Flash
     bus.write_byte_data(0x30, 0x04, 0x03)
@@ -102,12 +103,11 @@ class RotationalMotor():
   def adjustForward(self):
       
       rawPos = self.getCurrentPosition() 
-      if self.enc <= 3:
-            currentPos = ((rawPos-1) %1024)+1  
+      if self.enc >=4:
           #Convert pwm to degrees
             target = ((self.fVal-1)/1023.0)*360
             #convert current pos to degrees
-            currentDeg = ((currentPos-1)/1023.0)*360
+            currentDeg = ((rawPos-1)/1023.0)*360
         
             error = (target - currentDeg + 180) % 360 - 180
             self.pid.setpoint = currentDeg + error
@@ -138,25 +138,30 @@ class RotationalMotor():
   def rotate(self, angle, speed):
      speed = abs(speed)
      current = self.getCurrentPosition()
-     self.read_octoquad()
-     current_degrees = (current/8192) * 360
-     angle += ((self.fVal-1)/1023)*360
-     self.pid.setpoint = angle
-     fDegree = (self.fVal/8192)*360   
+     if(self.enc <=3):
+        current_degrees = (current/8192) * 360
+         
+        angle += ((self.fVal-1)/1023)*360
+        target = angle
+     else:
+        #current_degrees = ((current-1)/1023) * 360
+        current_degrees = ((current - 1)/1023) * 360
+        target = ((self.fVal-1)/1023)*360 + angle
+        speed *= -1
+     self.pid.setpoint = target
      control_signal = self.pid(current_degrees)
      # 3. ACT: Update the motor
-     control_signal *= speed
     
-     error = abs(current_degrees - angle)
-     if abs(error) < 0.5:
+     error = abs(current_degrees - target)
+     if abs(error % 180) <0.75  :
          self.motor.move_motor(0)
          print(f"Centered at {current} kP: {self.pid.Kp} kI: {self.pid.Ki} kD: {self.pid.Kd}")
          return True
      else:
-         self.motor.move_motor(-control_signal)
+         self.motor.move_motor(self.polarity * control_signal * speed)
            # Log status
          direction = "Left" if control_signal > 0 else "Right"
-         print(f"Enc: {self.enc} + Error {error} Target: {angle}° | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
+         print(f"Enc: {self.enc} + Error {error} Target: {target}° | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
          return False
 
 
@@ -164,9 +169,9 @@ class RotationalMotor():
     
 
         speed = abs(speed)
-        self.pid.Kp = 0.05
+        self.pid.Kp = 0.06
         self.pid.Kd = 0.0002
-        self.pid.Ki = 0.000175
+        self.pid.Ki = 0.0002
         return self.rotate(self.polarity * angle,speed)
         
         """

@@ -27,8 +27,8 @@ class MotorController():
 
         # pin_list_wheel = [[11, 'l'],[10,'l'],[13,'r'],[15,'r']]
         # 265 207
-        pin_list_rotational = [[2, "l", 0, 894,"P"], [3, "l", 1, 235,"P"], [4, "l", 2, 914,"P"], [6, "l", 3, 540,"P"], [11, 'l', 6, 0,"W"],
-                               [10, 'l', 5, 0,"W"], [13, 'r', 4, 0,"W"], [15, 'r', 7, 0,"W"]]
+        pin_list_rotational = [[2, "l", 4, -18553,"P"], [3, "l", 5, -11016,"P"], [4, "l", 6, -81946,"P"], [6, "l", 7, -13787,"P"], [11, 'l', 2, 0,"W"],
+                               [10, 'l', 1, 0,"W"], [13, 'r', 0, 0,"W"], [15, 'r', 3, 0,"W"]]
 
         # print("readying wheel motors...")
 
@@ -75,13 +75,14 @@ class MotorController():
     def rotateForward(self, angle,distance, speed):
         #117 rpm
         #y ticks = distance (m) * 355 ticks/m
-        speed = 0.5
+        speed = .3
         #max_ticks = distance * 144
         max_ticks = (91 * abs(distance))/.2
         ticks = 0
         halfTicks = max_ticks // 2
-        if(distance <= .2 and distance >= -0.2):
+        if(distance < .2 and distance > -0.2):
             ticks = halfTicks = max_ticks = -1
+            speed = 0.5
 
         
         isMotorAligned1 = isMotorAligned2 = isMotorAligned3 = isMotorAligned4 = False
@@ -121,12 +122,12 @@ class MotorController():
 
             if (not isMotorAligned4):
                 isMotorAligned4 = motor4.rotateForward(-angle4, speed)
-            print(f'Ticks: {ticks}')
+            print(f'Ticks: {ticks} + Speed: {speed}')
             stopCond = (isMotorAligned1 or isMotorAligned2) or (isMotorAligned3 or isMotorAligned4)
             if(ticks <= halfTicks and speed <= 1 and max_ticks != -1):
                 print("increase speed")
                 speed += (1/halfTicks)
-            elif(ticks > halfTicks and speed > 0.2 and max_ticks != -1):
+            elif(ticks > halfTicks and speed > 0.5 and max_ticks != -1):
                 speed -=1/halfTicks
             ticks+= 1
             # if(whichMotor == "w"):
@@ -179,7 +180,7 @@ class MotorController():
         self.rotateForward(degree_dis,distance, speed)
 
     def horizontalMode(self):
-        self.rotatePods(90, 0.1)
+        self.rotatePods(-90, 0.75)
 
     def stopMotors(self):
 
@@ -187,19 +188,19 @@ class MotorController():
             motor.stopMotor()
     def boxDrill(self,dis):
         self.adjustForward()
-        self.moveDistance(.1, dis)
+        self.moveDistance(dis, .1)
         time.sleep(1)
         self.horizontalMode()
         time.sleep(1)
-        self.moveDistance(-.1, dis)
+        self.moveDistance(-dis, .1)
         time.sleep(1)
         self.adjustForward()
         time.sleep(1)
-        self.moveDistance(-.1, dis)
+        self.moveDistance(-dis, .1)
         time.sleep(1)
         self.horizontalMode()
         time.sleep(1)
-        self.moveDistance(.1, dis)
+        self.moveDistance(dis, .1)
         self.adjustForward()
 
         print("complete")
@@ -219,14 +220,15 @@ class MotorController():
 
 # try:
 #distance = .01
-
+time.sleep(2)
 mc = MotorController()
-
+mc.boxDrill(0.2)
 # time.sleep(3)
 
 #mc.adjustForward()
 #time.sleep(3)
-mc.moveDistance(.2, 0.25)
+
+#mc.moveDistance(.2, 0.25)
 #time.sleep(1)
 #time.sleep(1)
 #mc.horizontalMode()
