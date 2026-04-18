@@ -73,11 +73,9 @@ def factory_reset_channel(channel):
     print("Settings saved. Power cycle the OctoQuad now.")
 # Inside your loop:
 def get_firmware_version():
-    # Read 3 bytes starting at register 0x00
-    version_data = bus.read_i2c_block_data(OCTOQUAD_ADDR, 0x00, 3)
-    major, minor, patch = version_data
-    print(f"OctoQuad Firmware: v{major}.{minor}.{patch}")
-
+    # Read 3 bytes starting at register 0x05 (Major, Minor, Patch)
+    v = bus.read_i2c_block_data(OCTOQUAD_ADDR, 0x05, 3)
+    print(f"Real Firmware Version: v{v[0]}.{v[1]}.{v[2]}")
 get_firmware_version()
 #factory_reset_channel(3) 
 
