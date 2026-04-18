@@ -79,8 +79,8 @@ def get_firmware_version():
     print(f"OctoQuad Firmware: v{major}.{minor}.{patch}")
 
 get_firmware_version()
-#factory_reset_channel(3) 
-
+factory_reset_channel(3) 
+"""
 try:
     init_octoquad(target_channel)
     
@@ -99,7 +99,7 @@ try:
         time.sleep(0.05)
 except:
     print("bit")
-
+"""
 """
     while True:
         # 1. Get fresh data
