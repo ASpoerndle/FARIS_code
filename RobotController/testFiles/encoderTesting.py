@@ -56,8 +56,8 @@ OCTOQUAD_I2C_ADDR = 0x30
 
 OCTOQUAD_REG_CHIP_ID = 0
 OCTOQUAD_REG_FW_MAJ = 1
-OCTOQUAD_REG_ENC0 = 0x0C
-OCTOQUAD_REG_VEL0 = 0x2C
+OCTOQUAD_REG_ENC0 = 0x1C
+OCTOQUAD_REG_VEL0 = 0x3C
 
 I2C_BUS_NUM = 1
 bus = smbus2.SMBus(1)
@@ -154,15 +154,25 @@ if (fw[0] != SUPPORTED_FW_VERSION_MAJ):
 # Pause for a moment to allow FW to be read by the human
 for i in range(5,0,-1):
     print("\rBeginning high speed reads in %d" % i, end='')
-    time.sleep(1)
+    time.sleep(.1)
 
 print("")
 prevNum = 0
+
+# Register for Channel 0 Mode is 0x60 (Check your specific firmware version, 
+# but usually 0x60 is the start of the 'Channel Config' bank)
+# Mode 1 = Pulse Width (PWM)
+bus.write_i2c_block_data(0x30,0x04,[0x01,0x05,0xF0])
+bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x02, 0x02])
+bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x04, 0x00, 0x01, 0x00, 0x00, 0x04])
+bus.write_i2c_block_data(0x30,0x04,[0x15,10])
+print("Channel 0 set to Absolute (PWM) mode.")
 # Start asking for the counts and printing to console in a tight loop
 while True:
     counts = readCounts()
     velocities = readVelocities()
     print(counts)
+    print((counts[0]-1)/1023 * 360)
     if(counts[4] < -8 and counts[4] > -18):
         print("forward")
     

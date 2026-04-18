@@ -1,5 +1,6 @@
 import struct
-from smbus2 import SMBus
+import smbus2
+from smbus2 import i2c_msg
 from Motor import WheelMotor
 import board
 from adafruit_pca9685 import PCA9685
@@ -7,6 +8,7 @@ import Jetson.GPIO as GPIO
 import time
 import math
 from simple_pid import PID
+bus = smbus2.SMBus(1)
 class RotationalMotor():
 
   I2C_ADDR = 0x30
@@ -26,12 +28,13 @@ class RotationalMotor():
   
   #left is more pos, right is more neg
 
-  def __init__(self, pca, pin, side, enc, fVal):
+  def __init__(self, pca, pin, side, enc, fVal,mType):
 
     self.motor = WheelMotor(pca,pin,side)
-
+    self.mType = mType
     self.enc = enc
-
+    self.init_hardware()
+    
     if(side == "r"):
 
         self.polarity = -1
@@ -47,78 +50,118 @@ class RotationalMotor():
     #Ki = 0.000008
     #Kd = 0.000001
 
-    self.read_octoquad()
-    self.pid = PID(0.05,0.000019,0.001, setpoint=(fVal/8192)*360) 
+    
+    self.pid = PID(0.05,0.000003,0.000002, setpoint=(fVal)) 
     self.pid.output_limits=(-.6,.6)
-  
+  def init_hardware(self):
+    """Configures the OctoQuad once based on spec 3.0C"""
+    print("Configuring OctoQuad hardware...")
+# SetParam (0x01), WrapTrack ID (0x05), Bitfield (0x00 to disable all)
+    bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, 0xF0])
+
+    # 1. Set Bank Mode: Bank 1 (0-3) = Absolute/PWM, Bank 2 (4-7) = Quad
+    # [Cmd, ParamID, Value]
+    bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x02, 2]) 
+    # 2. Set Min/Max for Absolute Channels (Default 1us to 1024us)
+    # Necessary for correct degree math and velocity
+    if(self.enc>=4):
+        # [Cmd, ParamID, Channel, Min_L, Min_H, Max_L, Max_H]
+        bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x04, self.enc, 1, 0, 0, 4])
+        bus.write_i2c_block_data(0x30,0x04, [0x01,0x05,0xF0])
+        #bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, self.enc, 0]) 
+    # 3. Save to Flash
+    bus.write_byte_data(0x30, 0x04, 0x03)
+    time.sleep(0.1)
+    print("Hardware ready.")
+
   #Returns T/F based on if it's off-centered, put a while loop in MotorController class so it can adjust all motors at once
   
+  # def adjustForward(self):
+  #   self.read_octoquad()
+  #   # currentPos is in raw microseconds (1 to 1024)
+  #   currentPos = self.getCurrentPosition() 
+    
+  #   # Ensure your target (fVal) is ALSO in microseconds
+  #   target_us = self.fVal 
+  #   total_range = 1023 # (Max - Min)
+  #   half_range = total_range / 2
+
+  #   # Normalize error to be within [-half_range, +half_range]
+  #   # This prevents the motor from spinning 359 degrees to move 1 degree
+  #   error = (target_us - currentPos + half_range) % total_range - half_range
+  #   #error = self.fVal - currentPos
+  #   # Pass the raw error-based setpoint to the PID
+  #   self.pid.setpoint = currentPos + error
+  #   control_signal = self.pid(0)
+
+  #   if abs(error) < 1.5: # Equivalent to roughly 0.7 degrees
+  #       self.motor.move_motor(0)
+  #       return True
+  #   else:
+  #       self.motor.move_motor(0.1*control_signal)
+  #       return False
   def adjustForward(self):
-      self.read_octoquad()
-      self.pid.setpoint = (self.fVal/8192)*360
-      currentPos = RotationalMotor.positions[self.enc] 
-      current_degrees = (currentPos / 8192) * 360
-    
-    
-      control_signal = self.pid(current_degrees)
-    # 3. ACT: Update the motor
-    
-      error = (self.fVal/8192)*360 - current_degrees
-      if abs(error) < 0.5:
-          self.motor.move_motor(0)
-          print(f"Centered at {current_degrees}")
-          return True
+      
+      rawPos = self.getCurrentPosition() 
+      if self.enc >=4:
+          #Convert pwm to degrees
+            target = ((self.fVal-1)/1023.0)*360
+            #convert current pos to degrees
+            currentDeg = ((rawPos-1)/1023.0)*360
+        
+            error = (target - currentDeg + 180) % 360 - 180
+            self.pid.setpoint = currentDeg + error
+            feedback = currentDeg
       else:
-          self.motor.move_motor(control_signal)
-          # Log status
-          direction = "Left" if control_signal > 0 else "Right"
-          print(f"Target: 0° + {error} | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
-          return False
+            # RELATIVE LOGIC (8192 range)
+            feedback = (currentPos / 8192.0) * 360.0
+            error = self.fVal - feedback
+            self.pid.setpoint = self.fVal
 
-      """
-      if(currentPos > self.fVal - 0 and currentPos < self.fVal + 0):
-         self.motor.move_motor(0)
-         return True
-      elif(currentPos < self.fVal):
-        self.motor.move_motor(control_signal) #0.1
-        print(f"Target: 0° | Current: {current_degrees:.2f}° | Power: {control_signal:.2f}")
-        time.sleep(0.02) # Run at 50Hz
-        print("rotate left for center")
-        return False
-
+      control_signal = self.pid(feedback)
+      print(f"Target: {target} | Current: {currentDeg} Encoder: {self.enc} | Error: {error} | Speed: {control_signal}")      
+       
+      if abs(error) < 1:
+            print(f"error: {error}")
+            self.motor.move_motor(0)
+            return True
       else:
-          print(f"Target: 0° | Current: {current_degrees:.2f}° | Power: {control_signal:.2f}")
-          time.sleep(0.02) # Run at 50Hz
-          self.motor.move_motor(control_signal) #-0.1
-          print("rotate right for center")
-          return False
-"""
-  #right is neg, left is pos
+            # Note: Negative sign here should match your motor polarity
+            self.motor.move_motor(-control_signal)
 
+            return False
+
+  
   def setMotorSpeed(self,speed):
         self.motor.move_motor(speed)
 
   def rotate(self, angle, speed):
      speed = abs(speed)
      current = self.getCurrentPosition()
-     self.read_octoquad()
-     current_degrees = (current / 8192) * 360
-     angle += (self.fVal/8192)*360
-     self.pid.setpoint = angle
-     fDegree = (self.fVal/8192)*360   
+     if(self.enc <=3):
+        current_degrees = (current/8192) * 360
+         
+        angle += ((self.fVal-1)/1023)*360
+        target = angle
+     else:
+        #current_degrees = ((current-1)/1023) * 360
+        current_degrees = ((current - 1)/1023) * 360
+        target = ((self.fVal-1)/1023)*360 + angle
+        speed *= -1
+     self.pid.setpoint = target
      control_signal = self.pid(current_degrees)
      # 3. ACT: Update the motor
     
-     error = abs(current_degrees - angle)
-     if abs(error) < 0.5:
+     error = abs(current_degrees - target)
+     if abs(error % 180) <0.75  :
          self.motor.move_motor(0)
-         print(f"Centered at {current_degrees} kP: {self.pid.Kp} kI: {self.pid.Ki} kD: {self.pid.Kd}")
+         print(f"Centered at {current} kP: {self.pid.Kp} kI: {self.pid.Ki} kD: {self.pid.Kd}")
          return True
      else:
-         self.motor.move_motor(self.polarity * control_signal)
+         self.motor.move_motor(self.polarity * control_signal * speed)
            # Log status
          direction = "Left" if control_signal > 0 else "Right"
-         print(f"{self.enc} + {error} Target: {angle}° | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
+         print(f"Enc: {self.enc} + Error {error} Target: {target}° | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
          return False
 
 
@@ -126,9 +169,9 @@ class RotationalMotor():
     
 
         speed = abs(speed)
-        self.pid.Kp = 0.05
+        self.pid.Kp = 0.06
         self.pid.Kd = 0.0002
-        self.pid.Ki = 0.000175
+        self.pid.Ki = 0.0002
         return self.rotate(self.polarity * angle,speed)
         
         """
@@ -183,7 +226,7 @@ class RotationalMotor():
       self.motor.move_motor(0)
 
   def rotateLeft(self, angle,  speed):
-    
+        
     current = self.getCurrentPosition()
     new_pos = (angle * 1024)/45  + self.currentCount
     if(current >0):
@@ -252,8 +295,11 @@ class RotationalMotor():
     #TODO - if current Pos < forward + 90, rotate right
 
   def getCurrentPosition(self):
-
+      self.read_octoquad()
+      print(RotationalMotor.positions)
+      
       return RotationalMotor.positions[self.enc]
+
 
 
   #input distance in m, speed -1.0 to 1.0
@@ -290,29 +336,14 @@ class RotationalMotor():
       self.pid.Ki = value2
       self.pid.Kd = value3
   def read_octoquad(self):
-
-    with SMBus(RotationalMotor.I2C_BUS) as bus:
-
-        addr = RotationalMotor.I2C_ADDR
-
-        # Read all 8 channels (32 bytes total) starting from register 0x00
-
-        all_positions = bus.read_i2c_block_data(addr, 0x1C, 32)
-
-        all_velocities = bus.read_i2c_block_data(addr, 0x3C,16)
-
-        
-
-        # Unpack into a list of 8 integers
-
-        # '<8i' means 8 little-endian signed integers
-
-        RotationalMotor.velocities = struct.unpack('<8h', bytes(all_velocities))
-
-        RotationalMotor.positions = struct.unpack('<8i', bytes(all_positions))
-
-        print(RotationalMotor.positions) 
-
+    """Uses atomic I2C transactions to prevent data byte-shifting"""
+    # Read 32 bytes (8 channels * 4 bytes each)
+    write = i2c_msg.write(0x30, [0x1C])
+    read = i2c_msg.read(0x30, 32) 
+    bus.i2c_rdwr(write, read)
+    
+    # Unpack as 8 signed 32-bit integers
+    RotationalMotor.positions = struct.unpack('<8i', bytes(list(read)))
         # for i, val in enumerate(positions):
 
         #     channels[i] = val
@@ -334,18 +365,18 @@ try:
     pca = PCA9685(i2c)
     pca.frequency = 50
     pin = 6
-    side = "l"
-    idealfVal = 0
+    side = "r"
+    idealfVal =538
     channel = 3
-    rotMotor = RotationalMotor(pca,pin,side,channel,idealfVal)
+    rotMotor = RotationalMotor(pca,pin,side,channel,idealfVal,"P")
     #val = rotMotor.adjustForward()
     # while(val):
     #     val = rotMotor.adjustForward()
     #     print(rotMotor.getCurrentPosition())
     # print("finshed")
     print("Adjusting forward...")
-    d = 0
-    val = False
+    
+    
     while True:
         value = float(input("gimme a Kp"))
         value2 = float(input("gimme a Kp"))
@@ -367,9 +398,13 @@ try:
         while(not val):
             val = rotMotor.rotate(90,.1)
             time.sleep(0.02)
+    
+
     print("Forward adjustment complete!")
     time.sleep(1)
     print("Rotating Motor 90 degrees...")
+    
+    
     val = False
     #rotMotor.setMotorSpeed(-.2)
     #target = (rotMotor.getCurrentPosition()/8192)*360
@@ -380,8 +415,9 @@ try:
     #while(not val): 
     #    val = rotMotor.rotateForward(target,.1)
     #val = True
-    #while(val):
-    #    val = rotMotor.adjustForward()
+    while(not val):
+        val = rotMotor.adjustForward()
+        time.sleep(0.02)
     #print("Rotation complete!")  
     # startPos = rotMotor.getCurrentPosition()
     # val = rotMotor.move(0.5,.1,startPos)

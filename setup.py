@@ -32,6 +32,7 @@ setup(
             'node = RobotController.Nodes.UserInputNode:main',
             'listener = RobotController.Nodes.Subscriber:main',
             'YOLO_node = RobotController.Nodes.YOLO_node:main',
+            'move_auto =RobotController.Nodes.auto_move:main',
             'distance_node = RobotController.Nodes.distanceFronObjNode:main'
 
         ],
