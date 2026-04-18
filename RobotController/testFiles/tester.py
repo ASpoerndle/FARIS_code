@@ -44,23 +44,39 @@ def read_all_channels():
 
 # --- TEST EXECUTION ---
 target_channel = 3 # Change this to the channel your WHITE wire is on
+# --- IMPROVED READING LOGIC ---
+def read_single_channel(channel_index):
+    # Calculate register: Channel 0 is 0x1C, each channel is 4 bytes
+    reg = 0x1C + (channel_index * 4)
+    
+    # Read 4 bytes (32-bit integer)
+    write = i2c_msg.write(OCTOQUAD_ADDR, [reg])
+    read = i2c_msg.read(OCTOQUAD_ADDR, 4)
+    bus.i2c_rdwr(write, read)
+    
+    # Unpack as a little-endian signed integer ('<i')
+    raw_pulse = struct.unpack('<i', bytes(list(read)))[0]
+    return raw_pulse
 
+# Inside your loop:
+
+    
 try:
     init_octoquad(target_channel)
     
     print(f"Reading Channel {target_channel}. Rotate the wheel now.")
     print("RAW_VAL | DEGREES")
     print("-" * 20)
-    while True:
-    # Read just the low byte of Channel 2 (Register 0x1C + 8 bytes = 0x24)
-    # This is a very "light" request
-        try:
-            val = bus.read_byte_data(0x30, 0x24)
-            print(f"Simple Byte Read: {val}", end='\r')
-            time.sleep(0.1)
-        except:
-            print("Bus failure!")
-            break
+   while True:
+        raw_val = read_single_channel(target_channel) # Use the target_channel variable!
+        
+        # The REV Encoder PWM range is roughly 1 to 1024 microseconds
+        # We normalize it to 0.0 - 1.0
+        normalized = (raw_val - 1) / 1023.0
+        degrees = normalized * 360.0
+        
+        print(f"Raw Pulse: {raw_val}µs | Degrees: {degrees:.2f}°          ", end='\r')
+        time.sleep(0.05)
 except:
     print("bit")
 """
