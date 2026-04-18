@@ -1,124 +1,48 @@
-import struct
 import smbus2
-from smbus2 import i2c_msg
 import time
 
-# --- CONSTANTS ---
-OCTOQUAD_ADDR = 0x30
-REG_CMD = 0x04
-REG_ENC0 = 0x1C
-
-# --- GLOBAL BUS SETUP ---
-# Open the bus once and keep it open
 bus = smbus2.SMBus(1)
+ADDR = 0x30
 
-def init_octoquad(channel):
-    print(f"--- Initializing Channel {channel} ---")
-    
-    # 1. Set Channel Mode to PWM (Mode 2)
-    # [SetParam, ModeRegister, Channel, ModeValue]
-    # Mode 2 = Pulse Width
-    bus.write_i2c_block_data(OCTOQUAD_ADDR, REG_CMD, [0x01, 0x02, channel, 2])
-    time.sleep(0.1)
+def force_single_byte_config():
+    print("--- Attempting Single-Byte Recovery ---")
+    try:
+        # Check Signature Byte 0
+        sig0 = bus.read_byte_data(ADDR, 0x00)
+        if sig0 == ord('Q'):
+            print("Found OctoQuad! Forcing Mode 5 on Channel 3...")
+            
+            # 0x0C is the specific register for Channel 3's Mode
+            # We write 0x05 (High-Precision PWM) directly to it
+            bus.write_byte_data(ADDR, 0x0C, 0x05)
+            time.sleep(0.1)
+            
+            # Set Polarity (Register 0x13 is Polarity for Chan 3)
+            # 0x01 = High Pulse
+            bus.write_byte_data(ADDR, 0x13, 0x01)
+            time.sleep(0.1)
+            
+            # Save to Flash (Command 0x03 to Register 0x04)
+            bus.write_byte_data(ADDR, 0x04, 0x03)
+            print("Save command sent.")
+            time.sleep(0.5)
+            
+            # Verify the Mode stuck
+            verify = bus.read_byte_data(ADDR, 0x0C)
+            print(f"Verification: Channel 3 Mode is now {verify}")
+            # Set the Min Pulse to 0 and Max Pulse to 65535 (FFFF)
+# This prevents the -2 (Invalid) error.
+# Register 0x11 is Min_L, 0x12 is Min_H, 0x13 is Max_L, 0x14 is Max_H (for Channel 3)
+# Note: In Mode 5, registers 0x10-0x17 control these bounds.
+            bus.write_byte_data(ADDR, 0x10, 0x00) # Min L
+            bus.write_byte_data(ADDR, 0x11, 0x00) # Min H
+            bus.write_byte_data(ADDR, 0x12, 1024) # Max L
+            bus.write_byte_data(ADDR, 0x13, 1024) # Max H
+            bus.write_byte_data(ADDR, 0x04, 0x03) # Save            
+        else:
+            print(f"Unexpected signature byte: {sig0}")
+            
+    except Exception as e:
+        print(f"Communication error: {e}")
 
-    # 2. Reset Min/Max bounds to be very wide (0 to 2000) 
-    # This prevents the -2 error if the REV encoder is slightly off 1024us.
-    # [SetParam, PulseRange, Channel, Min_L, Min_H, Max_L, Max_H]
-    # 2000 decimal is 0x07D0
-    bus.write_i2c_block_data(OCTOQUAD_ADDR, REG_CMD, [0x01, 0x04, channel, 0, 0, 0xD0, 0x07])
-    time.sleep(0.1)
-
-    # 3. Save to Flash
-    bus.write_byte_data(OCTOQUAD_ADDR, REG_CMD, 0x03)
-    time.sleep(0.5)
-    print("Configuration Saved.")
-    print("--- Init Finished. LED should be steady. ---")
-def read_all_channels():
-    """Atomic read of all 8 channels (32 bytes)"""
-    write = i2c_msg.write(OCTOQUAD_ADDR, [REG_ENC0])
-    read = i2c_msg.read(OCTOQUAD_ADDR, 32)
-    bus.i2c_rdwr(write, read)
-    return struct.unpack('<8i', bytes(list(read)))
-
-# --- TEST EXECUTION ---
-target_channel = 3 # Change this to the channel your WHITE wire is on
-# --- IMPROVED READING LOGIC ---
-def read_single_channel(channel_index):
-    # Calculate register: Channel 0 is 0x1C, each channel is 4 bytes
-    reg = 0x1C + (channel_index * 4)
-    
-    # Read 4 bytes (32-bit integer)
-    write = i2c_msg.write(OCTOQUAD_ADDR, [reg])
-    read = i2c_msg.read(OCTOQUAD_ADDR, 4)
-    bus.i2c_rdwr(write, read)
-    
-    # Unpack as a little-endian signed integer ('<i')
-    raw_pulse = struct.unpack('<i', bytes(list(read)))[0]
-    return raw_pulse
-def factory_reset_channel(channel):
-    print(f"Performing factory reset on Channel {channel} configuration...")
-    
-    # 0x01 = Set Param, 0x02 = Channel Mode, [channel], 2 = Pulse Width
-    bus.write_i2c_block_data(OCTOQUAD_ADDR, REG_CMD, [0x01, 0x02, channel, 2])
-    time.sleep(0.1)
-
-    # CRITICAL: Reset the Min/Max bounds to defaults (0 to 65535)
-    # This ensures the OctoQuad doesn't reject the REV signal for being "out of range"
-    # Format: [SetParam, PulseRange, Channel, Min_L, Min_H, Max_L, Max_H]
-    bus.write_i2c_block_data(OCTOQUAD_ADDR, REG_CMD, [0x01, 0x04, channel, 0, 0, 255, 255])
-    time.sleep(0.1)
-    
-    # Save and restart
-    bus.write_byte_data(OCTOQUAD_ADDR, REG_CMD, 0x03)
-    print("Settings saved. Power cycle the OctoQuad now.")
-# Inside your loop:
-def get_firmware_version():
-    # Read 3 bytes starting at register 0x05 (Major, Minor, Patch)
-    v = bus.read_i2c_block_data(OCTOQUAD_ADDR, 0x05, 3)
-    print(f"Real Firmware Version: v{v[0]}.{v[1]}.{v[2]}")
-get_firmware_version()
-#factory_reset_channel(3) 
-
-try:
-    init_octoquad(target_channel)
-    
-    print(f"Reading Channel {target_channel}. Rotate the wheel now.")
-    print("RAW_VAL | DEGREES")
-    print("-" * 20)
-    while True:
-        raw_val = read_single_channel(target_channel) # Use the target_channel variable!
-        
-        # The REV Encoder PWM range is roughly 1 to 1024 microseconds
-        # We normalize it to 0.0 - 1.0
-        normalized = (raw_val - 1) / 1023.0
-        degrees = normalized * 360.0
-        
-        print(f"Raw Pulse: {raw_val}µs | Degrees: {degrees:.2f}°          ", end='\r')
-        time.sleep(0.05)
-except:
-    print("bit")
-
-"""
-    while True:
-        # 1. Get fresh data
-        all_counts = read_all_channels()
-        raw_val = all_counts[target_channel]
-
-        # 2. Software Modulo Fix (Prevents negative numbers and wraps)
-        # This keeps the number between 1 and 1024
-        clean_raw = ((raw_val - 1) % 1024) + 1
-
-        # 3. Convert to Degrees
-        # Use 1023.0 to ensure floating point math
-        degrees = ((clean_raw - 1) / 1023.0) * 360.0
-
-        # 4. Print with formatting to catch oscillations
-        # If RAW_VAL only toggles 0 and 1, the Bank Mode didn't stick.
-        print(f"Raw: {raw_val:<6} | Clean: {clean_raw:<6} | Deg: {degrees:>6.2f}°", end='\r')
-        
-        time.sleep(0.05)
-"""
-"""except KeyboardInterrupt:
-    print("\nTest Stopped.")
-except Exception as e:
-    print(f"\nError: {e}")"""
+force_single_byte_config()

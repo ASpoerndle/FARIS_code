@@ -27,7 +27,7 @@ class MotorController():
 
         # pin_list_wheel = [[11, 'l'],[10,'l'],[13,'r'],[15,'r']]
         # 265 207
-        pin_list_rotational = [[2, "l", 0, -90,"P"], [3, "l", 1, -53,"P"], [4, "l", 2, -53,"P"], [6, "l", 3, -3,"P"], [11, 'l', 6, 0,"W"],
+        pin_list_rotational = [[2, "l", 0, 894,"P"], [3, "l", 1, 235,"P"], [4, "l", 2, 914,"P"], [6, "l", 3, 540,"P"], [11, 'l', 6, 0,"W"],
                                [10, 'l', 5, 0,"W"], [13, 'r', 4, 0,"W"], [15, 'r', 7, 0,"W"]]
 
         # print("readying wheel motors...")
@@ -224,7 +224,7 @@ mc = MotorController()
 
 # time.sleep(3)
 
-mc.adjustForward()
+#mc.adjustForward()
 #time.sleep(3)
 mc.moveDistance(.2, 0.25)
 #time.sleep(1)

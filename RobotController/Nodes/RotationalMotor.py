@@ -56,17 +56,18 @@ class RotationalMotor():
   def init_hardware(self):
     """Configures the OctoQuad once based on spec 3.0C"""
     print("Configuring OctoQuad hardware...")
-
+# SetParam (0x01), WrapTrack ID (0x05), Bitfield (0x00 to disable all)
+    bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, 0x00])
     # 1. Set Bank Mode: Bank 1 (0-3) = Absolute/PWM, Bank 2 (4-7) = Quad
     # [Cmd, ParamID, Value]
     
-    bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x02, 2]) 
+    bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x02, 1]) 
     # 2. Set Min/Max for Absolute Channels (Default 1us to 1024us)
     # Necessary for correct degree math and velocity
     if(self.enc<4):
         # [Cmd, ParamID, Channel, Min_L, Min_H, Max_L, Max_H]
         bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x04, self.enc, 1, 0, 0, 4])
-        bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, self.enc, 0]) 
+        #bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, self.enc, 0]) 
     # 3. Save to Flash
     bus.write_byte_data(0x30, 0x04, 0x03)
     time.sleep(0.1)
@@ -120,13 +121,13 @@ class RotationalMotor():
       control_signal = self.pid(feedback)
       print(f"Target: {target} | Current: {currentDeg} Encoder: {self.enc} | Error: {error} | Speed: {control_signal}")      
        
-      if abs(error) < 0.5:
+      if abs(error) < 1:
             print(f"error: {error}")
             self.motor.move_motor(0)
             return True
       else:
             # Note: Negative sign here should match your motor polarity
-            self.motor.move_motor(control_signal*.75)
+            self.motor.move_motor(-control_signal)
 
             return False
 
@@ -138,8 +139,8 @@ class RotationalMotor():
      speed = abs(speed)
      current = self.getCurrentPosition()
      self.read_octoquad()
-     current_degrees = (current / 8192) * 360
-     angle += (self.fVal/8192)*360
+     current_degrees = (current/8192) * 360
+     angle += ((self.fVal-1)/1023)*360
      self.pid.setpoint = angle
      fDegree = (self.fVal/8192)*360   
      control_signal = self.pid(current_degrees)
@@ -152,10 +153,10 @@ class RotationalMotor():
          print(f"Centered at {current} kP: {self.pid.Kp} kI: {self.pid.Ki} kD: {self.pid.Kd}")
          return True
      else:
-         self.motor.move_motor(self.polarity * control_signal)
+         self.motor.move_motor(-control_signal)
            # Log status
          direction = "Left" if control_signal > 0 else "Right"
-         print(f"Enc: {self.enc} + Error {error} Target: {angle}° | Current: {current:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
+         print(f"Enc: {self.enc} + Error {error} Target: {angle}° | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
          return False
 
 
@@ -353,14 +354,14 @@ TESTING GROUND FOR ROTATIONAL MOTOR
 
 given a pca address, pin value, and a side
 """
-
+"""
 try:
     i2c = board.I2C()
     pca = PCA9685(i2c)
     pca.frequency = 50
     pin = 6
     side = "r"
-    idealfVal =-50
+    idealfVal =538
     channel = 3
     rotMotor = RotationalMotor(pca,pin,side,channel,idealfVal,"P")
     #val = rotMotor.adjustForward()
@@ -369,7 +370,8 @@ try:
     #     print(rotMotor.getCurrentPosition())
     # print("finshed")
     print("Adjusting forward...")
-    """
+    
+    
     while True:
         value = float(input("gimme a Kp"))
         value2 = float(input("gimme a Kp"))
@@ -396,7 +398,8 @@ try:
     print("Forward adjustment complete!")
     time.sleep(1)
     print("Rotating Motor 90 degrees...")
-    """
+    
+    
     val = False
     #rotMotor.setMotorSpeed(-.2)
     #target = (rotMotor.getCurrentPosition()/8192)*360
@@ -417,4 +420,4 @@ try:
     rotMotor.stopMotor()
     #val = rotMotor.move(0.5,.1)
 except KeyboardInterrupt:
-    rotMotor.stopMotor()
+    rotMotor.stopMotor()"""
