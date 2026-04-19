@@ -122,16 +122,19 @@ class RotationalMotor():
      current = self.getCurrentPosition()
      if(self.enc <=3):
         current_degrees = (current/8192) * 360
-        current_degrees = current_degrees % 360 
         angle += ((self.fVal-1)/1023)*360
-        angle = min(angle, 226)
-        angle = max(angle,406)
+        current_degrees = current_degrees % 360 
         target = angle
         target = target % 360
      else:
         #current_degrees = ((current-1)/1023) * 360
         current_degrees = ((current - 1)/1023) * 360
-        target = ((self.fVal-1)/1023)*360 + angle
+        forward = ((self.fVal-1)/1023)*360
+        forwad = forward % 360
+        target = forward  + angle
+        target = max(target, forward +90)
+        target = min(target, forward -90)
+        current_degrees %360
         target = target %360
         speed *= -1
      self.pid.setpoint = target
@@ -139,15 +142,19 @@ class RotationalMotor():
      # 3. ACT: Update the motor
     
      error = abs(current_degrees - target)
-     if abs(error % 180) <0.75  :
+     if(self.enc>= 4 and(error <= -95 or error >= 95)):
+        error = error % 90
+
+
+     if error % 180 <0.75  :
          self.motor.move_motor(0)
          print(f"Centered at {current} kP: {self.pid.Kp} kI: {self.pid.Ki} kD: {self.pid.Kd}")
          return True
      else:
-         self.motor.move_motor(0*control_signal * speed)
+         self.motor.move_motor(control_signal * speed)
            # Log status
          direction = "Left" if control_signal > 0 else "Right"
-         print(f"Enc: {self.enc} + Error {error} Target: {target}° | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
+         print(f"Enc: {self.enc} + Error {error%180} Target: {target}° | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
          return False
 
   
