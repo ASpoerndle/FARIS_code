@@ -47,6 +47,8 @@ class MinimalSubscriber(Node):
             self.motors.boxDrill(int(dis))
         if(data >= 1003 and data < 1004):
             rotate = abs(1003-data) * 360
+        if(data == 1005):
+            self.motors.adjustForward()
             
     def setAutoMove(self,msg):
         self.autoDis = msg.data
