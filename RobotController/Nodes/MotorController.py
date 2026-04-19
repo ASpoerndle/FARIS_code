@@ -1,8 +1,8 @@
 import time
 
-from Motor import WheelMotor
+from .Motor import WheelMotor
 
-from RotationalMotor import RotationalMotor
+from .RotationalMotor import RotationalMotor
 
 import board
 
@@ -215,9 +215,9 @@ class MotorController():
 
 # try:
 #distance = .01
-time.sleep(2)
-mc = MotorController()
-mc.boxDrill(0.2)
+#time.sleep(2)
+#mc = MotorController()
+#mc.boxDrill(0.2)
 # time.sleep(3)
 
 #mc.adjustForward()
@@ -242,7 +242,7 @@ mc.boxDrill(0.2)
 print("complete")
 # mc.adjustForward(True)
 
-time.sleep(1)
+#time.sleep(1)
 # mc.horizontalMode()
 # mc.rotate(-45,.1,"r")
 

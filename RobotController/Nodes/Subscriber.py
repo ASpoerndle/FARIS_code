@@ -43,7 +43,7 @@ class MinimalSubscriber(Node):
         if(data == 1001.0):
             self.motors.horizontalMode()
         if(data >= 1002.0 and data < 1003.0):
-            dis = abs(1002-data) * 100)
+            dis = abs(1002-data) * 100
             self.motors.boxDrill(int(dis))
         if(data >= 1003 and data < 1004):
             rotate = abs(1003-data) * 360

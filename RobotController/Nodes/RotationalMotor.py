@@ -1,7 +1,7 @@
 import struct
 import smbus2
 from smbus2 import i2c_msg
-from Motor import WheelMotor
+from .Motor import WheelMotor
 import board
 from adafruit_pca9685 import PCA9685
 import Jetson.GPIO as GPIO
@@ -92,16 +92,18 @@ class RotationalMotor():
       
             #convert fVal pwm into degrees
       target = ((self.fVal-1)/1023.0)*360
+      target = target %360
             #convert current raw position to degrees
       currentDeg = ((currentPos-1)/1023.0)*360
+      currentDeg = currentDeg %360
             #calc the difference betweentarget and currentDeg
             # error = (target - currentDeg + 180) % 360 - 180
-      error = target - currentDeg
+      error = (target - currentDeg)
       self.pid.setpoint = currentDeg + error
       feedback = currentDeg
 
       control_signal = self.pid(feedback)
-      print(f"Target: {target} | Current: {currentDeg} Encoder: {self.enc} | Error: {error} | Speed: {control_signal}")      
+      print(f"Target: {target%360} | Current: {currentDeg%360} Encoder: {self.enc} | Error: {error} | Speed: {control_signal}")      
        
       if abs(error) < 1:
             
@@ -120,13 +122,14 @@ class RotationalMotor():
      current = self.getCurrentPosition()
      if(self.enc <=3):
         current_degrees = (current/8192) * 360
-         
+        current_degrees = current_degrees % 360 
         angle += ((self.fVal-1)/1023)*360
         target = angle
      else:
         #current_degrees = ((current-1)/1023) * 360
         current_degrees = ((current - 1)/1023) * 360
         target = ((self.fVal-1)/1023)*360 + angle
+        target = target %360
         speed *= -1
      self.pid.setpoint = target
      control_signal = self.pid(current_degrees)
