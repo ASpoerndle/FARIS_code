@@ -25,7 +25,7 @@ class ExampleNode(Node):
             choice = input("H for horizontal mode | F for forward/backward movement | B for box drill | R for rotation | A for adjust forward")
             if(choice == "H"):
                 msg.data = 1001.0
-            if(choice.upper == "F"):
+            if(choice == "F"):
                 data = input("How far? (m)")
                 msg.data = float(data)
             if(choice == "B"):

@@ -152,7 +152,7 @@ class MotorController():
                 isMotorAligned1 = cond1
 
             if (not isMotorAligned2):
-                cond2 = motor2.rotate(angle, speed)
+                cond2 = motor2.rotate(angle+2, speed)
 
                 isMotorAligned2 = cond2
 
