@@ -32,12 +32,7 @@ class MotorController():
 
         # print("readying wheel motors...")
 
-        # for i in pin_list_wheel:
-
-        #    motor = WheelMotor(pca,i[0], i[1])
-
-        #    self.wheel_motor_list.append(motor)
-
+        
         print("readying motors...")
         for i in pin_list_rotational:
             motor = RotationalMotor(pca, i[0], i[1], i[2], i[3],i[4])
