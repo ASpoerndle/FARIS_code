@@ -1,6 +1,6 @@
 ## This Folders holds the ROS2 nodes for the FARIS project
 
-### SampleNode
+### UserInputNode
 #### Node name: node
 ##### The purpose of this node is to act as an interface for me to input a desired speed and for FARIS to move at that speed
 ---
