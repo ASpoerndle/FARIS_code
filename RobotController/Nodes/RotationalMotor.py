@@ -130,23 +130,21 @@ class RotationalMotor():
         #current_degrees = ((current-1)/1023) * 360
         current_degrees = ((current - 1)/1023) * 360
         forward = ((self.fVal-1)/1023)*360
-        forwad = forward % 360
         target = forward  + angle
         target = max(target, forward +90)
         target = min(target, forward -90)
-        current_degrees %360
-        target = target %360
+        current_degrees
+        target = target
         speed *= -1
      self.pid.setpoint = target
      control_signal = self.pid(current_degrees)
      # 3. ACT: Update the motor
     
-     error = abs(current_degrees - target)
-     if(self.enc>= 4 and(error <= -95 or error >= 95)):
-        error = error % 90
+     error = current_degrees - target
+     if(self.enc >= 4):
+        error = (error + 90) % 360 - 90
 
-
-     if error % 180 <0.75  :
+     if abs(error % 180) <0.75  :
          self.motor.move_motor(0)
          print(f"Centered at {current} kP: {self.pid.Kp} kI: {self.pid.Ki} kD: {self.pid.Kd}")
          return True
