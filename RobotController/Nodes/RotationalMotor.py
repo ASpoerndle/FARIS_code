@@ -124,7 +124,10 @@ class RotationalMotor():
         current_degrees = (current/8192) * 360
         current_degrees = current_degrees % 360 
         angle += ((self.fVal-1)/1023)*360
+        angle = min(angle, 226)
+        angle = max(angle,406)
         target = angle
+        target = target % 360
      else:
         #current_degrees = ((current-1)/1023) * 360
         current_degrees = ((current - 1)/1023) * 360
@@ -141,7 +144,7 @@ class RotationalMotor():
          print(f"Centered at {current} kP: {self.pid.Kp} kI: {self.pid.Ki} kD: {self.pid.Kd}")
          return True
      else:
-         self.motor.move_motor(control_signal * speed)
+         self.motor.move_motor(0*control_signal * speed)
            # Log status
          direction = "Left" if control_signal > 0 else "Right"
          print(f"Enc: {self.enc} + Error {error} Target: {target}° | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
