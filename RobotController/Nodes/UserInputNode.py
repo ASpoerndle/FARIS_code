@@ -21,9 +21,13 @@ class ExampleNode(Node):
             msg.data = 1
             self.auto.publish(msg)
 
-        if(choice == "m"):
-            data = input("How far? (m)")
-            msg.data = float(data)
+        if(choice[0].upper == "M"):
+            choice = input("H for horizontal mode or F for forward/backward movement")
+            if(choice[0].upper == "H"):
+                msg.data = 1001.0
+            else:
+                data = input("How far? (m)")
+                msg.data = float(data)
             self.manual.publish(msg)
         if(choice[0].upper == "C"):
             msg.data = 1
