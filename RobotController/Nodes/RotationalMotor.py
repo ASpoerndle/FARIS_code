@@ -99,9 +99,12 @@ class RotationalMotor():
             #calc the difference betweentarget and currentDeg
             # error = (target - currentDeg + 180) % 360 - 180
       error = (target - currentDeg)
-      self.pid.setpoint = currentDeg + error
       feedback = currentDeg
-
+      error = (error + 180) % 360 - 180
+      error = (error + 90) % 180 - 90
+      if((self.enc == 7 or self.enc == 4) and error < 0):
+          error *= -1
+      self.pid.setpoint = currentDeg + error
       control_signal = self.pid(feedback)
       print(f"Target: {target%360} | Current: {currentDeg%360} Encoder: {self.enc} | Error: {error} | Speed: {control_signal}")      
        
@@ -130,6 +133,7 @@ class RotationalMotor():
         #current_degrees = ((current-1)/1023) * 360
         current_degrees = ((current - 1)/1023) * 360
         forward = ((self.fVal-1)/1023)*360
+        forward = forward % 360
         target = forward  + angle
         target = max(target, forward +90)
         target = min(target, forward -90)
@@ -142,7 +146,8 @@ class RotationalMotor():
     
      error = current_degrees - target
      if(self.enc >= 4):
-        error = (error + 90) % 360 - 90
+        error = (error + 180) % 360 - 180
+        error = (error +90) % 180 - 90
 
      if abs(error % 180) <0.75  :
          self.motor.move_motor(0)
