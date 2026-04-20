@@ -123,7 +123,7 @@ class MotorController():
             if(ticks <= halfTicks and speed <= 1 and max_ticks != -1):
                 print("increase speed")
                 speed += (1/halfTicks)
-            elif(ticks > halfTicks and speed > 0.5 and max_ticks != -1):
+            elif(ticks > halfTicks and speed > 0.6 and max_ticks != -1):
                 speed -=1/halfTicks
             ticks+= 1
             # if(whichMotor == "w"):
@@ -183,7 +183,7 @@ class MotorController():
 
     def horizontalMode(self):
         if(self.angle < 90):
-            self.rotatePods(90, 0.75)
+            self.rotatePods(-90, 0.75)
             
         
     def stopMotors(self):

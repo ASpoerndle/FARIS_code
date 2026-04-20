@@ -120,43 +120,50 @@ class RotationalMotor():
   def rotate(self, angle, speed):
      speed = abs(speed)
      current = self.getCurrentPosition()
+     
+     forward = ((self.fVal-1)/1023)*360 % 360
      if(self.enc <=3):
         current_degrees = (current/8192) * 360
         angle += ((self.fVal-1)/1023)*360
         target = angle
         speed *= self.polarity
-     
+        error = current_degrees - target    
      else:
         #current_degrees = ((current-1)/1023) * 360
         current_degrees = ((current - 1)/1023) * 360 % 360
         
-        forward = ((self.fVal-1)/1023)*360 % 360
         target = (forward  + angle) % 360
-        if(angle < 1):
-            speed *= -1
-
+        
         speed *= 0.75
         error = (target -current_degrees + 180) % 360 - 180 
         if (error > 90):
             error -= 180
-        if(error < 90):
+            speed *= -1
+        if(error < -90):
             error += 180
+            speed *= -1
         target = current_degrees + error
-
-     error = target - current_degrees
+        speed *= -1
      self.pid.setpoint = target
      control_signal = self.pid(current_degrees)
-    
-
+        
+     # Absolute safety check
+     if abs(current_degrees - forward) > 100 and self.enc >= 4:
+        self.motor.move_motor(0)
+        print("EMERGENCY STOP: Cord limit reached!")
+        return True
      if abs(error) <2.5:
          self.motor.move_motor(0)
          print(f"Centered at {current} kP: {self.pid.Kp} kI: {self.pid.Ki} kD: {self.pid.Kd}")
+         return True
+     if(abs(error) < 10 and self.enc <= 3):
+         self.motor.move_motor(0)
          return True
      else:
          self.motor.move_motor(control_signal * speed)
            # Log status
          direction = "Left" if control_signal > 0 else "Right"
-         print(f"Enc: {self.enc} + Error {error%180} Target: {target}° | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
+         print(f"Enc: {self.enc} + Error {error} Target: {target}° | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
          return False
 
   

@@ -51,6 +51,8 @@ class MinimalSubscriber(Node):
             self.motors.boxDrill(int(dis))
         if(data >= 1003 and data < 1004):
             rotate = abs(1003-data) * 360
+            if(rotate > 180):
+                rotate -= 360
             print("Rotation: " + str(rotate))
             self.motors.rotatePods(rotate,0.5)
         if(data == 1005):
