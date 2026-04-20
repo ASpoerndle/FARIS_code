@@ -21,11 +21,24 @@ class ExampleNode(Node):
             msg.data = 1
             self.auto.publish(msg)
 
-        if(choice == "m"):
-            data = input("How far? (m)")
-            msg.data = float(data)
+        if(choice == "M"):
+            choice = input("H for horizontal mode | F for forward/backward movement | B for box drill | R for rotation | A for adjust forward")
+            if(choice == "H"):
+                msg.data = 1001.0
+            if(choice == "F"):
+                data = input("How far? (m)")
+                msg.data = float(data)
+            if(choice == "B"):
+                distance = float(input("How far? (m)"))
+                msg.data = 1002 + distance/100
+            if(choice == "R"):
+                rotation = float(input("How much rotation? (degrees)"))
+                rotation = rotation % 360
+                msg.data = 1003.0 + rotation/360
+            if(choice == "A"):
+                msg.data = 1005.0
             self.manual.publish(msg)
-        if(choice[0].upper == "C"):
+        if(choice.upper == "C"):
             msg.data = 1
             self.vision.publish(msg)
             

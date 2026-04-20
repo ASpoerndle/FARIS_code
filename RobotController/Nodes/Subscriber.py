@@ -38,14 +38,26 @@ class MinimalSubscriber(Node):
         print(msg)
     def manual_mode(self,msg):
         data = msg.data
+
+        print(data)
+        
+
         if(data <= 1 and data >= -1):
             self.move_forward(data,1)
-        elif(data >= 2 and data <=3):
+        if(data == 1001.0):
             self.motors.horizontalMode()
-        elif(data > 3):
-            self.motors.boxDrill(0.1)
-        elif(data <= -3):
+        if(data >= 1002.0 and data < 1003.0):
+            dis = abs(1002-data) * 100
+            self.motors.boxDrill(int(dis))
+        if(data >= 1003 and data < 1004):
+            rotate = abs(1003-data) * 360
+            if(rotate > 180):
+                rotate -= 360
+            print("Rotation: " + str(rotate))
+            self.motors.rotatePods(rotate,0.5)
+        if(data == 1005):
             self.motors.adjustForward()
+            
     def setAutoMove(self,msg):
         self.autoDis = msg.data
     def listener_callback(self, msg):

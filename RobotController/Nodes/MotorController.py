@@ -1,8 +1,8 @@
 import time
 
-from Motor import WheelMotor
+from .Motor import WheelMotor
 
-from RotationalMotor import RotationalMotor
+from .RotationalMotor import RotationalMotor
 
 import board
 
@@ -18,7 +18,7 @@ class MotorController():
     def __init__(self):
         GPIO.cleanup()
         GPIO.setmode(GPIO.BOARD)  # Use physical pin numbering
-        
+        self.angle = 0
         i2c = board.I2C()
         pca = PCA9685(i2c)
         pca.frequency = 50
@@ -27,17 +27,12 @@ class MotorController():
 
         # pin_list_wheel = [[11, 'l'],[10,'l'],[13,'r'],[15,'r']]
         # 265 207
-        pin_list_rotational = [[2, "l", 4, -18553,"P"], [3, "l", 5, -11016,"P"], [4, "l", 6, -81946,"P"], [6, "l", 7, -13787,"P"], [11, 'l', 2, 0,"W"],
+        pin_list_rotational = [[2, "l", 4, -18553+14,"P"], [3, "l", 5, -11016,"P"], [4, "l", 6, -81946,"P"], [6, "l", 7, -13787+8,"P"], [11, 'l', 2, 0,"W"],
                                [10, 'l', 1, 0,"W"], [13, 'r', 0, 0,"W"], [15, 'r', 3, 0,"W"]]
 
         # print("readying wheel motors...")
 
-        # for i in pin_list_wheel:
-
-        #    motor = WheelMotor(pca,i[0], i[1])
-
-        #    self.wheel_motor_list.append(motor)
-
+        
         print("readying motors...")
         for i in pin_list_rotational:
             motor = RotationalMotor(pca, i[0], i[1], i[2], i[3],i[4])
@@ -54,6 +49,7 @@ class MotorController():
     def adjustForward(self):
         cond1 = True
         cond2 = False
+        self.angle = 0
         isMotorAligned1 = isMotorAligned2 = isMotorAligned3 = isMotorAligned4 = False
         stopCond = False
         motor1, motor2, motor3, motor4 = self.rotational_motor_list[0:4]
@@ -127,7 +123,7 @@ class MotorController():
             if(ticks <= halfTicks and speed <= 1 and max_ticks != -1):
                 print("increase speed")
                 speed += (1/halfTicks)
-            elif(ticks > halfTicks and speed > 0.5 and max_ticks != -1):
+            elif(ticks > halfTicks and speed > 0.6 and max_ticks != -1):
                 speed -=1/halfTicks
             ticks+= 1
             # if(whichMotor == "w"):
@@ -138,6 +134,12 @@ class MotorController():
 
     #       self.adjustForward()
     def rotatePods(self, angle, speed):
+        
+        if(self.angle + angle > 90 or self.angle + angle < -90):
+            return
+        self.angle += angle
+        
+
 
         cond1 = True
 
@@ -180,8 +182,10 @@ class MotorController():
         self.rotateForward(degree_dis,distance, speed)
 
     def horizontalMode(self):
-        self.rotatePods(-90, 0.75)
-
+        if(self.angle < 90):
+            self.rotatePods(-90, 0.75)
+            
+        
     def stopMotors(self):
 
         for motor in self.rotational_motor_list:
@@ -220,9 +224,9 @@ class MotorController():
 
 # try:
 #distance = .01
-time.sleep(2)
-mc = MotorController()
-mc.boxDrill(0.2)
+#time.sleep(2)
+#mc = MotorController()
+#mc.boxDrill(0.2)
 # time.sleep(3)
 
 #mc.adjustForward()
@@ -247,7 +251,7 @@ mc.boxDrill(0.2)
 print("complete")
 # mc.adjustForward(True)
 
-time.sleep(1)
+#time.sleep(1)
 # mc.horizontalMode()
 # mc.rotate(-45,.1,"r")
 
