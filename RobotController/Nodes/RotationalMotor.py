@@ -101,20 +101,17 @@ class RotationalMotor():
       error = (target - currentDeg)
       feedback = currentDeg
       error = (error + 180) % 360 - 180
-      error = (error + 90) % 180 - 90
-      if((self.enc == 7 or self.enc == 4) and error < 0):
-          error *= -1
       self.pid.setpoint = currentDeg + error
       control_signal = self.pid(feedback)
       print(f"Target: {target%360} | Current: {currentDeg%360} Encoder: {self.enc} | Error: {error} | Speed: {control_signal}")      
        
-      if abs(error) < 1:
+      if abs(error) < .5 or abs(error) > 177:
             
             self.motor.move_motor(0)
             return True
       else:
           
-            self.motor.move_motor(-control_signal)
+            self.motor.move_motor(-control_signal * .75)
 
             return False
 
@@ -126,30 +123,32 @@ class RotationalMotor():
      if(self.enc <=3):
         current_degrees = (current/8192) * 360
         angle += ((self.fVal-1)/1023)*360
-        current_degrees = current_degrees % 360 
         target = angle
-        target = target % 360
+        speed *= self.polarity
+     
      else:
         #current_degrees = ((current-1)/1023) * 360
-        current_degrees = ((current - 1)/1023) * 360
-        forward = ((self.fVal-1)/1023)*360
-        forward = forward % 360
-        target = forward  + angle
-        target = max(target, forward +90)
-        target = min(target, forward -90)
-        current_degrees
-        target = target
-        speed *= -1
+        current_degrees = ((current - 1)/1023) * 360 % 360
+        
+        forward = ((self.fVal-1)/1023)*360 % 360
+        target = (forward  + angle) % 360
+        if(angle < 1):
+            speed *= -1
+
+        speed *= 0.75
+        error = (target -current_degrees + 180) % 360 - 180 
+        if (error > 90):
+            error -= 180
+        if(error < 90):
+            error += 180
+        target = current_degrees + error
+
+     error = target - current_degrees
      self.pid.setpoint = target
      control_signal = self.pid(current_degrees)
-     # 3. ACT: Update the motor
     
-     error = current_degrees - target
-     if(self.enc >= 4):
-        error = (error + 180) % 360 - 180
-        error = (error +90) % 180 - 90
 
-     if abs(error % 180) <0.75  :
+     if abs(error) <2.5:
          self.motor.move_motor(0)
          print(f"Centered at {current} kP: {self.pid.Kp} kI: {self.pid.Ki} kD: {self.pid.Kd}")
          return True

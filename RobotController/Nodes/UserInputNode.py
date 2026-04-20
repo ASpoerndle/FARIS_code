@@ -33,6 +33,7 @@ class ExampleNode(Node):
                 msg.data = 1002 + distance/100
             if(choice == "R"):
                 rotation = float(input("How much rotation? (degrees)"))
+                rotation = rotation % 360
                 msg.data = 1003.0 + rotation/360
             if(choice == "A"):
                 msg.data = 1005.0
