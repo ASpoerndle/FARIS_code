@@ -174,8 +174,8 @@ class MotorController():
         self.stopMotors()
 
     def moveDistance(self, distance, speed):
-
-        rev_dis = distance / (.144 * math.pi)
+        
+        rev_dis = distance / (.192 * math.pi)
 
         degree_dis = rev_dis * 360
 
