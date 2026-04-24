@@ -120,7 +120,7 @@ class MotorController():
         if angle > 90 or angle < -90:
             print(f"ROTATION ERR: Angle of {angle} degrees is will cause wire damage")
             return
-
+        
         isMotorAligned1 = isMotorAligned2 = isMotorAligned3 = isMotorAligned4 = False
 
         stopCond = False
@@ -158,7 +158,31 @@ class MotorController():
         if(self.angle < 90):
             self.rotatePods(-90, 0.75,debug)
             
-        
+    def rotateTwoMotors(self,angle,speed,motor1i,motor2i):
+        if angle > 90 or angle < -90:
+            print(f"ROTATION ERR: Angle of {angle} degrees is will cause wire damage")
+            return
+        if(motor1i > 3 or motor2i >3):
+            print(f"MOTOR INDEX ERR: motor1 or motor2 index out of range for pod motors | {motor1i} & {motor2i}")
+        isMotorAligned1 = isMotorAligned2 = False
+
+        stopCond = False
+
+        motor1 = self.rotational_motor_list[motor1i] 
+        motor2 = self.rotational_motor_list[motor2i]
+
+        while (not stopCond):
+
+            if (not isMotorAligned1):
+                isMotorAligned1 = motor1.rotate(angle, speed,debug)
+
+            if (not isMotorAligned2):
+                isMotorAligned2 = motor2.rotate(angle, speed,debug)
+
+            
+            stopCond = isMotorAligned2 and isMotorAligned1 
+            time.sleep(0.02)
+        self.stopMotors()
     def stopMotors(self):
         for motor in self.rotational_motor_list:
             motor.stopMotor()
@@ -200,5 +224,6 @@ TESTING GROUNDS FOR MOTORCONTROLLER CLASS
 """
 mc = MotorController()
 mc.boxDrill(1,False)
-
+mc.rotateTwoMotors(-45,0,2)
+mc.rotateTwo Motors(45,1,3)
 print("complete")
