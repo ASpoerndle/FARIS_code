@@ -83,14 +83,12 @@ class RotationalMotor(WheelMotor):
     time.sleep(0.1)
     print("Hardware ready.")
 
-  #Returns T/F based on if it's off-centered, put a while loop in MotorController class so it can adjust all motors at once
   
   """
   Method: adjustForward
   Purpose: handles the logic for adjusting the Pod motors to a "forward" position
- 
   """
-  def adjustForward(self):
+  def adjustForward(self,debug):
       currentPos = self.getCurrentPosition()
             #convert fVal pwm into degrees
       target = ((self.fVal-1)/1023.0)*360
@@ -105,7 +103,8 @@ class RotationalMotor(WheelMotor):
       error = (error + 180) % 360 - 180
       self.pid.setpoint = currentDeg + error
       control_signal = self.pid(feedback)
-      print(f"Target: {target%360} | Current: {currentDeg%360} Encoder: {self.enc} | Error: {error} | Speed: {control_signal}")      
+      if(debug):
+        print(f"Target: {target%360} | Current: {currentDeg%360} Encoder: {self.enc} | Error: {error} | Speed: {control_signal}")      
        
       if abs(error) < .5 or abs(error) > 177:
             
@@ -122,7 +121,7 @@ class RotationalMotor(WheelMotor):
   Method: rotate(angle {degrees}, speed
   Purpose: rotates the Pod motors to the designated location based on a degree input
   """
-  def rotate(self, angle, speed):
+  def rotate(self, angle, speed,debug):
      speed = abs(speed)
      current = self.getCurrentPosition()
      
@@ -156,40 +155,42 @@ class RotationalMotor(WheelMotor):
      # Absolute safety check
      if angle > 91 and self.enc >= 4 or angle < -91 and self.enc >= 4:
         self.move_motor(0)
-        print("EMERGENCY STOP: Cord limit reached!")
+        print("ERR: Cord limit reached!")
         return True
      if abs(error) <2.5:
          self.move_motor(0)
-         print(f"Centered at {current} kP: {self.pid.Kp} kI: {self.pid.Ki} kD: {self.pid.Kd}")
+         if(debug):
+           print(f"Centered at {current} kP: {self.pid.Kp} kI: {self.pid.Ki} kD: {self.pid.Kd}")
          return True
      if(abs(error) < 10 and self.enc <= 3):
          self.move_motor(0)
          return True
      else:
          self.move_motor(control_signal * speed)
-           # Log status
-         direction = "Left" if control_signal > 0 else "Right"
-         print(f"Enc: {self.enc} + Error {error} Target: {target}° | Current: {current_degrees:.1f}° | Power: {control_signal:.2f} | Adjusting: {direction}")
+           
+         
+         if(debug):  
+           print(f"Enc: {self.enc} | Error {error} Target: {target} | Current: {current_degrees} | Power: {control_signal}")
          return False
 
   """
   Method: rotateForward(angle {degrees} ,speed)
   Purpose: handles the logic for moving the wheel motors forward and backward    
   """
-  def rotateForward(self,position,speed, isBack):
+  def rotateForward(self,position,speed, isBack,debug):
     
         if((position < 0 or (position > 0 and self.polarity < 0)) and isBack):
-            return self.drive_neg(self.polarity * position,speed)
+            return self.drive_neg(self.polarity * position,speed,debug)
         self.pid.Kp = 0.06
         self.pid.Kd = 0.0002
         self.pid.Ki = 0.0002
-        return self.drive(self.polarity * position,speed)
+        return self.drive(self.polarity * position,speed,debug)
 
   """
   Method: drive(target {Quadrature}, speed)
   Purpose: the logic that tells the motor to keep running until it reaches its desired location
   """
-  def drive(self,target,speed):
+  def drive(self,target,speed,debug):
       current = self.getCurrentPosition()
       self.pid.setpoint = target
       motor_speed = self.pid(current)
@@ -203,7 +204,8 @@ class RotationalMotor(WheelMotor):
             self.move_motor(0)
 
         else:
-            print(f"Target: {target} | Current: {current} Encoder: {self.enc} |  Speed: {motor_speed}")
+            if(debug):
+              print(f"Target: {target} | Current: {current} Encoder: {self.enc} |  Speed: {motor_speed}")
             self.move_motor(motor_speed)
       else:
             bool = current <= -target
@@ -215,13 +217,16 @@ class RotationalMotor(WheelMotor):
       return bool
 
 
-
-  def drive_neg(self,target,speed):
+  """
+  Method: drive_neg
+  Purpose: allows the motors that need to drive towards negative quadrature values to be able to move with the other motors
+  """
+  def drive_neg(self,target,speed,debug):
       current = self.getCurrentPosition()
       self.pid.setpoint = target
       motor_speed = self.pid(current)
       motor_speed *= -speed
-      print("neg")
+      
       if(self.polarity == 1):
       
 
@@ -231,7 +236,8 @@ class RotationalMotor(WheelMotor):
             self.move_motor(0)
 
         else:
-            print(f"Target: {target} | Current: {current} Encoder: {self.enc} |  Speed: {motor_speed}")
+            if(debug):
+              print(f"Target: {target} | Current: {current} Encoder: {self.enc} |  Speed: {motor_speed}")
             self.move_motor(motor_speed)
       else:
             bool = current >= -target
@@ -257,7 +263,7 @@ class RotationalMotor(WheelMotor):
 
   def getCurrentPosition(self):
       self.read_octoquad()
-      print(RotationalMotor.positions)
+      # print(RotationalMotor.positions)
       
       return RotationalMotor.positions[self.enc]
 
