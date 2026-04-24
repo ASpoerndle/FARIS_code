@@ -28,11 +28,10 @@ class MotorController():
         """
         PWM Pin, left or right side, forwardValue, motorType
         """
-        pin_list_rotational = 
-        [[2, "l", 4, 181], 
-         [3, "l", 5, 144], 
-         [4, "l", 6, 134], 
-         [6, "l", 7, 261], 
+        pin_list_rotational = [[2, "l", 4, -18539], 
+         [3, "l", 5, -11016], 
+         [4, "l", 6, -81946], 
+         [6, "l", 7, -13779], 
          #WheelMotors
          [11, 'l', 2, 0],                      
          [10, 'l', 1, 0], 
@@ -86,16 +85,18 @@ class MotorController():
         if(ticks < 0):
             polar = -1
             speed = -.3
+            isBack = True
         else:
             polar = 1
             speed = .3
+            isBack = False
         #Alter logic for determing ramp up and ramp down
 
         
         isMotorAligned1 = isMotorAligned2 = isMotorAligned3 = isMotorAligned4 = False
 
         stopCond = False
-        
+        print(f"Polar: {polar}") 
 
         motor1,motor2,motor3,motor4 = self.rotational_motor_list[4:8]
         motor4.resetEncoder()
@@ -103,16 +104,16 @@ class MotorController():
         while (not stopCond):
 
             if (not isMotorAligned1):
-                isMotorAligned1 = motor1.rotateForward(ticks, speed)
+                isMotorAligned1 = motor1.rotateForward(ticks, speed,isBack)
 
             if (not isMotorAligned2):
-                isMotorAligned2 = motor2.rotateForward(ticks, speed)
+                isMotorAligned2 = motor2.rotateForward(ticks, speed,isBack)
 
             if (not isMotorAligned3):
-                isMotorAligned3 = motor3.rotateForward(-ticks, speed)
+                isMotorAligned3 = motor3.rotateForward(-ticks, speed,isBack)
 
             if (not isMotorAligned4):
-                isMotorAligned4 = motor4.rotateForward(-ticks, speed)
+                isMotorAligned4 = motor4.rotateForward(-ticks, speed,isBack)
             print(f'Ticks: {ticks} + Speed: {speed}')
             if(polar > 0):            
                 if(motor1.getCurrentPosition() < 100 and polar > 0):
@@ -235,10 +236,10 @@ class MotorController():
 #distance = .01
 #time.sleep(2)
 mc = MotorController()
-#mc.boxDrill(0.2)
+mc.boxDrill(1)
 # time.sleep(3)
 #mc.adjustForward()
-mc.moveDistance(-3,1)
+#mc.moveDistance(-1,1)
 #time.sleep(3)
 #mc.rotatePods(45,1)
 #mc.moveDistance(.2, 0.25)

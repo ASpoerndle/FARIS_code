@@ -176,9 +176,9 @@ class RotationalMotor(WheelMotor):
   Method: rotateForward(angle {degrees} ,speed)
   Purpose: handles the logic for moving the wheel motors forward and backward    
   """
-  def rotateForward(self,position,speed):
+  def rotateForward(self,position,speed, isBack):
     
-        if(position < 0 or (position > 0 and self.polarity < 0)):
+        if((position < 0 or (position > 0 and self.polarity < 0)) and isBack):
             return self.drive_neg(self.polarity * position,speed)
         self.pid.Kp = 0.06
         self.pid.Kd = 0.0002
