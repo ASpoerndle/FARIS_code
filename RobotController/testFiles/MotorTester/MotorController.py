@@ -29,22 +29,22 @@ class MotorController():
         PWM Pin, left or right side, forwardValue, motorType
         """
         pin_list_rotational = 
-        [[2, "l", 4, 181,"P"], 
-         [3, "l", 5, 144,"P"], 
-         [4, "l", 6, 134,"P"], 
-         [6, "l", 7, 261,"P"], 
+        [[2, "l", 4, 181], 
+         [3, "l", 5, 144], 
+         [4, "l", 6, 134], 
+         [6, "l", 7, 261], 
          #WheelMotors
-         [11, 'l', 2, 0,"W"],                      
-         [10, 'l', 1, 0,"W"], 
-         [13, 'r', 0, 0,"W"], 
-         [15, 'r', 3, 0,"W"]]
+         [11, 'l', 2, 0],                      
+         [10, 'l', 1, 0], 
+         [13, 'r', 0, 0], 
+         [15, 'r', 3, 0]]
 
         # print("readying wheel motors...")
 
         
         print("readying motors...")
         for i in pin_list_rotational:
-            motor = RotationalMotor(pca, i[0], i[1], i[2], i[3],i[4])
+            motor = RotationalMotor(pca, i[0], i[1], i[2], i[3])
             self.rotational_motor_list.append(motor)
         print("motors ready!")
     def moveWheels(self, i):
