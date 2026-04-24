@@ -85,7 +85,7 @@ class RotationalMotor(WheelMotor):
 
   
   """
-  Method: adjustForward
+  Method: adjustForward()
   Purpose: handles the logic for adjusting the Pod motors to a "forward" position
   """
   def adjustForward(self,debug):
@@ -118,7 +118,7 @@ class RotationalMotor(WheelMotor):
 
   
   """
-  Method: rotate(angle {degrees}, speed
+  Method: rotate(angle {degrees}, speed)
   Purpose: rotates the Pod motors to the designated location based on a degree input
   """
   def rotate(self, angle, speed,debug):
@@ -218,7 +218,7 @@ class RotationalMotor(WheelMotor):
 
 
   """
-  Method: drive_neg
+  Method: drive_neg(target {quadrature}, speed)
   Purpose: allows the motors that need to drive towards negative quadrature values to be able to move with the other motors
   """
   def drive_neg(self,target,speed,debug):
@@ -248,7 +248,7 @@ class RotationalMotor(WheelMotor):
                 self.move_motor(motor_speed)
       return bool
   """
-  Method: stopMotor
+  Method: stopMotor()
   Purpose: sets the motor speed equal to 0
   """
         
@@ -257,7 +257,7 @@ class RotationalMotor(WheelMotor):
       self.move_motor(0)
 
   """
-  Method: getCurrentPosition
+  Method: getCurrentPosition()
   Purpose: returns the position of the object's encoder from the OctoQuad
   """
 
@@ -268,7 +268,7 @@ class RotationalMotor(WheelMotor):
       return RotationalMotor.positions[self.enc]
 
   """
-  Method: resetEncoder
+  Method: resetEncoder()
   Purpose: resets the relative quadrature encoder values for the wheel motors
   """
   def resetEncoder(self):
@@ -288,7 +288,7 @@ class RotationalMotor(WheelMotor):
       self.pid.Kd = value3
 
   """
-  Method: read_octoquad
+  Method: read_octoquad()
   Purpose: returns a list of all of the current positions of the absolute and relative encoders
   """
   def read_octoquad(self):
