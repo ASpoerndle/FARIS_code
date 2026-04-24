@@ -23,7 +23,7 @@ class MotorController():
         pca.frequency = 50
         self.wheel_motor_list = []
         self.rotational_motor_list = []
-
+        
         """
         PWM Pin, left or right side, forwardValue, motorType
         """
@@ -52,8 +52,8 @@ class MotorController():
     def teleForward(self,speed):
         for motor in self.rotational_motor_list[4:8]:
             motor.setSpeed(speed)
-    def adjustForward(self):
-        self.rotatePods(0,0.5)
+    def adjustForward(self,debug):
+        self.rotatePods(0,0.5,debug)
         return
         
 
@@ -82,16 +82,16 @@ class MotorController():
         while (not stopCond):
 
             if (not isMotorAligned1):
-                isMotorAligned1 = motor1.rotateForward(ticks, speed,isBack)
+                isMotorAligned1 = motor1.rotateForward(ticks, speed,isBack,debug)
 
             if (not isMotorAligned2):
-                isMotorAligned2 = motor2.rotateForward(ticks, speed,isBack)
+                isMotorAligned2 = motor2.rotateForward(ticks, speed,isBack,debug)
 
             if (not isMotorAligned3):
-                isMotorAligned3 = motor3.rotateForward(-ticks, speed,isBack)
+                isMotorAligned3 = motor3.rotateForward(-ticks, speed,isBack,debug)
 
             if (not isMotorAligned4):
-                isMotorAligned4 = motor4.rotateForward(-ticks, speed,isBack)
+                isMotorAligned4 = motor4.rotateForward(-ticks, speed,isBack,debug)
             if(debug):
                 print(f'Ticks: {ticks} + Speed: {speed}')
            
@@ -130,16 +130,16 @@ class MotorController():
         while (not stopCond):
 
             if (not isMotorAligned1):
-                isMotorAligned1 = motor1.rotate(angle, speed)
+                isMotorAligned1 = motor1.rotate(angle, speed,debug)
 
             if (not isMotorAligned2):
-                isMotorAligned2 = motor2.rotate(angle, speed)
+                isMotorAligned2 = motor2.rotate(angle, speed,debug)
 
             if (not isMotorAligned3):
-                isMotorAligned3 = motor3.rotate(angle, speed)
+                isMotorAligned3 = motor3.rotate(angle, speed,debug)
 
             if (not isMotorAligned4):
-                isMotorAligned4 = motor4.rotate(angle, speed)
+                isMotorAligned4 = motor4.rotate(angle, speed,debug)
 
             stopCond = isMotorAligned2 and isMotorAligned1 and isMotorAligned3 and isMotorAligned4
             time.sleep(0.02)
@@ -154,9 +154,9 @@ class MotorController():
 
         self.rotateForward(ticks, debug)
 
-    def horizontalMode(self):
+    def horizontalMode(self,debug):
         if(self.angle < 90):
-            self.rotatePods(-90, 0.75)
+            self.rotatePods(-90, 0.75,debug)
             
         
     def stopMotors(self):
@@ -164,21 +164,21 @@ class MotorController():
             motor.stopMotor()
             
     def boxDrill(self,dis,debug):
-        self.adjustForward()
+        self.adjustForward(debug)
         self.moveDistance(dis,debug)
         time.sleep(1)
-        self.horizontalMode()
+        self.horizontalMode(debug)
         time.sleep(1)
         self.moveDistance(-dis,debug)
         time.sleep(1)
-        self.adjustForward()
+        self.adjustForward(debug)
         time.sleep(1)
         self.moveDistance(-dis,debug)
         time.sleep(1)
-        self.horizontalMode()
+        self.horizontalMode(debug)
         time.sleep(1)
         self.moveDistance(dis,debug)
-        self.adjustForward()
+        self.adjustForward(debug)
 
         print("complete")
 
@@ -199,6 +199,6 @@ class MotorController():
 TESTING GROUNDS FOR MOTORCONTROLLER CLASS
 """
 mc = MotorController()
-mc.boxDrill(1)
+mc.boxDrill(1,False)
 
 print("complete")
