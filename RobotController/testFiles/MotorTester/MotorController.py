@@ -25,10 +25,19 @@ class MotorController():
         self.wheel_motor_list = []
         self.rotational_motor_list = []
 
-        # pin_list_wheel = [[11, 'l'],[10,'l'],[13,'r'],[15,'r']]
-        # 265 207
-        pin_list_rotational = [[2, "l", 4, -18553+14,"P"], [3, "l", 5, -11016,"P"], [4, "l", 6, -81946,"P"], [6, "l", 7, -13787+8,"P"], [11, 'l', 2, 0,"W"],
-                               [10, 'l', 1, 0,"W"], [13, 'r', 0, 0,"W"], [15, 'r', 3, 0,"W"]]
+        """
+        PWM Pin, left or right side, forwardValue, motorType
+        """
+        pin_list_rotational = 
+        [[2, "l", 4, 181,"P"], 
+         [3, "l", 5, 144,"P"], 
+         [4, "l", 6, 134,"P"], 
+         [6, "l", 7, 261,"P"], 
+         #WheelMotors
+         [11, 'l', 2, 0,"W"],                      
+         [10, 'l', 1, 0,"W"], 
+         [13, 'r', 0, 0,"W"], 
+         [15, 'r', 3, 0,"W"]]
 
         # print("readying wheel motors...")
 
@@ -49,6 +58,8 @@ class MotorController():
         for motor in self.rotational_motor_list[4:8]:
             motor.setSpeed(speed)
     def adjustForward(self):
+        self.rotatePods(0,0.5)
+        return
         cond1 = True
         cond2 = False
         self.angle = 0
@@ -84,28 +95,11 @@ class MotorController():
         isMotorAligned1 = isMotorAligned2 = isMotorAligned3 = isMotorAligned4 = False
 
         stopCond = False
-        whichMotor = "w"
-        if (whichMotor == "w"):
         
 
-            motor1,motor2,motor3,motor4 = self.rotational_motor_list[4:8]
-            motor4.resetEncoder()
-            #
-            # angle1 = angle + (motor1.getCurrentPosition() / 8192) * 360
-            #
-            # angle2 = angle + (motor2.getCurrentPosition() / 8192) * 360
-            #
-            # angle3 = (motor3.getCurrentPosition() / 8192) * 360 - angle
-            #
-            # angle4 = (motor4.getCurrentPosition() / 8192) * 360 - angle
-            # print(angle1, angle2, angle3, angle4)
-            # print(str(motor4.getCurrentPosition()) + "CP")
-
-        else:
-
-            # angle1 = angle2 = angle3 = angle4 = angle
-
-            motor1, motor2, motor3, motor4 = self.rotational_motor_list[0:4]
+        motor1,motor2,motor3,motor4 = self.rotational_motor_list[4:8]
+        motor4.resetEncoder()
+        
         while (not stopCond):
 
             if (not isMotorAligned1):
