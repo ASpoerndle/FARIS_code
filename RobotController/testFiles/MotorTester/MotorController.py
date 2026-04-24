@@ -116,7 +116,8 @@ class MotorController():
         self.stopMotors()
 
   
-    def rotatePods(self, angle, speed): 
+    def rotatePods(self, angle):
+        speed = 0.75
         if angle > 90 or angle < -90:
             print(f"ROTATION ERR: Angle of {angle} degrees is will cause wire damage")
             return
@@ -155,8 +156,8 @@ class MotorController():
         self.rotateForward(ticks, debug)
 
     def horizontalMode(self,debug):
-        if(self.angle < 90):
-            self.rotatePods(-90, 0.75,debug)
+        if(self.angle < 91 or self.angle > -91):
+            self.rotatePods(-90,debug)
             
     def rotateTwoMotors(self,angle,speed,motor1i,motor2i):
         if angle > 90 or angle < -90:
@@ -186,7 +187,17 @@ class MotorController():
     def stopMotors(self):
         for motor in self.rotational_motor_list:
             motor.stopMotor()
-            
+    def moveCord(self, cords,debug):
+        x,y = cords
+        hypo = math.sqrt((x**2) + (y**2))
+        angle = math.acos(x,hypo)
+        if(debug):
+            print(f"X,Y: {x},{y} | Hypotenuse: {hypo} | Angle (Degrees) {angle}")
+        self.rotatePods(angle,debug)
+        self.moveDistance(hypo,debug)
+    def moveCord(self,cords,heading,debug):
+        x,y = cords
+        
     def boxDrill(self,dis,debug):
         self.adjustForward(debug)
         self.moveDistance(dis,debug)
@@ -226,4 +237,5 @@ mc = MotorController()
 mc.boxDrill(1,False)
 mc.rotateTwoMotors(-45,0,2)
 mc.rotateTwo Motors(45,1,3)
+#mc.moveCords((4,5),True)
 print("complete")
