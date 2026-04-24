@@ -28,10 +28,10 @@ class RotationalMotor(WheelMotor):
   
   #left is more pos, right is more neg
 
-  def __init__(self, pca, pin, side, enc, fVal,mType):
+  def __init__(self, pca, pin, side, enc, fVal):
     WheelMotor.__init__(self,pca,pin,side)
 
-    self.mType = mType
+    
     self.enc = enc
     self.init_hardware()
     
