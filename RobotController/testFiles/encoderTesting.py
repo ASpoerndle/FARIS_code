@@ -29,6 +29,7 @@ import time
 import sys
 import smbus2
 import busio
+import struct
 #import board
 #----------------------------------------------------------------
 #                      CONSTANTS
@@ -173,9 +174,12 @@ while True:
     velocities = readVelocities()
     print(counts)
     print((counts[0]-1)/1023 * 360)
+     
+    de = bus.read_i2c_block_data(0x30,0x18,2)
+    de = struct.unpack('<h', bytes(de))[0]
+    print(f"Degrees: {de/100}")
     if(counts[4] < -8 and counts[4] > -18):
         print("forward")
-    
     elif(counts[4] > -13):
         print("right")
     else:

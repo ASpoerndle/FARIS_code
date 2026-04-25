@@ -41,11 +41,15 @@ else:
                 mc.teleForward(-joy.get_axis(1)/2)
                 print(f" up and down {joy.get_axis(1)}")
             if(joy.get_button(0) and not isSideways):
-                mc.horizontalMode()
+                mc.horizontalMode(False)
                 isSideways = True
             if(joy.get_button(1) and isSideways):
-                mc.adjustForward()
+                mc.adjustForward(False)
                 isSideways = False
+            if(joy.get_button(3)):
+                mc.rotatePods(-45,False)
+                mc.adjustForward(False)
+                break
             print(joy.get_axis(0))
             pygame.time.wait(10) # Prevent 100% CPU usage
     except KeyboardInterrupt:

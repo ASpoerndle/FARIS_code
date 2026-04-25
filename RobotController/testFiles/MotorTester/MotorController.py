@@ -27,10 +27,10 @@ class MotorController():
         """
         PWM Pin, left or right side, forwardValue, motorType
         """
-        pin_list_rotational = [[2, "l", 4, -18539], 
-         [3, "l", 5, -11016], 
-         [4, "l", 6, -81946], 
-         [6, "l", 7, -13779], 
+        pin_list_rotational = [[2, "l", 4, 897], 
+         [3, "l", 5, 238], 
+         [4, "l", 6, 914], 
+         [6, "l", 7, 722], 
          #WheelMotors
          [11, 'l', 2, 0],                      
          [10, 'l', 1, 0], 
@@ -53,19 +53,19 @@ class MotorController():
         for motor in self.rotational_motor_list[4:8]:
             motor.setSpeed(speed)
     def adjustForward(self,debug):
-        self.rotatePods(0,0.5,debug)
+        self.rotatePods(0,debug)
         return
         
 
-    def rotateForward(self, ticks,debug):
+    def rotateForward(self, ticks,debug,zero):
         polar = 0
         if(ticks < 0):
             polar = -1
-            speed = -.3
+            speed = -.5
             isBack = True
         else:
             polar = 1
-            speed = .3
+            speed = .5
             isBack = False
         #Alter logic for determing ramp up and ramp down
 
@@ -88,23 +88,23 @@ class MotorController():
                 isMotorAligned2 = motor2.rotateForward(ticks, speed,isBack,debug)
 
             if (not isMotorAligned3):
-                isMotorAligned3 = motor3.rotateForward(-ticks, speed,isBack,debug)
+                isMotorAligned3 = motor3.rotateForward(-ticks * zero, speed * zero,isBack,debug)
 
             if (not isMotorAligned4):
-                isMotorAligned4 = motor4.rotateForward(-ticks, speed,isBack,debug)
+                isMotorAligned4 = motor4.rotateForward(-ticks, speed * zero,isBack * zero,debug)
             if(debug):
                 print(f'Ticks: {ticks} + Speed: {speed}')
            
             if(polar > 0):            
                 if(motor1.getCurrentPosition() < 100 and polar > 0):
-                    speed = 0.3
+                    speed = 0.5
                 elif(abs(motor1.getCurrentPosition()) < abs(3*ticks//8) and abs(ticks) > 1000 and speed < .8):
                     speed += 0.01
                 elif(abs(motor1.getCurrentPosition()) > abs(5*ticks//8) and abs(ticks) > 1000 and speed >0.3):
                     speed -= 0.01
             else:
                 if(motor1.getCurrentPosition() > -100):
-                    speed = -.3
+                    speed = -.5
                 elif(motor1.getCurrentPosition() > 3 * ticks//8 and ticks < 1000 and speed > -.8):
                     speed -= 0.01
                 elif(motor1.getCurrentPosition() < 5 * ticks//8 and ticks < 1000 and speed < -.3):
@@ -116,7 +116,7 @@ class MotorController():
         self.stopMotors()
 
   
-    def rotatePods(self, angle):
+    def rotatePods(self, angle,debug):
         speed = 0.75
         if angle > 90 or angle < -90:
             print(f"ROTATION ERR: Angle of {angle} degrees is will cause wire damage")
@@ -145,21 +145,29 @@ class MotorController():
             stopCond = isMotorAligned2 and isMotorAligned1 and isMotorAligned3 and isMotorAligned4
             time.sleep(0.02)
         self.stopMotors()
+        
 
-    def moveDistance(self, distance, debug):
+
+    def moveDistance(self, distance, debug,isZero):
         #ALL VALUES IN METERS
         cir = math.pi * 0.192
-        self.rotatePods(0,.5)
+        #self.rotatePods(0,.5)
 
         ticks = (distance / cir) * 1425.1
-
-        self.rotateForward(ticks, debug)
+        if(isZero):
+            for i in range(6,8):
+                self.rotational_motor_list[i].switchPolarity()
+            self.rotateForward(ticks,debug,-1)
+            for i in range(6,8):
+                self.rotational_motor_list[i].switchPolarity()
+        else:
+            self.rotateForward(ticks, debug,1)
 
     def horizontalMode(self,debug):
-        if(self.angle < 91 or self.angle > -91):
-            self.rotatePods(-90,debug)
+        self.rotatePods(-90,debug)
             
-    def rotateTwoMotors(self,angle,speed,motor1i,motor2i):
+    def rotateTwoMotors(self,angle,motor1i,motor2i,debug):
+        speed = 0.75
         if angle > 90 or angle < -90:
             print(f"ROTATION ERR: Angle of {angle} degrees is will cause wire damage")
             return
@@ -190,29 +198,48 @@ class MotorController():
     def moveCord(self, cords,debug):
         x,y = cords
         hypo = math.sqrt((x**2) + (y**2))
-        angle = math.acos(x,hypo)
+        angle = (math.acos(abs(x)/hypo) * 180)/math.pi
+        if(x > 0):
+            angle = -angle
+        if(x == 0):
+            angle = 0
+        if(y == 0):
+            angle = -90
+            if(x < 0):
+                hypo = -hypo
         if(debug):
             print(f"X,Y: {x},{y} | Hypotenuse: {hypo} | Angle (Degrees) {angle}")
+            debug = False
         self.rotatePods(angle,debug)
-        self.moveDistance(hypo,debug)
-    def moveCord(self,cords,heading,debug):
-        x,y = cords
-        
+        if(y < 0):
+            hypo = -hypo
+        self.moveDistance(hypo,debug,False)
+        self.adjustForward(debug)
+#    def moveCord(self,cords,heading,debug):
+ #       x,y = cords
+    def turn(self, angle, debug):
+    #90 degrees = .38
+        angle /= 90
+        angle *= -.38
+        mc.rotateTwoMotors(45,2,0,False)
+        mc.rotateTwoMotors(-45,1,3,False)
+        mc.moveDistance(angle,False,True)
+        mc.adjustForward(False)
     def boxDrill(self,dis,debug):
         self.adjustForward(debug)
-        self.moveDistance(dis,debug)
+        self.moveDistance(dis,debug,False)
         time.sleep(1)
-        self.horizontalMode(debug)
+        self.horizontalMode(debug,False)
         time.sleep(1)
-        self.moveDistance(-dis,debug)
+        self.moveDistance(-dis,debug,False)
         time.sleep(1)
         self.adjustForward(debug)
         time.sleep(1)
-        self.moveDistance(-dis,debug)
+        self.moveDistance(-dis,debug,False)
         time.sleep(1)
         self.horizontalMode(debug)
         time.sleep(1)
-        self.moveDistance(dis,debug)
+        self.moveDistance(dis,debug,False)
         self.adjustForward(debug)
 
         print("complete")
@@ -233,9 +260,22 @@ class MotorController():
 """
 TESTING GROUNDS FOR MOTORCONTROLLER CLASS
 """
-mc = MotorController()
-mc.boxDrill(1,False)
-mc.rotateTwoMotors(-45,0,2)
-mc.rotateTwo Motors(45,1,3)
+#mc = MotorController()
+#mc.adjustForward(True)
+#mc.boxDrill(1,False)
+#mc.adjustForward(False)
+#mc.moveCord((-1,1),False)
+#mc.moveCord((1,0),False)
+##mc.moveCord((0,-1),False)
+
+#mc.adjustForward(False)
+#mc.moveCord((0,1),True)
+#mc.moveCord((-1,1),False)
+#mc.turn(90,False)
+#mc.moveCord((1,0),False)
+#mc.turn(270,False)
+
+
+
 #mc.moveCords((4,5),True)
-print("complete")
+#print("complete")

@@ -276,7 +276,8 @@ class RotationalMotor(WheelMotor):
 
 
   #input distance in m, speed -1.0 to 1.0
-
+  def switchPolarity(self):
+      self.polarity = -self.polarity 
   
   """
   Method: setValue(kP,Ki,Kd)
