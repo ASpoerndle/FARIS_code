@@ -278,7 +278,10 @@ class RotationalMotor(WheelMotor):
   #input distance in m, speed -1.0 to 1.0
   def switchPolarity(self):
       self.polarity = -self.polarity 
-  
+  def getPolarity(self):
+      return self.polarity
+  def setPolairty(self, polar):
+      self.polarity = polar
   """
   Method: setValue(kP,Ki,Kd)
   Purpose: mostly for debugging PID values.

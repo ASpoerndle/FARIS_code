@@ -52,7 +52,42 @@ class MotorController():
     def teleForward(self,speed):
         for motor in self.rotational_motor_list[4:8]:
             motor.setSpeed(speed)
+    def teleTurn(self):
+        self.rotateTwoMotors(45,2,0,False)
+        self.rotateTwoMotors(-45,1,3,False)
+        for i,motor in enumerate(self.rotational_motor_list[4:8]):
+            if(i<2):
+                if(motor.getPolarity() == 1):
+                    motor.switchPolarity()
+    def teleMoveTurn(self,speed):
+             
+           
+           for i,motor in enumerate(self.rotational_motor_list[4:8]):
+               if(i == 0):
+                   motor.setSpeed(speed)
+               if(i==1):
+                    motor.setSpeed(speed)
+               if(i==2):
+                   motor.setSpeed(-speed)
+               if(i==3):
+                   motor.setSpeed(-speed)
+           """ 
+            for i,motor in enumerate(self.rotational_motor_list[4:8]):
+g               if(i == 0 or i == 1):
+                    motor.setSpeed(speed)
+                else:
+                    motor.setSpeed(speed)
+            for i in range(6,8):
+                self.rotational_motor_list[i].switchPolarity()
+            """
     def adjustForward(self,debug):
+        for i,motor in enumerate (self.rotational_motor_list[4:8]):
+            if(i<6):
+                if(motor.getPolarity() != 1):
+                    motor.switchPolarity()
+            else:
+                if(motor.getPolairty() != -1):
+                    motor.switchPolarity()
         self.rotatePods(0,debug)
         return
         
@@ -221,10 +256,10 @@ class MotorController():
     #90 degrees = .38
         angle /= 90
         angle *= -.38
-        mc.rotateTwoMotors(45,2,0,False)
-        mc.rotateTwoMotors(-45,1,3,False)
-        mc.moveDistance(angle,False,True)
-        mc.adjustForward(False)
+        self.rotateTwoMotors(45,2,0,False)
+        self.rotateTwoMotors(-45,1,3,False)
+        self.moveDistance(angle,False,True)
+        self.adjustForward(False)
     def boxDrill(self,dis,debug):
         self.adjustForward(debug)
         self.moveDistance(dis,debug,False)
