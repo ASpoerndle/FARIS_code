@@ -250,8 +250,14 @@ g               if(i == 0 or i == 1):
             hypo = -hypo
         self.moveDistance(hypo,debug,False)
         self.adjustForward(debug)
-#    def moveCord(self,cords,heading,debug):
- #       x,y = cords
+    def moveCurve(self,cords,heading,debug):
+        #Do more research into ackermann steering
+        """
+        turning radius = Wheelbase / tan (front wheel angle)
+        arc length = turning radius * final_heading
+        """
+
+        x,y = cords
     def turn(self, angle, debug):
     #90 degrees = .38
         angle /= 90
@@ -296,6 +302,14 @@ g               if(i == 0 or i == 1):
 TESTING GROUNDS FOR MOTORCONTROLLER CLASS
 """
 #mc = MotorController()
+
+#===CODE FOR ROTATING ROBOT 90 WHILE MOVING===
+#mc.rotateTwoMotors(45,2,3,False)
+#mc.moveDistacne(1,False,False)
+
+
+
+
 #mc.adjustForward(True)
 #mc.boxDrill(1,False)
 #mc.adjustForward(False)

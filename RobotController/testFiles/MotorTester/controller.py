@@ -11,15 +11,24 @@ time.sleep(3)
 def get_default(obj,num):
     return obj.get_axis(num)
 mc = MotorController()
-#joysticks_def = []
-#joysticks_def.append(get_default(pygame.joystick.Joystick(0),0))
 
-#joysticks_def.append(get_default(pygame.joystick.Joystick(0),1))
 
-#joysticks_def.append(get_default(pygame.joystick.Joystick(-1),0))
 
-#joysticks_def.append(get_default(pygame.joystick.Joystick(-1),1))
-
+"""
+NUM | BUTTON
+0 - X
+1 - A
+2 - B
+3 - Y
+4 - LB
+5 - RB 
+6 - LT
+7 - RT
+8 - SEL
+9 - START
+10 - LSTICK 
+11 - RSTICK
+"""
 isSideways = False
 if pygame.joystick.get_count() == 0:
     print("No controller found! Check the X/D switch on the back.")
@@ -30,7 +39,7 @@ else:
     joy.init()
     #joy2.init()
     isTurn = False
-    print(f"Detected: {joy.get_name()} | count {pygame.joystick.get_count()}")
+    print(f"Detected: {joy.get_name()} | count {pygame.joystick.get_count()} | button num | {joy.get_numbuttons()}")
     default = joy.get_axis(0)
     try:
         while True:
@@ -50,7 +59,7 @@ else:
                 mc.adjustForward(False)
                 isSideways = False
                 isTurn = False
-            elif(joy.get_button(3)):
+            elif(joy.get_button(3) and joy.get_button(9)):
                 mc.rotatePods(-45,False)
                 mc.adjustForward(False)
                 break
