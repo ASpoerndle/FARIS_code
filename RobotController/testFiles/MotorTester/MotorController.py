@@ -266,7 +266,7 @@ TESTING GROUNDS FOR MOTORCONTROLLER CLASS
 #mc.adjustForward(False)
 #mc.moveCord((-1,1),False)
 #mc.moveCord((1,0),False)
-##mc.moveCord((0,-1),False)
+#mc.moveCord((0,-1),False)
 
 #mc.adjustForward(False)
 #mc.moveCord((0,1),True)
