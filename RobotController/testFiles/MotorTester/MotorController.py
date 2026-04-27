@@ -226,7 +226,7 @@ g               if(i == 0 or i == 1):
 
         while (not stopCond):
 
-            for motor,i in enumerate(motorList):
+            for i,motor in enumerate(motorList):
                 isRotated = self.checkRotate(motor,angle,speed,debug)
                 if(isRotated):
                     list.pop(i)
