@@ -229,7 +229,7 @@ g               if(i == 0 or i == 1):
             for i,motor in enumerate(motorList):
                 isRotated = self.checkRotate(motor,angle,speed,debug)
                 if(isRotated):
-                    list.pop(i)
+                    motorList.pop(i)
             stopCond = len(motorList) == 0
 
             
