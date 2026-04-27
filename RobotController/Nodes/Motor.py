@@ -3,7 +3,7 @@ import time
 from adafruit_pca9685 import PCA9685
 
 
-class WheelMotor:
+class Motor:
     default_f = 5400
     default_r = 5000
     current_duty = 5200
@@ -15,9 +15,9 @@ class WheelMotor:
     """
     def forward_motion(self, speed):
         
-        new_speed = WheelMotor.default_f + (1300 * speed)
+        new_speed = Motor.default_f + (1300 * speed)
         self.motor.duty_cycle = int(new_speed)
-        WheelMotor.current_duty = int(new_speed)
+        Motor.current_duty = int(new_speed)
     """
     Method: backward_motion(speed)
     Purpose: Adjusts the motors duty cycle proportionally to an inputted float speed so that
@@ -25,17 +25,19 @@ class WheelMotor:
     """
     def backward_motion(self,speed):
         
-        new_speed = WheelMotor.default_r + (1300 * speed)
+        new_speed = Motor.default_r + (1300 * speed)
         self.motor.duty_cycle = int(new_speed)
-        WheelMotor.current_duty = int(new_speed)
+        Motor.current_duty = int(new_speed)
     """
     Method: zero_motion()
     Purpose: sets the motor duty cycle to a motionless speed (5200 mHz)
     """
     def zero_motion(self):
         self.motor.duty_cycle = 5200
-        WheelMotor.current_duty = 5200
-
+        Motor.current_duty = 5200
+    def kill_motor(self):
+        self.motor.duty_cycle = 0
+        Motor.current_duty = 0
     
     def __init__(self,pca, pin,side):
         self.motor = pca.channels[pin]
