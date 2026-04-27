@@ -1,7 +1,7 @@
 import struct
 import smbus2
 from smbus2 import i2c_msg
-from .Motor import WheelMotor
+from .Motor import Motor
 import board
 from adafruit_pca9685 import PCA9685
 import Jetson.GPIO as GPIO
@@ -9,7 +9,7 @@ import time
 import math
 from simple_pid import PID
 bus = smbus2.SMBus(1)
-class RotationalMotor(WheelMotor):
+class RotationalMotor(Motor):
 
   I2C_ADDR = 0x30
 
@@ -19,17 +19,12 @@ class RotationalMotor(WheelMotor):
 
   velocities = [0,0,0,0,0,0,0,0]  
 
-  WHEELDIAMETER = .144
-
-  WHEELC = WHEELDIAMETER * math.pi
-  #=========
-  #pip install simple-pid
-  #=========
+ 
   
   #left is more pos, right is more neg
 
   def __init__(self, pca, pin, side, enc, fVal):
-    WheelMotor.__init__(self,pca,pin,side)
+    Motor.__init__(self,pca,pin,side)
 
     
     self.enc = enc
@@ -46,10 +41,6 @@ class RotationalMotor(WheelMotor):
     self.fVal = fVal
 
     self.currentCount = fVal
-    #Kp = 0.006
-    #Ki = 0.000008
-    #Kd = 0.000001
-
     
     self.pid = PID(0.05,0.000003,0.000002, setpoint=(fVal)) 
     self.pid.output_limits=(-.6,.6)
