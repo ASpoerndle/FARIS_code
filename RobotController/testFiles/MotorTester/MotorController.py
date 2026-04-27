@@ -53,8 +53,9 @@ class MotorController():
         for motor in self.rotational_motor_list[4:8]:
             motor.setSpeed(speed)
     def teleTurn(self):
-        self.rotateTwoMotors(45,2,0,False)
-        self.rotateTwoMotors(-45,1,3,False)
+        self.rotateXMotors(45, [self.rotational_motor_list[2], self.rotational_motor_list[0]], False)
+
+        self.rotateXMotors(-45, [self.rotational_motor_list[1], self.rotational_motor_list[3]], False)
         for i,motor in enumerate(self.rotational_motor_list[4:8]):
             if(i<2):
                 if(motor.getPolarity() == 1):
@@ -91,8 +92,26 @@ g               if(i == 0 or i == 1):
         self.rotatePods(0,debug)
         return
         
+    def rampSpeedPos(self,motor,ticks,speed):
+        if (motor.getCurrentPosition() < 100 ):
+            speed = 0.5
+        elif (abs(motor.getCurrentPosition()) < abs(3 * ticks // 8) and abs(ticks) > 1000 and speed < .8):
+            speed += 0.01
+        elif (abs(motor.getCurrentPosition()) > abs(5 * ticks // 8) and abs(ticks) > 1000 and speed > 0.3):
+            speed -= 0.01
+        return speed
+    def rampSpeedNeg(self,motor,ticks,speed):
+        if (motor.getCurrentPosition() > -100):
+            speed = -.5
+        elif (motor.getCurrentPosition() > 3 * ticks // 8 and ticks < 1000 and speed > -.8):
+            speed -= 0.01
+        elif (motor.getCurrentPosition() < 5 * ticks // 8 and ticks < 1000 and speed < -.3):
+            speed += 0.01
+        return speed
+    def checkRotateForward(self,motor,ticks,speed,isBack,debug):
+            return motor.rotateForward(ticks, speed, isBack, debug)
 
-    def rotateForward(self, ticks,debug,zero):
+    def rotateForward(self, ticks,debug,inPlace):
         polar = 0
         if(ticks < 0):
             polar = -1
@@ -117,44 +136,36 @@ g               if(i == 0 or i == 1):
         while (not stopCond):
 
             if (not isMotorAligned1):
-                isMotorAligned1 = motor1.rotateForward(ticks, speed,isBack,debug)
+                isMotorAligned1 = self.checkRotateForward(motor1,ticks,speed,isBack,debug)
 
             if (not isMotorAligned2):
-                isMotorAligned2 = motor2.rotateForward(ticks, speed,isBack,debug)
+                isMotorAligned2 = self.checkRotateForward(motor2,ticks,speed,isBack,debug)
 
             if (not isMotorAligned3):
-                isMotorAligned3 = motor3.rotateForward(-ticks * zero, speed * zero,isBack,debug)
+                isMotorAligned3= self.checkRotateForward(motor3, -ticks * inPlace, speed * inPlace, isBack, debug)
 
             if (not isMotorAligned4):
-                isMotorAligned4 = motor4.rotateForward(-ticks, speed * zero,isBack * zero,debug)
+                isMotorAligned4 = self.checkRotateForward(motor4, -ticks * inPlace, speed * inPlace, isBack, debug)
+
             if(debug):
                 print(f'Ticks: {ticks} + Speed: {speed}')
            
             if(polar > 0):            
-                if(motor1.getCurrentPosition() < 100 and polar > 0):
-                    speed = 0.5
-                elif(abs(motor1.getCurrentPosition()) < abs(3*ticks//8) and abs(ticks) > 1000 and speed < .8):
-                    speed += 0.01
-                elif(abs(motor1.getCurrentPosition()) > abs(5*ticks//8) and abs(ticks) > 1000 and speed >0.3):
-                    speed -= 0.01
+                speed = self.rampSpeedPos(motor1,ticks,speed)
             else:
-                if(motor1.getCurrentPosition() > -100):
-                    speed = -.5
-                elif(motor1.getCurrentPosition() > 3 * ticks//8 and ticks < 1000 and speed > -.8):
-                    speed -= 0.01
-                elif(motor1.getCurrentPosition() < 5 * ticks//8 and ticks < 1000 and speed < -.3):
-                    speed += 0.01
-           
+                speed = self.rampSpeedNeg(motor1,ticks,speed)
             time.sleep(0.02)
             stopCond = isMotorAligned1 or isMotorAligned2 or isMotorAligned3 or isMotorAligned4
 
         self.stopMotors()
 
-  
+    def checkRotate(self,motor,angle,speed,debug):
+        return motor.rotate(angle, speed, debug)
+
     def rotatePods(self, angle,debug):
         speed = 0.75
         if angle > 90 or angle < -90:
-            print(f"ROTATION ERR: Angle of {angle} degrees is will cause wire damage")
+            print(f"ROTATION ERR: Angle of {angle} degrees will cause wire damage")
             return
         
         isMotorAligned1 = isMotorAligned2 = isMotorAligned3 = isMotorAligned4 = False
@@ -166,16 +177,16 @@ g               if(i == 0 or i == 1):
         while (not stopCond):
 
             if (not isMotorAligned1):
-                isMotorAligned1 = motor1.rotate(angle, speed,debug)
+                isMotorAligned1 = self.checkRotate(motor1,angle,speed,debug)
 
             if (not isMotorAligned2):
-                isMotorAligned2 = motor2.rotate(angle, speed,debug)
+                isMotorAligned2 = self.checkRotate(motor2,angle,speed,debug)
 
             if (not isMotorAligned3):
-                isMotorAligned3 = motor3.rotate(angle, speed,debug)
+                isMotorAligned3 = self.checkRotate(motor3,angle,speed,debug)
 
             if (not isMotorAligned4):
-                isMotorAligned4 = motor4.rotate(angle, speed,debug)
+                isMotorAligned4 = self.checkRotate(motor4,angle,speed,debug)
 
             stopCond = isMotorAligned2 and isMotorAligned1 and isMotorAligned3 and isMotorAligned4
             time.sleep(0.02)
@@ -201,30 +212,28 @@ g               if(i == 0 or i == 1):
     def horizontalMode(self,debug):
         self.rotatePods(-90,debug)
             
-    def rotateTwoMotors(self,angle,motor1i,motor2i,debug):
+    def rotateXMotors(self,angle,motorList,debug):
         speed = 0.75
         if angle > 90 or angle < -90:
             print(f"ROTATION ERR: Angle of {angle} degrees is will cause wire damage")
             return
-        if(motor1i > 3 or motor2i >3):
-            print(f"MOTOR INDEX ERR: motor1 or motor2 index out of range for pod motors | {motor1i} & {motor2i}")
+
         isMotorAligned1 = isMotorAligned2 = False
 
         stopCond = False
 
-        motor1 = self.rotational_motor_list[motor1i] 
-        motor2 = self.rotational_motor_list[motor2i]
+
 
         while (not stopCond):
 
-            if (not isMotorAligned1):
-                isMotorAligned1 = motor1.rotate(angle, speed,debug)
-
-            if (not isMotorAligned2):
-                isMotorAligned2 = motor2.rotate(angle, speed,debug)
+            for motor,i in enumerate(motorList):
+                isRotated = self.checkRotate(motor,angle,speed,debug)
+                if(isRotated):
+                    list.pop(i)
+            stopCond = len(motorList) == 0
 
             
-            stopCond = isMotorAligned2 and isMotorAligned1 
+
             time.sleep(0.02)
         self.stopMotors()
     def stopMotors(self):
@@ -262,8 +271,9 @@ g               if(i == 0 or i == 1):
     #90 degrees = .38
         angle /= 90
         angle *= -.38
-        self.rotateTwoMotors(45,2,0,False)
-        self.rotateTwoMotors(-45,1,3,False)
+        self.rotateXMotors(45,[self.rotational_motor_list[2],self.rotational_motor_list[0]],debug)
+
+        self.rotateXMotors(-45,[self.rotational_motor_list[1],self.rotational_motor_list[3]],debug)
         self.moveDistance(angle,False,True)
         self.adjustForward(False)
     def boxDrill(self,dis,debug):
