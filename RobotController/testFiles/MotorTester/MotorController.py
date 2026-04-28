@@ -30,7 +30,7 @@ class MotorController():
         pin_list_rotational = [[2, "l", 4, 897], 
          [3, "l", 5, 238], 
          [4, "l", 6, 914], 
-         [6, "l", 7, 722], 
+         [6, "l", 7, 1065], 
          #WheelMotors
          [11, 'l', 2, 0],                      
          [10, 'l', 1, 0], 
@@ -72,15 +72,15 @@ class MotorController():
                    motor.setSpeed(-speed)
                if(i==3):
                    motor.setSpeed(-speed)
-           """ 
-            for i,motor in enumerate(self.rotational_motor_list[4:8]):
-g               if(i == 0 or i == 1):
-                    motor.setSpeed(speed)
-                else:
-                    motor.setSpeed(speed)
-            for i in range(6,8):
-                self.rotational_motor_list[i].switchPolarity()
-            """
+    def teleRotate(self,speed):
+        MAX_ROTATE = 60
+        for i,motor in enumerate(self.rotational_motor_list[0:4]):
+            if((motor.getCurrentAngle() < MAX_ROTATE and speed < 0) or (motor.getCurrentAngle() > -MAX_ROTATE and speed > 0)):
+            #if(abs(motor.getCurrentAngle()) < 90):
+                #print(f"Angle: {motor.getCurrentAngle()}, Speed: {speed}")
+                motor.setSpeed(speed)
+            else:
+                motor.setSpeed(0)
     def adjustForward(self,debug):
         for i,motor in enumerate (self.rotational_motor_list[4:8]):
             if(i<6):
@@ -294,15 +294,11 @@ g               if(i == 0 or i == 1):
         self.adjustForward(debug)
 
         print("complete")
-
     def __del__(self):
 
-        for motor in self.wheel_motor_list:
-            motor.move_motor(0)
 
         for motor in self.rotational_motor_list:
-            motor.stopMotor()
-
+            motor.kill_motor()
         time.sleep(2)
 
         print("finished")
@@ -311,12 +307,10 @@ g               if(i == 0 or i == 1):
 """
 TESTING GROUNDS FOR MOTORCONTROLLER CLASS
 """
-#mc = MotorController()
 
 #===CODE FOR ROTATING ROBOT 90 WHILE MOVING===
-#mc.rotateTwoMotors(45,2,3,False)
+#mc.rotateXMotors(45,self.rotational_motors_list[2:4],False)
 #mc.moveDistacne(1,False,False)
-
 
 
 

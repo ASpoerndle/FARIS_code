@@ -55,7 +55,8 @@ else:
             elif(joy.get_button(0) and not isSideways):
                 mc.horizontalMode(False)
                 isSideways = True
-            elif(joy.get_button(1) and (isSideways or isTurn)):
+                isTurn = False
+            elif(joy.get_button(1)):
                 mc.adjustForward(False)
                 isSideways = False
                 isTurn = False
@@ -65,12 +66,16 @@ else:
                 break
             elif(joy.get_button(2) and not isTurn):
                 isTurn = True
+                isSideways = False
                 mc.teleTurn()
                 continue
             elif(abs(joy.get_axis(2)) >= 0.2 and isTurn and not isSideways):
                 mc.teleMoveTurn(joy.get_axis(2)/2)
+            elif(abs(joy.get_axis(2)) >= 0.2 and not isTurn and not isSideways):
+
+                mc.teleRotate(joy.get_axis(2)/2)
             else:
-                mc.teleForward(0)
+                mc.stopMotors()
             pygame.time.wait(10) # Prevent 100% CPU usage
     except KeyboardInterrupt:
         pygame.quit()

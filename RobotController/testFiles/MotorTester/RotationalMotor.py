@@ -127,28 +127,21 @@ class RotationalMotor(WheelMotor):
      
      forward = ((self.fVal-1)/1023)*360 % 360
 
-     if(self.enc <=3):
-        current_degrees = (current/8192) * 360
-        angle += ((self.fVal-1)/1023)*360
-        target = angle
-        speed *= self.polarity
-        error = current_degrees - target    
-     else:
-        #current_degrees = ((current-1)/1023) * 360
-        current_degrees = ((current - 1)/1023) * 360 % 360
+         #current_degrees = ((current-1)/1023) * 360
+     current_degrees = ((current - 1)/1023) * 360 % 360
         
-        target = (forward  + angle) % 360
+     target = (forward  + angle) % 360
         
-        speed *= 0.75
-        error = (target -current_degrees + 180) % 360 - 180 
-        if (error > 90):
-            error -= 180
-            speed *= -1
-        if(error < -90):
-            error += 180
-            speed *= -1
-        target = current_degrees + error
+     speed *= 0.75
+     error = (target -current_degrees + 180) % 360 - 180 
+     if (error > 90):
+           error -= 180
+           speed *= -1
+     if(error < -90):
+        error += 180
         speed *= -1
+     target = current_degrees + error
+     speed *= -1
      self.pid.setpoint = target
      control_signal = self.pid(current_degrees)
         
@@ -308,6 +301,11 @@ class RotationalMotor(WheelMotor):
   def setSpeed(self,speed):
       self.move_motor(speed)
     
+  def getCurrentAngle(self):
+      currentPos = self.getCurrentPosition()
+      currentDeg = (currentPos-1)/1023 * 360
+      currentDeg -= (self.fVal-1)/1023 * 360
+      return currentDeg
 
 """
 TESTING GROUND FOR ROTATIONAL MOTOR

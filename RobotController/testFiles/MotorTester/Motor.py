@@ -35,8 +35,10 @@ class WheelMotor:
     def zero_motion(self):
         self.motor.duty_cycle = 5200
         WheelMotor.current_duty = 5200
-
     
+    def kill_motor(self):
+        self.motor.duty_cycle = 0
+        WheelMotor.current_duty = 0
     def __init__(self,pca, pin,side):
         self.motor = pca.channels[pin]
         self.motor.duty_cycle = 5200
