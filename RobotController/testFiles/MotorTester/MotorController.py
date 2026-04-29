@@ -118,12 +118,7 @@ class MotorController():
             speed = .5
             isBack = False
         #Alter logic for determing ramp up and ramp down
-
-        
-        
-        MotorList = self.rotational_motor_list[4:8]
-
-        
+        MotorList = self.rotational_motor_list[4:8].copy()
         stopCond = False
         if(debug):
             print(f"Polar: {polar}") 
@@ -133,23 +128,23 @@ class MotorController():
     
         while (not stopCond):
 
-            for i,motor in enumerate(motorList):
+            for i,motor in enumerate(MotorList):
                 if(i > 5):
                     ticks *= -1
                 else:
                     ticks = abs(ticks)
                 isThere = self.checkRotateForward(motor,ticks,speed,isBack,debug)
                 if(isThere):
-                    motorList.pop(i)
-            stopCond = len(motorList) == 0
+                    MotorList.pop(i)
+            stopCond = len(MotorList) <= 3
             
             if(debug):
                 print(f'Ticks: {ticks} + Speed: {speed}')
            
             if(polar > 0):            
-                speed = self.rampSpeedPos(motor1,ticks,speed)
+                speed = self.rampSpeedPos(MotorList[0],ticks,speed)
             else:
-                speed = self.rampSpeedNeg(motor1,ticks,speed)
+                speed = self.rampSpeedNeg(MotorList[0],ticks,speed)
             time.sleep(0.02)
             
         self.stopMotors()
@@ -163,27 +158,17 @@ class MotorController():
             print(f"ROTATION ERR: Angle of {angle} degrees will cause wire damage")
             return
         
-        isMotorAligned1 = isMotorAligned2 = isMotorAligned3 = isMotorAligned4 = False
-
+        
         stopCond = False
-
-        motor1, motor2, motor3, motor4 = self.rotational_motor_list[0:4]
-
+        MotorList = self.rotational_motor_list[0:4].copy()
+        
         while (not stopCond):
-
-            if (not isMotorAligned1):
-                isMotorAligned1 = self.checkRotate(motor1,angle,speed,debug)
-
-            if (not isMotorAligned2):
-                isMotorAligned2 = self.checkRotate(motor2,angle,speed,debug)
-
-            if (not isMotorAligned3):
-                isMotorAligned3 = self.checkRotate(motor3,angle,speed,debug)
-
-            if (not isMotorAligned4):
-                isMotorAligned4 = self.checkRotate(motor4,angle,speed,debug)
-
-            stopCond = isMotorAligned2 and isMotorAligned1 and isMotorAligned3 and isMotorAligned4
+            for i,motor in enumerate(MotorList):
+                isAligned = self.checkRotate(motor,angle,speed,debug)
+                if(isAligned):
+                    MotorList.pop(i)
+            
+            stopCond = len(MotorList) == 0
             time.sleep(0.02)
         self.stopMotors()
         
@@ -216,11 +201,8 @@ class MotorController():
         if angle > 90 or angle < -90:
             print(f"ROTATION ERR: Angle of {angle} degrees is will cause wire damage")
             return
-
-
+            
         stopCond = False
-
-
 
         while (not stopCond):
 
@@ -229,9 +211,6 @@ class MotorController():
                 if(isRotated):
                     motors.pop(i)
             stopCond = len(motors) == 0
-
-            
-
             time.sleep(0.02)
         self.stopMotors()
 
