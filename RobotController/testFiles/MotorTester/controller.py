@@ -13,7 +13,7 @@ def get_default(obj,num):
 mc = MotorController()
 
 mc.adjustForward(False)
-SLOW_DOWN = 1
+SLOW_DOWN = 1.5
 """
 NUM | BUTTON
 0 - X
