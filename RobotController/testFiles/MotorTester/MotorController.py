@@ -124,29 +124,29 @@ g               if(i == 0 or i == 1):
         #Alter logic for determing ramp up and ramp down
 
         
-        isMotorAligned1 = isMotorAligned2 = isMotorAligned3 = isMotorAligned4 = False
+        
+        MotorList = self.rotational_motor_list[4:8]
 
+        
         stopCond = False
         if(debug):
             print(f"Polar: {polar}") 
 
-        motor1,motor2,motor3,motor4 = self.rotational_motor_list[4:8]
-        motor4.resetEncoder()
+        MotorList[0].resetEncoder()
         
+    
         while (not stopCond):
 
-            if (not isMotorAligned1):
-                isMotorAligned1 = self.checkRotateForward(motor1,ticks,speed,isBack,debug)
-
-            if (not isMotorAligned2):
-                isMotorAligned2 = self.checkRotateForward(motor2,ticks,speed,isBack,debug)
-
-            if (not isMotorAligned3):
-                isMotorAligned3= self.checkRotateForward(motor3, -ticks * inPlace, speed * inPlace, isBack, debug)
-
-            if (not isMotorAligned4):
-                isMotorAligned4 = self.checkRotateForward(motor4, -ticks * inPlace, speed * inPlace, isBack, debug)
-
+            for i,motor in enumerate(motorList):
+                if(i > 5):
+                    ticks *= -1
+                else:
+                    ticks = abs(ticks)
+                isThere = self.checkRotateForward(motor,ticks,speed,isBack,debug)
+                if(isThere):
+                    motorList.pop(i)
+            stopCond = len(motorList) == 0
+            
             if(debug):
                 print(f'Ticks: {ticks} + Speed: {speed}')
            
@@ -155,8 +155,7 @@ g               if(i == 0 or i == 1):
             else:
                 speed = self.rampSpeedNeg(motor1,ticks,speed)
             time.sleep(0.02)
-            stopCond = isMotorAligned1 or isMotorAligned2 or isMotorAligned3 or isMotorAligned4
-
+            
         self.stopMotors()
 
     def checkRotate(self,motor,angle,speed,debug):
@@ -231,9 +230,6 @@ g               if(i == 0 or i == 1):
                 if(isRotated):
                     motorList.pop(i)
             stopCond = len(motorList) == 0
-
-            
-
             time.sleep(0.02)
         self.stopMotors()
     def stopMotors(self):
