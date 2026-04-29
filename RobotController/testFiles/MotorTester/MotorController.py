@@ -53,9 +53,9 @@ class MotorController():
         for motor in self.rotational_motor_list[4:8]:
             motor.setSpeed(speed)
     def teleTurn(self):
-        self.rotateXMotors(45, [self.rotational_motor_list[2], self.rotational_motor_list[0]], False)
+        self.rotateXMotors(45, [2,0], False)
 
-        self.rotateXMotors(-45, [self.rotational_motor_list[1], self.rotational_motor_list[3]], False)
+        self.rotateXMotors(-45, [1,3], False)
         for i,motor in enumerate(self.rotational_motor_list[4:8]):
             if(i<2):
                 if(motor.getPolarity() == 1):
@@ -214,11 +214,14 @@ class MotorController():
             
     def rotateXMotors(self,angle,motorList,debug):
         speed = 0.75
+        motors = []
+        for i in range(len(motorList)):
+            motors.append(self.rotational_motor_list[motorList[i]])
+            
         if angle > 90 or angle < -90:
             print(f"ROTATION ERR: Angle of {angle} degrees is will cause wire damage")
             return
 
-        isMotorAligned1 = isMotorAligned2 = False
 
         stopCond = False
 
@@ -226,14 +229,39 @@ class MotorController():
 
         while (not stopCond):
 
-            for i,motor in enumerate(motorList):
+            for i,motor in enumerate(motors):
                 isRotated = self.checkRotate(motor,angle,speed,debug)
                 if(isRotated):
-                    motorList.pop(i)
-            stopCond = len(motorList) == 0
+                    motors.pop(i)
+            stopCond = len(motors) == 0
 
             
 
+            time.sleep(0.02)
+        self.stopMotors()
+
+    def rotateAllMotors(self,speed,angle,debug):
+        speed = 0.75
+        motors = self.rotational_motor_list.copy()
+        ticks = 1000
+        isBack = False
+        if(angle > 90 or angle < -90):
+            return
+        stopCond = False
+        while(not stopCond):
+            for i,motor in enumerate(motors):
+                if(i<4):
+                    isRotated = self.checkRotate(motor,angle,speed,debug)
+                    if(isRotated):
+                        motors.pop(i)
+                if(i>3):
+                    if(i>5):
+                        isThere = self.checkRotateForward(motor,ticks,speed,isBack,debug)
+                    else:
+                        isThere = self.checkRotateForward(motor,-ticks,speed,isBack,debug)
+                    if(isThere):
+                        motors.pop(i)
+            stopCond = len(motors) < 4
             time.sleep(0.02)
         self.stopMotors()
     def stopMotors(self):
@@ -271,9 +299,9 @@ class MotorController():
     #90 degrees = .38
         angle /= 90
         angle *= -.38
-        self.rotateXMotors(45,[self.rotational_motor_list[2],self.rotational_motor_list[0]],debug)
+        self.rotateXMotors(45,[2,0],debug)
 
-        self.rotateXMotors(-45,[self.rotational_motor_list[1],self.rotational_motor_list[3]],debug)
+        self.rotateXMotors(-45,[1,3],debug)
         self.moveDistance(angle,False,True)
         self.adjustForward(False)
     def boxDrill(self,dis,debug):
@@ -311,9 +339,9 @@ TESTING GROUNDS FOR MOTORCONTROLLER CLASS
 #===CODE FOR ROTATING ROBOT 90 WHILE MOVING===
 #mc.rotateXMotors(45,self.rotational_motors_list[2:4],False)
 #mc.moveDistacne(1,False,False)
-
-
-
+#mc = MotorController()
+#mc.adjustForward(False)
+#mc.rotateAllMotors(0.1,45,True)
 #mc.adjustForward(True)
 #mc.boxDrill(1,False)
 #mc.adjustForward(False)
