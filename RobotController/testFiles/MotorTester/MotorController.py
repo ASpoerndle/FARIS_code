@@ -64,13 +64,9 @@ class MotorController():
              
            
            for i,motor in enumerate(self.rotational_motor_list[4:8]):
-               if(i == 0):
-                   motor.setSpeed(speed)
-               if(i==1):
+               if(i<=1):
                     motor.setSpeed(speed)
-               if(i==2):
-                   motor.setSpeed(-speed)
-               if(i==3):
+               if(i>=2):
                    motor.setSpeed(-speed)
     def teleRotate(self,speed):
         MAX_ROTATE = 60
