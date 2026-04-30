@@ -17,4 +17,3 @@
 - **YOLO model**
   - after training, test using real sense camera
   - utilize ROS nodes so that the robot takes in a distance once, and moves closer to object
-- 
