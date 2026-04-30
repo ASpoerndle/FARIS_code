@@ -231,7 +231,7 @@ class RotationalMotor(Motor):
               print(f"Target: {target} | Current: {current} Encoder: {self.enc} |  Speed: {motor_speed}")
             self.move_motor(motor_speed)
       else:
-            bool = current >= -target
+            bool = current <= -target
             if(bool):
                 print(f"Encoder: {self.enc} Stopped=== Target: {target} Current: {current}")
                 self.move_motor(0)

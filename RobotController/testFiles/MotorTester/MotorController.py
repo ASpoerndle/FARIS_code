@@ -167,6 +167,7 @@ class MotorController():
             print(f"Polar: {polar}") 
 
         MotorList[0].resetEncoder()
+        time.sleep(0.05)
         if(debug):
             print(f"Reset encoder {MotorList[0]}")
     
@@ -181,6 +182,7 @@ class MotorController():
                 isThere = self.checkRotateForward(motor,ticks,speed,isBack,debug)
                 if(isThere):
                     MotorList.pop(i)
+                    break
                 if(debug):
                     print(f"Loop: {i} | Ticks {ticks}")
             stopCond = len(MotorList) <= 3
