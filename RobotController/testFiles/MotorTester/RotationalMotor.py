@@ -191,7 +191,7 @@ class RotationalMotor(Motor):
 
         bool = current >= target
         if(bool):
-            print(f"===Encoder: {self.enc} Stopped===")
+            print(f"===Encoder: {self.enc} Stopped=== Target: {target} | Current: {current}")
             self.move_motor(0)
 
         else:
@@ -201,7 +201,7 @@ class RotationalMotor(Motor):
       else:
             bool = current <= -target
             if(bool):
-                print(f"Encoder: {self.enc} Stopped===")
+                print(f"Encoder: {self.enc} Stopped=== Current: {current} Target: {target}")
                 self.move_motor(0)
             else:
                 self.move_motor(motor_speed)
@@ -223,7 +223,7 @@ class RotationalMotor(Motor):
 
         bool = current <= target
         if(bool):
-            print(f"===Encoder: {self.enc} Stopped===")
+            print(f"===Encoder: {self.enc} Stopped=== Current {current} | Target: {target}")
             self.move_motor(0)
 
         else:
@@ -302,7 +302,9 @@ class RotationalMotor(Motor):
   def getCurrentAngle(self):
       currentPos = self.getCurrentPosition()
       currentDeg = (currentPos-1)/1023 * 360
-      currentDeg -= (self.fVal-1)/1023 * 360
+      forward = (self.fVal-1)/1023 * 360 % 360
+      currentDeg -= forward
+      print(f"Encoder: {self.enc} | fVal {forward} | current {currentDeg}")
       return currentDeg
 
 """

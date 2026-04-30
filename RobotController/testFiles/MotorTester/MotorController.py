@@ -34,7 +34,7 @@ class MotorController():
         PWM Pin, left or right side, forwardValue, motorType
         """
         pin_list_rotational = [[2, "l", 4, 897], 
-         [3, "l", 5, 238], 
+         [3, "l", 5, 412], 
          [4, "l", 6, 914], 
          [6, "l", 7, 1065], 
          #WheelMotors
@@ -93,9 +93,9 @@ class MotorController():
         MAX_ROTATE = 60
         for i,motor in enumerate(self.rotational_motor_list[0:4]):
             if((motor.getCurrentAngle() < MAX_ROTATE and speed < 0) or (motor.getCurrentAngle() > -MAX_ROTATE and speed > 0)):
-            #if(abs(motor.getCurrentAngle()) < 90):
-                #print(f"Angle: {motor.getCurrentAngle()}, Speed: {speed}")
-                motor.setSpeed(speed)
+                if(abs(motor.getCurrentAngle()) < 90):
+                    print(f"Angle: {motor.getCurrentAngle()}, Speed: {speed}")
+                    motor.setSpeed(speed)
             else:
                 motor.setSpeed(0)
 
@@ -145,9 +145,12 @@ class MotorController():
     Purpose: calls the motors rotateForward() method to check if the motor has reached it's intended destination
     """
     def checkRotateForward(self,motor,ticks,speed,isBack,debug):
-            return motor.rotateForward(ticks, speed, isBack, debug)
+        
+        if(debug):
+            print(f"Ticks: {ticks} | Speed: {speed}")
+        return motor.rotateForward(ticks, speed, isBack, debug)
 
-       def rotateForward(self, ticks,debug,inPlace):
+    def rotateForward(self, ticks,debug,inPlace):
         polar = 0
         if(ticks < 0):
             polar = -1
@@ -164,7 +167,8 @@ class MotorController():
             print(f"Polar: {polar}") 
 
         MotorList[0].resetEncoder()
-        
+        if(debug):
+            print(f"Reset encoder {MotorList[0]}")
     
         while (not stopCond):
 
@@ -176,6 +180,8 @@ class MotorController():
                 isThere = self.checkRotateForward(motor,ticks,speed,isBack,debug)
                 if(isThere):
                     MotorList.pop(i)
+                if(debug):
+                    print(f"Loop: {i}")
             stopCond = len(MotorList) <= 3
             
             if(debug):
@@ -220,6 +226,8 @@ class MotorController():
         #self.rotatePods(0,.5)
 
         ticks = (distance / cir) * 1425.1
+        if(debug):
+            print(f"Ticks: {ticks} | distance: {distance} | isZero: {isZero}")
         if(isZero):
             for i in range(6,8):
                 self.rotational_motor_list[i].switchPolarity()
@@ -227,6 +235,8 @@ class MotorController():
             for i in range(6,8):
                 self.rotational_motor_list[i].switchPolarity()
         else:
+            if(debug):
+                print(f"Rotating forward...")
             self.rotateForward(ticks, debug,1)
 
     def horizontalMode(self,debug):
@@ -295,10 +305,11 @@ class MotorController():
                 hypo = -hypo
         if(debug):
             print(f"X,Y: {x},{y} | Hypotenuse: {hypo} | Angle (Degrees) {angle}")
-            debug = False
+            
         self.rotatePods(angle,debug)
         if(y < 0):
             hypo = -hypo
+        print(f"Moving distance...")
         self.moveDistance(hypo,debug,False)
         self.adjustForward(debug)
     def moveCurve(self,cords,heading,debug):
