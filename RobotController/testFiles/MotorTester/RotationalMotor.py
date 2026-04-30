@@ -170,7 +170,7 @@ class RotationalMotor(Motor):
   """
   def rotateForward(self,position,speed, isBack,debug):
     
-        if((position < 0 or (position > 0 and self.polarity < 0)) and isBack):
+        if(position < 0 or (position > 0 and self.polarity < 0 and isBack)):
             return self.drive_neg(self.polarity * position,speed,debug)
         self.pid.Kp = 0.06
         self.pid.Kd = 0.0002
@@ -233,7 +233,7 @@ class RotationalMotor(Motor):
       else:
             bool = current >= -target
             if(bool):
-                print(f"Encoder: {self.enc} Stopped===")
+                print(f"Encoder: {self.enc} Stopped=== Target: {target} Current: {current}")
                 self.move_motor(0)
             else:
                 self.move_motor(motor_speed)

@@ -173,7 +173,8 @@ class MotorController():
         while (not stopCond):
 
             for i,motor in enumerate(MotorList):
-                if(i > 5):
+                ticks = abs(ticks)
+                if(i > 1):
                     ticks *= -1
                 else:
                     ticks = abs(ticks)
@@ -181,7 +182,7 @@ class MotorController():
                 if(isThere):
                     MotorList.pop(i)
                 if(debug):
-                    print(f"Loop: {i}")
+                    print(f"Loop: {i} | Ticks {ticks}")
             stopCond = len(MotorList) <= 3
             
             if(debug):
