@@ -1,6 +1,5 @@
 import time
 
-from Motor import WheelMotor
 
 from RotationalMotor import RotationalMotor
 
@@ -14,6 +13,13 @@ import time
 import math
 
 #50.9:1 and 71.2:1
+
+"""
+Class: MotorController
+@Author: Aidan Spoerndle
+Purpose: This class is the brains of the logic for the robot, the following methods allow for the robot to conduct
+         complex movement patterns and interactions between the Pod motors and the Wheel motors. 
+"""
 class MotorController():
     def __init__(self):
         GPIO.cleanup()
@@ -48,10 +54,17 @@ class MotorController():
     
     
     
-    
+    """
+    Method: teleforward(speed)
+    Purpose: For the TeleOp controller, allows for the controller to move the robot forward and backward
+    """
     def teleForward(self,speed):
         for motor in self.rotational_motor_list[4:8]:
             motor.setSpeed(speed)
+    """
+    Method: teleTurn()
+    Purpose: For the TeleOp controller, sets the robot to "Turn Mode", allowing it to turn in place
+    """
     def teleTurn(self):
         self.rotateXMotors(45, [2,0], False)
 
@@ -60,6 +73,10 @@ class MotorController():
             if(i<2):
                 if(motor.getPolarity() == 1):
                     motor.switchPolarity()
+    """
+    Method: teleMoveTurn(Speed)
+    Purpose: For the TeleOp controller, allows for the robot to turn in place in "Turn Mode"
+    """
     def teleMoveTurn(self,speed):
              
            
@@ -68,6 +85,10 @@ class MotorController():
                     motor.setSpeed(speed)
                if(i>=2):
                    motor.setSpeed(-speed)
+    """
+    Method: teleRotate(speed)
+    Purpose: For the TeleOp controller, allows the pod motors to rotate together while maintaining the same heading
+    """
     def teleRotate(self,speed):
         MAX_ROTATE = 60
         for i,motor in enumerate(self.rotational_motor_list[0:4]):
@@ -77,6 +98,11 @@ class MotorController():
                 motor.setSpeed(speed)
             else:
                 motor.setSpeed(0)
+
+    """
+    Method: adjustForward(debug)
+    Purpose: resets the Pod motors so that they're facing forwards and are ready to rotate in the same direction together
+    """
     def adjustForward(self,debug):
         for i,motor in enumerate (self.rotational_motor_list[4:8]):
             if(i<6):
@@ -87,7 +113,12 @@ class MotorController():
                     motor.switchPolarity()
         self.rotatePods(0,debug)
         return
-        
+
+
+    """
+    Method: rampSpeedPos(motor, ticks, speed)
+    Purpose: taking in speed input and current tick count, the method ramps the speed up and down. For moving forward
+    """
     def rampSpeedPos(self,motor,ticks,speed):
         if (motor.getCurrentPosition() < 100 ):
             speed = 0.5
@@ -96,6 +127,10 @@ class MotorController():
         elif (abs(motor.getCurrentPosition()) > abs(5 * ticks // 8) and abs(ticks) > 1000 and speed > 0.3):
             speed -= 0.01
         return speed
+    """
+    Method: rampSpeedNeg(motor,ticks,speed)
+    Purpose: taking in speed input and current tick count, the method ramps the speed up and down. For moving backward
+    """
     def rampSpeedNeg(self,motor,ticks,speed):
         if (motor.getCurrentPosition() > -100):
             speed = -.5
@@ -104,6 +139,11 @@ class MotorController():
         elif (motor.getCurrentPosition() < 5 * ticks // 8 and ticks < 1000 and speed < -.3):
             speed += 0.01
         return speed
+
+    """
+    Method: checkRotateForward()
+    Purpose: calls the motors rotateForward() method to check if the motor has reached it's intended destination
+    """
     def checkRotateForward(self,motor,ticks,speed,isBack,debug):
             return motor.rotateForward(ticks, speed, isBack, debug)
 

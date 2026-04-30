@@ -9,6 +9,15 @@ import time
 import math
 from simple_pid import PID
 bus = smbus2.SMBus(1)
+"""
+Class: RotationlMotor
+@Author: Aidan Spoerndle
+Purpose: A subclass of the Motor class, the RotationalMotor class incorporates the encoder data received from an
+         Octoquad MK2 to aid the robot in precise movement of both the pod and the wheel motors.  
+"""
+
+
+
 class RotationalMotor(Motor):
 
   I2C_ADDR = 0x30
