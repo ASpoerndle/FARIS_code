@@ -33,9 +33,9 @@ class MotorController():
         """
         PWM Pin, left or right side, forwardValue, motorType
         """
-        pin_list_rotational = [[2, "l", 4, 897], 
-         [3, "l", 5, 412], 
-         [4, "l", 6, 914], 
+        pin_list_rotational = [[2, "l", 4, 900], 
+         [3, "l", 5, 420], 
+         [4, "l", 6, 930], 
          [6, "l", 7, 1065], 
          #WheelMotors
          [11, 'l', 2, 0],                      
@@ -176,7 +176,7 @@ class MotorController():
             for i,motor in enumerate(MotorList):
              
                 if(i > 1):
-                    isThere = self.checkRotateForward(motor,-ticks,speed,isBack,debug)
+                    isThere = self.checkRotateForward(motor,-ticks*inPlace,speed*inPlace,isBack,debug)
                 else:
                     isThere = self.checkRotateForward(motor,ticks,speed,isBack,debug)
                 
@@ -298,7 +298,9 @@ class MotorController():
         x,y = cords
         hypo = math.sqrt((x**2) + (y**2))
         angle = (math.acos(abs(x)/hypo) * 180)/math.pi
-        if(x > 0):
+        if((x>0 and y < 0) or (x<0 and y >0)):
+            angle = abs(angle)
+        if((x<0 and y <0) or (x>0 and y >0)):
             angle = -angle
         if(x == 0):
             angle = 0
