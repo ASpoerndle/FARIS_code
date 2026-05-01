@@ -174,12 +174,12 @@ class MotorController():
         while (not stopCond):
 
             for i,motor in enumerate(MotorList):
-                ticks = abs(ticks)
+             
                 if(i > 1):
-                    ticks *= -1
+                    isThere = self.checkRotateForward(motor,-ticks,speed,isBack,debug)
                 else:
-                    ticks = abs(ticks)
-                isThere = self.checkRotateForward(motor,ticks,speed,isBack,debug)
+                    isThere = self.checkRotateForward(motor,ticks,speed,isBack,debug)
+                
                 if(isThere):
                     MotorList.pop(i)
                     break
