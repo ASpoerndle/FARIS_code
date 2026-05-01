@@ -34,8 +34,10 @@ def demo1():
     input("Complete")
 
 def demo2():
+    print(mc.getHeading())
     input(".")
     mc.rotatePods(45,False)
+    print(mc.getHeading())
     input("..")
     mc.adjustForward(False)
 

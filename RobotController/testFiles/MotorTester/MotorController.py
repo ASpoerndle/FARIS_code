@@ -352,6 +352,8 @@ class MotorController():
         self.adjustForward(debug)
 
         print("complete")
+    def getHeading(self):
+        return self.rotational_motor_list[0].getCurrentHeading()
     def __del__(self):
 
 

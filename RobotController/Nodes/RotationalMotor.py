@@ -81,6 +81,20 @@ class RotationalMotor(Motor):
     #save settings to octoquad
     bus.write_byte_data(0x30, 0x04, 0x03)
     time.sleep(0.1)
+    #INIT IMU
+    bus.write_byte_data(0x30, 0x04, 0x28)
+
+    # Poll status register until status is 'Running Pose Integration' (4) [cite: 162]
+    while True:
+        status = bus.read_byte_data(0x30, 0x0D)
+        if status == 4:
+            print("Localizer Ready!")
+            break
+        elif status == 5:
+            raise Exception("IMU Fault: Device not detected [cite: 162]")
+
+        time.sleep(0.1)
+
     print("Hardware ready.")
 
   
@@ -307,7 +321,14 @@ class RotationalMotor(Motor):
        
   def setSpeed(self,speed):
       self.move_motor(speed)
-    
+  def getCurrentHeading(self):
+      data = bus.read_i2c_block_data(0x30, 0x18, 2)
+      raw_heading = struct.unpack('<h', bytes(data))[0]
+
+      # Scale factor is 5000 for Radians
+      headingRad = raw_heading / 5000.0
+      headingDeg = headingRad * math.pi/180
+      return headingDeg
 
 """
 TESTING GROUND FOR ROTATIONAL MOTOR
