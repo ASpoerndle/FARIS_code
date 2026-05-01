@@ -78,6 +78,8 @@ else:
                 SLOW_DOWN =1.5
             elif(joy.get_button(5) and SLOW_DOWN < 10):
                 SLOW_DOWN = 3
+            elif(joy.get_button(8)):
+                print(mc.getHeading())
             else:
                 mc.stopMotors()
             pygame.time.wait(10) # Prevent 100% CPU usage
