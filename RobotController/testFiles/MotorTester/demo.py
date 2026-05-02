@@ -18,7 +18,7 @@ def demo1():
     input("Complete")
 
     run_command("Move diagonal")
-    mc.moveCord([1,1], True)
+    mc.moveCord([1,-1], True)
 
     input("Complete")
     run_command("Rotate in place")

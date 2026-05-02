@@ -95,6 +95,7 @@ class MotorController():
     def adjustForward(self,debug):
         self.wheelController.adjustForward()
         self.podController.rotatePods(0,debug)
+
         return
 
 
@@ -115,12 +116,15 @@ class MotorController():
         ticks = (distance / cir) * 1425.1
         if(debug):
             print(f"Ticks: {ticks} | distance: {distance} | isZero: {isZero}")
-        if(isZero):
-            for i in range(6,8):
-                self.rotational_motor_list[i].switchPolarity()
+        if(isZero and distance < 0):
+            self.wheelController.switchForTurning()
             self.wheelController.rotateForward(ticks,debug,-1)
+            self.wheelController.switchForTurning()
+        elif(isZero and distance >0):
             for i in range(6,8):
-                self.rotational_motor_list[i].switchPolarity()
+                self.wheelController.switchForTurning()
+                self.wheelController.rotateForward(ticks, debug, 1)
+                self.wheelController.switchForTurning()
         else:
             if(debug):
                 print(f"Rotating forward...")

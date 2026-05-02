@@ -166,7 +166,9 @@ class WheelController():
             if (debug):
                 print(f"Rotating forward...")
             self.rotateForward(ticks, debug, 1)
-
+    def switchForTurning(self):
+        for i in range(2, 4):
+            self.wheelMotors[i].switchPolarity()
 
     def stopMotors(self):
         for motor in self.wheelMotors:
