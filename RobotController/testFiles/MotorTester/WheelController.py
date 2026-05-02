@@ -100,14 +100,30 @@ class WheelController():
 
     def rotateForward(self, ticks, debug, inPlace):
         polar = 0
-        if (ticks < 0):
+        if (ticks < 0 and inPlace > 0):
             polar = -1
             speed = -.5
             isBack = True
+            isRight = False
+        elif(ticks > 0 and inPlace < 0):
+            isRight = True
+            speed = 0.3
+            polar = 1
+            isBack = True
+            if(debug):
+                print("===isRight===")
+        elif(ticks<0 and inPlace < 0):
+            polar = -1
+            speed = -.3
+            isBack = True
+            isRight = False
         else:
+            isRight = False
             polar = 1
             speed = .5
             isBack = False
+                
+
         # Alter logic for determing ramp up and ramp down
         MotorList = self.wheelMotors.copy()
         stopCond = False
@@ -123,11 +139,15 @@ class WheelController():
 
             for i, motor in enumerate(MotorList):
 
-                if (i > 1):
+                if (i > 1 and not isRight):
                     isThere = self.checkRotateForward(motor, -ticks * inPlace, speed * inPlace, isBack, debug)
-                else:
+                elif(i <= 1 and not isRight):
                     isThere = self.checkRotateForward(motor, ticks, speed, isBack, debug)
+                elif(i > 1 and isRight):
+                    isThere= self.checkRotateForward(motor,ticks * inPlace,speed *inPlace, isBack,debug)
 
+                elif(i <= 1 and isRight):
+                    isThere = self.checkRotateForward(motor,ticks, speed, isBack,debug)
                 if (isThere):
                     MotorList.pop(i)
                     break
@@ -138,9 +158,9 @@ class WheelController():
             if (debug):
                 print(f'Ticks: {ticks} + Speed: {speed}')
 
-            if (polar > 0):
+            if (polar > 0 and inPlace > 0):
                 speed = self.rampSpeedPos(MotorList[0], ticks, speed)
-            else:
+            elif(polar < 0 and inPlace > 0):
                 speed = self.rampSpeedNeg(MotorList[0], ticks, speed)
             time.sleep(0.02)
 

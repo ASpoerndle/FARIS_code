@@ -95,9 +95,11 @@ class MotorController():
     def adjustForward(self,debug):
         self.wheelController.adjustForward()
         self.podController.rotatePods(0,debug)
-
         return
-
+    def faceForward(self,debug):
+        if(self.getHeading() != 0):
+            self.heading = self.getHeading() - 2
+            self.turn(self.heading, False)
 
 
     def rotateForward(self, ticks,debug,inPlace):
@@ -121,10 +123,9 @@ class MotorController():
             self.wheelController.rotateForward(ticks,debug,-1)
             self.wheelController.switchForTurning()
         elif(isZero and distance >0):
-            for i in range(6,8):
-                self.wheelController.switchForTurning()
-                self.wheelController.rotateForward(ticks, debug, 1)
-                self.wheelController.switchForTurning()
+            self.wheelController.switchForTurning()
+            self.wheelController.rotateForward(ticks, debug, -1)
+            self.wheelController.switchForTurning()
         else:
             if(debug):
                 print(f"Rotating forward...")
@@ -198,7 +199,7 @@ class MotorController():
     def turn(self, angle, debug):
     #90 degrees = .38
         angle /= 90
-        angle *= -.38
+        angle *= .38
         self.podController.rotateXMotors(45,[2,0],debug)
 
         self.podController.rotateXMotors(-45,[1,3],debug)
