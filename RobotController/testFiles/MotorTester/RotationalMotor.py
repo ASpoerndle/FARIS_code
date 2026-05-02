@@ -76,7 +76,7 @@ class RotationalMotor(Motor):
         bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x04, self.enc, 1, 0, 0, 4])
         bus.write_i2c_block_data(0x30,0x04, [0x01,0x05,0xF0])
         #bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, self.enc, 0])
-    packed_scalar = struct.pack('<f', float(1.0162115225033))
+    packed_scalar = struct.pack('<f', float(1.0176661986832))
 
     # 2. Prepare the full data payload for the command registers
     # Format: [CommandID, ParamID, Byte0, Byte1, Byte2, Byte3]
@@ -86,15 +86,16 @@ class RotationalMotor(Motor):
     # All operand registers must be written in the same transaction [cite: 202]
     bus.write_i2c_block_data(0x30, 0x04, payload)
     #save settings to octoquad
-    bus.write_byte_data(0x30, 0x04, 0x03)
+   # bus.write_byte_data(0x30, 0x04, 0x03)
     time.sleep(0.1)
+    #bus.write_byte_data(0x30, 0x04, 0x28)
     while True:
         status = bus.read_byte_data(0x30, 0x0D)
         if status == 4:
             print("Localizer Ready!")
             break
         elif status == 5:
-            raise Exception("IMU Fault: Device not detected [cite: 162]")
+            raise Exception("IMU Fault: Device not detected")
 
     
     print("Hardware ready.")

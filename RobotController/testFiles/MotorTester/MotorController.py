@@ -29,7 +29,7 @@ class MotorController():
         pca.frequency = 50
         self.wheel_motor_list = []
         self.rotational_motor_list = []
-        
+         
         """
         PWM Pin, left or right side, forwardValue, motorType
         """
@@ -51,7 +51,7 @@ class MotorController():
             motor = RotationalMotor(pca, i[0], i[1], i[2], i[3])
             self.rotational_motor_list.append(motor)
         print("motors ready!")
-    
+        self.heading = self.getHeading()
     
     
     """
