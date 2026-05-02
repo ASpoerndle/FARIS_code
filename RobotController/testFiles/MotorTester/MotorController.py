@@ -2,7 +2,7 @@ import time
 
 
 from RotationalMotor import RotationalMotor
-
+from PodController import PodController
 import board
 
 from adafruit_pca9685 import PCA9685
@@ -20,6 +20,7 @@ Class: MotorController
 Purpose: This class is the brains of the logic for the robot, the following methods allow for the robot to conduct
          complex movement patterns and interactions between the Pod motors and the Wheel motors. 
 """
+
 class MotorController():
     def __init__(self):
         GPIO.cleanup()
@@ -27,7 +28,6 @@ class MotorController():
         i2c = board.I2C()
         pca = PCA9685(i2c)
         pca.frequency = 50
-        self.wheel_motor_list = []
         self.rotational_motor_list = []
          
         """
@@ -52,7 +52,8 @@ class MotorController():
             self.rotational_motor_list.append(motor)
         print("motors ready!")
         self.heading = self.getHeading()
-    
+        self.podController = PodController(self.rotational_motor_list[0:4])
+
     
     """
     Method: teleforward(speed)
@@ -111,7 +112,7 @@ class MotorController():
             else:
                 if(motor.getPolairty() != -1):
                     motor.switchPolarity()
-        self.rotatePods(0,debug)
+        self.podController.rotatePods(0,False)
         return
 
 

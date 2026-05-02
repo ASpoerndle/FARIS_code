@@ -21,7 +21,7 @@ Purpose: This class is the brains of the logic for the robot, the following meth
 """
 
 
-class MotorController():
+class PodController():
     def __init__(self, rot_motors):
 
         self.podMotors = rot_motors.copy()
