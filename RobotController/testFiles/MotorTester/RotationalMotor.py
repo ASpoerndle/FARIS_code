@@ -75,7 +75,16 @@ class RotationalMotor(Motor):
         # [Cmd, ParamID, Channel, Min_L, Min_H, Max_L, Max_H]
         bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x04, self.enc, 1, 0, 0, 4])
         bus.write_i2c_block_data(0x30,0x04, [0x01,0x05,0xF0])
-        #bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, self.enc, 0]) 
+        #bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, self.enc, 0])
+    packed_scalar = struct.pack('<f', float(1.0162115225033))
+
+    # 2. Prepare the full data payload for the command registers
+    # Format: [CommandID, ParamID, Byte0, Byte1, Byte2, Byte3]
+    payload = [0x01, 0x36] + list(packed_scalar)
+
+    # 3. Write the payload starting at the Command Register (0x04)
+    # All operand registers must be written in the same transaction [cite: 202]
+    bus.write_i2c_block_data(0x30, 0x04, payload)
     #save settings to octoquad
     bus.write_byte_data(0x30, 0x04, 0x03)
     time.sleep(0.1)
@@ -87,7 +96,7 @@ class RotationalMotor(Motor):
         elif status == 5:
             raise Exception("IMU Fault: Device not detected [cite: 162]")
 
-
+    
     print("Hardware ready.")
 
   
@@ -321,7 +330,7 @@ class RotationalMotor(Motor):
 
       # Scale factor is 5000 for Radians
       headingRad = raw_heading / 5000.0
-      headingDeg = headingRad * math.pi/180
+      headingDeg = headingRad * 180/math.pi
       return headingDeg
 
 """

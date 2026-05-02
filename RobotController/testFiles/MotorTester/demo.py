@@ -36,10 +36,10 @@ def demo1():
 def demo2():
     print(mc.getHeading())
     input(".")
-    mc.rotatePods(45,False)
+    mc.turn(45,False)
     print(mc.getHeading())
     input("..")
-    mc.adjustForward(False)
+    mc.turn(-45,False)
 
 ind = input("Which demo?")
 if(int(ind) == 1):

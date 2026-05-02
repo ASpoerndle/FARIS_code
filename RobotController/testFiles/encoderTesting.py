@@ -167,6 +167,33 @@ bus.write_i2c_block_data(0x30,0x04,[0x01,0x05,0xF0])
 bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x02, 0x02])
 bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x04, 0x00, 0x01, 0x00, 0x00, 0x04])
 bus.write_i2c_block_data(0x30,0x04,[0x15,10])
+
+
+import struct
+
+def set_imu_scalar(bus, address, scalar_value):
+    # Parameter IDs
+    REG_COMMAND = 0x04
+    CMD_SET_PARAM = 0x01
+    PARAM_IMU_SCALAR = 0x36
+    
+    # 1. Pack the float into 4 bytes (little-endian)
+    # 'f' is for float, '<' is for little-endian
+    packed_scalar = struct.pack('<f', float(scalar_value))
+    
+    # 2. Prepare the full data payload for the command registers
+    # Format: [CommandID, ParamID, Byte0, Byte1, Byte2, Byte3]
+    payload = [CMD_SET_PARAM, PARAM_IMU_SCALAR] + list(packed_scalar)
+    
+    # 3. Write the payload starting at the Command Register (0x04)
+    # All operand registers must be written in the same transaction [cite: 202]
+    bus.write_i2c_block_data(address, REG_COMMAND, payload)
+    
+    print(f"IMU Scalar set to {scalar_value}. Remember to reset localizer to apply.")
+
+# Example usage:
+set_imu_scalar(bus, 0x30, 1.017656)
+
 print("Channel 0 set to Absolute (PWM) mode.")
 # Start asking for the counts and printing to console in a tight loop
 while True:
