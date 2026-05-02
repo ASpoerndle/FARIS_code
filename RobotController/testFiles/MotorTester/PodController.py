@@ -125,7 +125,9 @@ class PodController():
             stopCond = len(motors) == 0
             time.sleep(0.02)
 
-
+    def stopMotors(self):
+        for motor in self.podMotors:
+            motor.kill_motor()
 
 
 
