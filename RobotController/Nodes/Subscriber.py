@@ -33,7 +33,7 @@ class MinimalSubscriber(Node):
         print(msg.data)
         print(msg)
         if(self.autoDis != 0):
-            self.move_forward(self.autoDis)
+            self.move_distance(self.autoDis)
             self.autoDis = 0
     def vision_mode(self,msg):
         print(msg.data)
