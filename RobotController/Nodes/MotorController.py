@@ -1,9 +1,6 @@
-import time
-
-
-
 from .RotationalMotor import RotationalMotor
-
+from .PodController import PodController
+from .WheelController import WheelController
 import board
 
 from adafruit_pca9685 import PCA9685
@@ -13,7 +10,16 @@ import Jetson.GPIO as GPIO
 import time
 import math
 
-#50.9:1 and 71.2:1
+# 50.9:1 and 71.2:1
+
+"""
+Class: MotorController
+@Author: Aidan Spoerndle
+Purpose: This class is the brains of the logic for the robot, the following methods allow for the robot to conduct
+         complex movement patterns and interactions between the Pod motors and the Wheel motors. 
+"""
+
+
 class MotorController():
     def __init__(self):
         GPIO.cleanup()
@@ -21,180 +27,218 @@ class MotorController():
         i2c = board.I2C()
         pca = PCA9685(i2c)
         pca.frequency = 50
-        self.wheel_motor_list = []
         self.rotational_motor_list = []
-        
+
         """
         PWM Pin, left or right side, forwardValue, motorType
         """
-        pin_list_rotational = [[2, "l", 4, -18539], 
-         [3, "l", 5, -11016], 
-         [4, "l", 6, -81946], 
-         [6, "l", 7, -13779], 
-         #WheelMotors
-         [11, 'l', 2, 0],                      
-         [10, 'l', 1, 0], 
-         [13, 'r', 0, 0], 
-         [15, 'r', 3, 0]]
+        pin_list_rotational = [[2, "l", 4, 900],
+                               [3, "l", 5, 420],
+                               [4, "l", 6, 930],
+                               [6, "l", 7, 1065],
+                               # WheelMotors
+                               [11, 'l', 2, 0],
+                               [10, 'l', 1, 0],
+                               [13, 'r', 0, 0],
+                               [15, 'r', 3, 0]]
 
         # print("readying wheel motors...")
 
-        
         print("readying motors...")
         for i in pin_list_rotational:
             motor = RotationalMotor(pca, i[0], i[1], i[2], i[3])
             self.rotational_motor_list.append(motor)
         print("motors ready!")
-    
-    
-    
-    
-    def teleForward(self,speed):
-        for motor in self.rotational_motor_list[4:8]:
-            motor.setSpeed(speed)
-    def adjustForward(self,debug):
-        self.rotatePods(0,0.5,debug)
+        self.heading = self.getHeading()
+        self.podController = PodController(self.rotational_motor_list[0:4])
+        self.wheelController = WheelController(self.rotational_motor_list[4:8])
+
+    """
+    Method: teleforward(speed)
+    Purpose: For the TeleOp controller, allows for the controller to move the robot forward and backward
+    """
+
+    def teleForward(self, speed):
+        self.wheelController.teleForward(speed)
+
+    """
+    Method: teleTurn()
+    Purpose: For the TeleOp controller, sets the robot to "Turn Mode", allowing it to turn in place
+    """
+
+    def teleTurn(self):
+        self.podController.teleTurn()
+        # self.rotateXMotors(45, [2,0], False)
+        #
+        # self.rotateXMotors(-45, [1,3], False)
+        # for i,motor in enumerate(self.rotational_motor_list[4:8]):
+        #     if(i<2):
+        #         if(motor.getPolarity() == 1):
+        #             motor.switchPolarity()
+
+    """
+    Method: teleMoveTurn(Speed)
+    Purpose: For the TeleOp controller, allows for the robot to turn in place in "Turn Mode"
+    """
+
+    def teleMoveTurn(self, speed):
+
+        self.wheelController.teleMoveTurn(speed)
+
+    """
+    Method: teleRotate(speed)
+    Purpose: For the TeleOp controller, allows the pod motors to rotate together while maintaining the same heading
+    """
+
+    def teleRotate(self, speed):
+        self.podController.teleRotate(speed)
+
+    """
+    Method: adjustForward(debug)
+    Purpose: resets the Pod motors so that they're facing forwards and are ready to rotate in the same direction together
+    """
+
+    def adjustForward(self, debug):
+        self.wheelController.adjustForward()
+        self.podController.rotatePods(0, debug)
         return
-        
 
-    def rotateForward(self, ticks,distance, speed):
+    def faceForward(self, debug):
+        if (self.getHeading() != 0):
+            self.heading = self.getHeading() - 2
+            self.turn(self.heading, False)
 
+    def rotateForward(self, ticks, debug, inPlace):
+        self.wheelController.rotateForward(ticks, debug, inPlace)
 
-        #Alter logic for determing ramp up and ramp down
+    def rotatePods(self, angle, debug):
+        self.podController.rotatePods(angle, debug)
 
-        
-        isMotorAligned1 = isMotorAligned2 = isMotorAligned3 = isMotorAligned4 = False
-
-        stopCond = False
-        whichMotor = "w"
-        if (whichMotor == "w"):
-            for i in range(0,4):
-                self.rotational_motor_list[i+4].resetEncoder()
-            # motor1, motor2, motor3, motor4 = self.rotational_motor_list[4:8]
-            #
-            # angle1 = angle + (motor1.getCurrentPosition() / 8192) * 360
-            #
-            # angle2 = angle + (motor2.getCurrentPosition() / 8192) * 360
-            #
-            # angle3 = (motor3.getCurrentPosition() / 8192) * 360 - angle
-            #
-            # angle4 = (motor4.getCurrentPosition() / 8192) * 360 - angle
-            # print(angle1, angle2, angle3, angle4)
-            # print(str(motor4.getCurrentPosition()) + "CP")
-
-        else:
-
-            # angle1 = angle2 = angle3 = angle4 = angle
-
-            motor1, motor2, motor3, motor4 = self.rotational_motor_list[0:4]
-
-        motor1,motor2,motor3,motor4 = self.rotational_motor_list[4:8]
-        motor4.resetEncoder()
-        
-        while (not stopCond):
-
-            if (not isMotorAligned1):
-                isMotorAligned1 = motor1.rotateForward(ticks, speed)
-
-            if (not isMotorAligned2):
-                isMotorAligned2 = motor2.rotateForward(ticks, speed)
-
-            if (not isMotorAligned3):
-                isMotorAligned3 = motor3.rotateForward(-ticks, speed)
-
-            if (not isMotorAligned4):
-                isMotorAligned4 = motor4.rotateForward(-ticks, speed)
-            print(f'Ticks: {ticks} + Speed: {speed}')
-            # stopCond = (isMotorAligned1 or isMotorAligned2) or (isMotorAligned3 or isMotorAligned4)
-            # if(ticks <= halfTicks and speed <= 1 and max_ticks != -1):
-            #     print("increase speed")
-            #     speed += (1/halfTicks)
-            # elif(ticks > halfTicks and speed > 0.6 and max_ticks != -1):
-            #     speed -=1/halfTicks
-            # ticks+= 1
-            # # if(whichMotor == "w"):
-            time.sleep(0.02)
-            stopCond = isMotorAligned1 or isMotorAligned2 or isMotorAligned3 or isMotorAligned4
-
-        self.stopMotors()
-
-  
-    def rotatePods(self, angle, speed): 
-        if angle > 90 or angle < -90:
-            print(f"ROTATION ERR: Angle of {angle} degrees is will cause wire damage")
-            return
-
-        isMotorAligned1 = isMotorAligned2 = isMotorAligned3 = isMotorAligned4 = False
-
-        stopCond = False
-
-        motor1, motor2, motor3, motor4 = self.rotational_motor_list[0:4]
-
-        while (not stopCond):
-
-            if (not isMotorAligned1):
-                isMotorAligned1 = motor1.rotate(angle, speed,debug)
-
-            if (not isMotorAligned2):
-                isMotorAligned2 = motor2.rotate(angle, speed,debug)
-
-            if (not isMotorAligned3):
-                isMotorAligned3 = motor3.rotate(angle, speed,debug)
-
-            if (not isMotorAligned4):
-                isMotorAligned4 = motor4.rotate(angle, speed,debug)
-
-            stopCond = isMotorAligned2 and isMotorAligned1 and isMotorAligned3 and isMotorAligned4
-            time.sleep(0.02)
-        self.stopMotors()
-
-    def moveDistance(self, distance, speed):
-        #ALL VALUES IN METERS
+    def moveDistance(self, distance, debug, isZero):
+        # ALL VALUES IN METERS
         cir = math.pi * 0.192
-
+        # self.rotatePods(0,.5)
 
         ticks = (distance / cir) * 1425.1
+        if (debug):
+            print(f"Ticks: {ticks} | distance: {distance} | isZero: {isZero}")
+        if (isZero and distance < 0):
+            self.wheelController.switchForTurning()
+            self.wheelController.rotateForward(ticks, debug, -1)
+            self.wheelController.switchForTurning()
+        elif (isZero and distance > 0):
+            self.wheelController.switchForTurning()
+            self.wheelController.rotateForward(ticks, debug, -1)
+            self.wheelController.switchForTurning()
+        else:
+            if (debug):
+                print(f"Rotating forward...")
+            self.wheelController.rotateForward(ticks, debug, 1)
 
+    def horizontalMode(self, debug):
+        self.podController.rotatePods(-90, debug)
 
+    def rotateXMotors(self, angle, motorList, debug):
+        self.podController.rotateXMotors(angle, motorList, debug)
 
-        self.rotateForward(ticks,distance, speed)
+    def rotateAllMotors(self, speed, angle, debug):
+        speed = 0.75
+        motors = self.rotational_motor_list.copy()
+        ticks = 1000
+        isBack = False
+        if (angle > 90 or angle < -90):
+            return
+        stopCond = False
+        while (not stopCond):
+            for i, motor in enumerate(motors):
+                if (i < 4):
+                    isRotated = self.podController.checkRotate(motor, angle, speed, debug)
+                    if (isRotated):
+                        motors.pop(i)
+                if (i > 3):
+                    if (i > 5):
+                        isThere = self.wheelController.checkRotateForward(motor, ticks, speed, isBack, debug)
+                    else:
+                        isThere = self.wheelController.checkRotateForward(motor, -ticks, speed, isBack, debug)
+                    if (isThere):
+                        motors.pop(i)
+            stopCond = len(motors) < 4
+            time.sleep(0.02)
+        self.stopMotors()
 
-    def horizontalMode(self,debug):
-        if(self.angle < 90):
-            self.rotatePods(-90, 0.75,debug)
-            
-        
     def stopMotors(self):
         for motor in self.rotational_motor_list:
             motor.stopMotor()
-            
-    def boxDrill(self,dis,debug):
+
+    def moveCord(self, cords, debug):
+        x, y = cords
+        hypo = math.sqrt((x ** 2) + (y ** 2))
+        angle = (math.acos(abs(x) / hypo) * 180) / math.pi
+        if ((x > 0 and y < 0) or (x < 0 and y > 0)):
+            angle = abs(angle)
+        if ((x < 0 and y < 0) or (x > 0 and y > 0)):
+            angle = -angle
+        if (x == 0):
+            angle = 0
+        if (y == 0):
+            angle = -90
+            if (x < 0):
+                hypo = -hypo
+        if (debug):
+            print(f"X,Y: {x},{y} | Hypotenuse: {hypo} | Angle (Degrees) {angle}")
+
+        self.podController.rotatePods(angle, debug)
+        if (y < 0):
+            hypo = -hypo
+        print(f"Moving distance...")
+        self.moveDistance(hypo, debug, False)
+        self.podController.adjustForward(debug)
+
+    def moveCurve(self, cords, heading, debug):
+        # Do more research into ackermann steering
+        """
+        turning radius = Wheelbase / tan (front wheel angle)
+        arc length = turning radius * final_heading
+        """
+
+        x, y = cords
+
+    def turn(self, angle, debug):
+        # 90 degrees = .38
+        angle /= 90
+        angle *= .38
+        self.podController.rotateXMotors(45, [2, 0], debug)
+
+        self.podController.rotateXMotors(-45, [1, 3], debug)
+        self.moveDistance(angle, False, True)
+        self.podController.adjustForward(False)
+
+    def boxDrill(self, dis, debug):
         self.adjustForward(debug)
-        self.moveDistance(dis,debug)
+        self.moveDistance(dis, debug, False)
         time.sleep(1)
         self.horizontalMode(debug)
         time.sleep(1)
-        self.moveDistance(-dis,debug)
+        self.moveDistance(-dis, debug, False)
         time.sleep(1)
         self.adjustForward(debug)
         time.sleep(1)
-        self.moveDistance(-dis,debug)
+        self.moveDistance(-dis, debug, False)
         time.sleep(1)
         self.horizontalMode(debug)
         time.sleep(1)
-        self.moveDistance(dis,debug)
+        self.moveDistance(dis, debug, False)
         self.adjustForward(debug)
 
         print("complete")
 
+    def getHeading(self):
+        return self.rotational_motor_list[0].getCurrentHeading()
+
     def __del__(self):
 
-        for motor in self.wheel_motor_list:
-            motor.move_motor(0)
-
         for motor in self.rotational_motor_list:
-            motor.stopMotor()
-
+            motor.kill_motor()
         time.sleep(2)
 
         print("finished")
@@ -203,7 +247,27 @@ class MotorController():
 """
 TESTING GROUNDS FOR MOTORCONTROLLER CLASS
 """
-# mc = MotorController()
-# mc.boxDrill(1,False)
 
-print("complete")
+# ===CODE FOR ROTATING ROBOT 90 WHILE MOVING===
+# mc.rotateXMotors(45,self.rotational_motors_list[2:4],False)
+# mc.moveDistacne(1,False,False)
+# mc = MotorController()
+# mc.adjustForward(False)
+# mc.rotateAllMotors(0.1,45,True)
+# mc.adjustForward(True)
+# mc.boxDrill(1,False)
+# mc.adjustForward(False)
+# mc.moveCord((-1,1),False)
+# mc.moveCord((1,0),False)
+# mc.moveCord((0,-1),False)
+
+# mc.adjustForward(False)
+# mc.moveCord((0,1),True)
+# mc.moveCord((-1,1),False)
+# mc.turn(90,False)
+# mc.moveCord((1,0),False)
+# mc.turn(270,False)
+
+
+# mc.moveCords((4,5),True)
+# print("complete")
