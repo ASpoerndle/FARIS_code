@@ -27,7 +27,7 @@ class MinimalSubscriber(Node):
         self.autoDis = 0
         #self.subscription  # prevent unused variable warning
         self.motors = MotorController()
-        self.motors.adjustForward()
+        self.motors.adjustForward(False)
         self.controller = controller(self.motors)
     def auto_mode(self,msg):
         print(msg.data)

@@ -2,7 +2,6 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 from std_msgs.msg import Float32
-from .Controller import controller
 class ExampleNode(Node):
     def __init__(self):
         super().__init__("UserInput")
@@ -18,10 +17,10 @@ class ExampleNode(Node):
     def timer_callback(self):
         msg = Float32()
         print("Farming Automaton for Row-Intercopping Systems")
-        choice = input("Input a for auto_move | Input c for camera move | Input m for manual move")
+        choice = input("Input a for auto_move | Input c for controller | Input m for manual move")
         choice = choice[0].upper()
         if(choice[0].upper() == "A"):
-            msg.data = 1
+            msg.data = 1.0
             self.auto.publish(msg)
 
         if(choice == "M"):
@@ -42,10 +41,10 @@ class ExampleNode(Node):
                 msg.data = 1005.0
             self.manual.publish(msg)
         if(choice[0].upper() == "V"):
-            msg.data = 1
+            msg.data = 1.0
             self.vision.publish(msg)
         if(choice == "C"):
-            msg.data = 1006
+            msg.data = 1006.0
             self.manual.publish(msg)
 
             
