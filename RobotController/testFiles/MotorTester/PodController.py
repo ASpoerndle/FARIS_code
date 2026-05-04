@@ -14,10 +14,9 @@ import math
 # 50.9:1 and 71.2:1
 
 """
-Class: MotorController
+Class: PodController
 @Author: Aidan Spoerndle
-Purpose: This class is the brains of the logic for the robot, the following methods allow for the robot to conduct
-         complex movement patterns and interactions between the Pod motors and the Wheel motors. 
+Purpose: This class controls the main functions of rotating the swerve pods on the robot to a desired angle (degrees) 
 """
 
 
@@ -25,12 +24,15 @@ class PodController():
     def __init__(self, rot_motors):
 
         self.podMotors = rot_motors.copy()
-        # print("readying wheel motors...")
 
 
 
 
 
+    """
+    Method: teleTurn()
+    Purpose: For the TeleOp controller, sets the robot to "Turn Mode", allowing it to turn in place
+    """
     def teleTurn(self):
         self.rotateXMotors(45, [2, 0], False)
 
@@ -76,10 +78,18 @@ class PodController():
         self.rotatePods(0, debug)
         return
 
-
+    """
+    Method: checkRotate(motor,angle,speed,debug)
+    Purpose: calls the specified motors rotate() method which returns back a boolean value whilst also
+             rotating the wheel
+    """
     def checkRotate(self, motor, angle, speed, debug):
         return motor.rotate(angle, speed, debug)
 
+    """
+    Method: rotatePods(angle,debug)
+    Purpose: rotates all 4 swerve pods to a desired degree angle
+    """
     def rotatePods(self, angle, debug):
         speed = 0.75
         if angle > 90 or angle < -90:
@@ -99,11 +109,19 @@ class PodController():
             time.sleep(0.02)
         self.stopMotors()
 
-
-
+    """
+    Method: horizontalMode(debug)
+    Purpose: sends a command to the podController to rotate the pods so that the robot can crab
+             walk 
+    """
     def horizontalMode(self, debug):
         self.rotatePods(-90, debug)
 
+    """
+    Method: rotateXMotors(angle, motorList,debug)
+    Purpose: sends a command to the podController specifying which motors to rotate to
+             a specified degree angle
+    """
     def rotateXMotors(self, angle, motorList, debug):
         speed = 0.75
         motors = []
@@ -124,11 +142,21 @@ class PodController():
                     motors.pop(i)
             stopCond = len(motors) == 0
             time.sleep(0.02)
-
+    """
+    Method: stopMotors()
+    Purpose: sets the motor speed to 0, stopping the motor whilst not killing it
+    """
     def stopMotors(self):
         for motor in self.podMotors:
+            motor.stopMotor()
+    """
+    Method: killMotors()
+    Purpose: kills all power to the motors allowing them to move freely, used mostly when MotorController
+             obj gets deleted
+    """
+    def killMotors(self):
+        for motor in self.podMotors:
             motor.kill_motor()
-
 
 
 

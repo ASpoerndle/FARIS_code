@@ -184,10 +184,10 @@ class RotationalMotor(Motor):
          return False
 
   """
-  Method: rotateForward(angle {degrees} ,speed)
+  Method: driveForward(angle {degrees} ,speed)
   Purpose: handles the logic for moving the wheel motors forward and backward    
   """
-  def rotateForward(self,position,speed, isBack,debug):
+  def driveForward(self,position,speed, isBack,debug):
     
         if(position < 0 or (position > 0 and self.polarity < 0 and isBack)):
             return self.drive_neg(self.polarity * position,speed,debug)
@@ -393,7 +393,7 @@ try:
     #target += 10 
     #print("new degrees",target)
     #while(not val): 
-    #    val = rotMotor.rotateForward(target,.1)
+    #    val = rotMotor.driveForward(target,.1)
     #val = True
     while(not val):
         val = rotMotor.adjustForward()

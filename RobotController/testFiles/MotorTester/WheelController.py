@@ -14,10 +14,10 @@ import math
 # 50.9:1 and 71.2:1
 
 """
-Class: MotorController
+Class: WheelController
 @Author: Aidan Spoerndle
-Purpose: This class is the brains of the logic for the robot, the following methods allow for the robot to conduct
-         complex movement patterns and interactions between the Pod motors and the Wheel motors. 
+Purpose: This class contains the necessary functions to move the Wheel Motors attached to the swerve pods to any
+         desired distance 
 """
 
 
@@ -48,7 +48,10 @@ class WheelController():
             if (i >= 2):
                 motor.setSpeed(-speed)
 
-
+    """
+    Method:adjustForward()
+    Purpose: resets the polarity of each wheel in case it gets changed for any reason
+    """
     def adjustForward(self):
         for i,motor in enumerate (self.wheelMotors):
             if(i<6):
@@ -88,17 +91,20 @@ class WheelController():
         return speed
 
     """
-    Method: checkRotateForward()
-    Purpose: calls the motors rotateForward() method to check if the motor has reached it's intended destination
+    Method: checkDriveForward()
+    Purpose: calls the motors driveForward() method to check if the motor has reached it's intended destination
     """
 
-    def checkRotateForward(self, motor, ticks, speed, isBack, debug):
+    def checkDriveForward(self, motor, ticks, speed, isBack, debug):
 
         if (debug):
             print(f"Ticks: {ticks} | Speed: {speed}")
-        return motor.rotateForward(ticks, speed, isBack, debug)
-
-    def rotateForward(self, ticks, debug, inPlace):
+        return motor.driveForward(ticks, speed, isBack, debug)
+    """
+    Method: driveForward(ticks,debug,inPlace)
+    Purpose: controls the necessary logic to drive the robot either in the forward direction or to turn in place
+    """
+    def driveForward(self, ticks, debug, inPlace):
         polar = 0
         if (ticks < 0 and inPlace > 0):
             polar = -1
@@ -126,7 +132,8 @@ class WheelController():
 
         # Alter logic for determing ramp up and ramp down
         MotorList = self.wheelMotors.copy()
-        stopCond = False
+        stopCond  = False
+        isThere = False
         if (debug):
             print(f"Polar: {polar}")
 
@@ -140,14 +147,14 @@ class WheelController():
             for i, motor in enumerate(MotorList):
 
                 if (i > 1 and not isRight):
-                    isThere = self.checkRotateForward(motor, -ticks * inPlace, speed * inPlace, isBack, debug)
+                    isThere = self.checkDriveForward(motor, -ticks * inPlace, speed * inPlace, isBack, debug)
                 elif(i <= 1 and not isRight):
-                    isThere = self.checkRotateForward(motor, ticks, speed, isBack, debug)
+                    isThere = self.checkDriveForward(motor, ticks, speed, isBack, debug)
                 elif(i > 1 and isRight):
-                    isThere= self.checkRotateForward(motor,ticks * inPlace,speed *inPlace, isBack,debug)
+                    isThere= self.checkDriveForward(motor,ticks * inPlace,speed *inPlace, isBack,debug)
 
                 elif(i <= 1 and isRight):
-                    isThere = self.checkRotateForward(motor,ticks, speed, isBack,debug)
+                    isThere = self.checkDriveForward(motor,ticks, speed, isBack,debug)
                 if (isThere):
                     MotorList.pop(i)
                     break
@@ -167,33 +174,29 @@ class WheelController():
         self.stopMotors()
 
 
-
-    def moveDistance(self, distance, debug, isZero):
-        # ALL VALUES IN METERS
-        cir = math.pi * 0.192
-        # self.rotatePods(0,.5)
-
-        ticks = (distance / cir) * 1425.1
-        if (debug):
-            print(f"Ticks: {ticks} | distance: {distance} | isZero: {isZero}")
-        if (isZero):
-            for i in range(2, 4):
-                self.wheelMotors[i].switchPolarity()
-            self.rotateForward(ticks, debug, -1)
-            for i in range(2, 4):
-                self.wheelMotors[i].switchPolarity()
-        else:
-            if (debug):
-                print(f"Rotating forward...")
-            self.rotateForward(ticks, debug, 1)
+    """
+    Method: switchForTurning()
+    Purpose: switches the polarity of the motors on the right side of the robot, used primarily for turning in place
+    """
     def switchForTurning(self):
         for i in range(2, 4):
             self.wheelMotors[i].switchPolarity()
 
+    """
+    Method: stopMotors()
+    Purpose: sets the motor speed to 0, stopping the motor whilst not killing it
+    """
     def stopMotors(self):
         for motor in self.wheelMotors:
             motor.stopMotor()
 
-
+    """
+    Method: killMotors()
+    Purpose: kills all power to the motors allowing them to move freely, used mostly when MotorController
+             obj gets deleted
+    """
+    def killMotors(self):
+        for motor in self.wheelMotors:
+            motor.kill_motor()
 
 

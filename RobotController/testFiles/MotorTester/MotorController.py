@@ -21,27 +21,31 @@ Purpose: This class is the brains of the logic for the robot, the following meth
 
 class MotorController():
     def __init__(self):
+        #Code for Jetson/PWM breakout board
         GPIO.cleanup()
-        GPIO.setmode(GPIO.BOARD)  # Use physical pin numbering
+        GPIO.setmode(GPIO.BOARD)
         i2c = board.I2C()
         pca = PCA9685(i2c)
         pca.frequency = 50
         self.rotational_motor_list = []
          
         """
-        PWM Pin, left or right side, forwardValue, motorType
+        PWM Pin, left or right side, encoder port, forwardValue 
         """
-        pin_list_rotational = [[2, "l", 4, 900], 
-         [3, "l", 5, 420], 
-         [4, "l", 6, 930], 
-         [6, "l", 7, 1065], 
-         #WheelMotors
-         [11, 'l', 2, 0],                      
-         [10, 'l', 1, 0], 
-         [13, 'r', 0, 0], 
-         [15, 'r', 3, 0]]
 
-        # print("readying wheel motors...")
+        pin_list_rotational = [
+         #PodMotors
+         [2, "l", 4, 900] , #BL - Pod
+         [3, "l", 5, 420], #BR - Pod
+         [4, "l", 6, 930], #FR - Pod
+         [6, "l", 7, 1065], #FL - Pod
+         #WheelMotors
+         [11, 'l', 2, 0],   #FL - Wheel
+         [10, 'l', 1, 0],   #BL - Wheel
+         [13, 'r', 0, 0],   #BR - Wheel
+         [15, 'r', 3, 0]]   #FR - Wheel
+
+
 
         
         print("readying motors...")
@@ -61,6 +65,15 @@ class MotorController():
     """
     def teleForward(self,speed):
         self.wheelController.teleForward(speed)
+
+    """
+        Method: teleTurn()
+        Purpose: For the TeleOp controller, sets the robot to "Turn Mode", allowing it to turn in place
+        """
+
+    def teleTurn(self):
+        self.podController.teleTurn()
+
     """
     Method: teleTurn()
     Purpose: For the TeleOp controller, sets the robot to "Turn Mode", allowing it to turn in place
@@ -96,81 +109,89 @@ class MotorController():
         self.wheelController.adjustForward()
         self.podController.rotatePods(0,debug)
         return
+
+    """
+    Method: faceForward(debug)
+    Purpose: if the current heading isn't 0, turn the robot so that it's facing 0
+    """
     def faceForward(self,debug):
+        OFFSET = -2
         if(self.getHeading() != 0):
-            self.heading = self.getHeading() - 2
+            self.getHeading()
+            self.heading += OFFSET
             self.turn(self.heading, False)
 
+    """
+    Method: driveForward(ticks, debug, inPlace)
+    Purpose: sends a command to the wheelController to drive the robot forward a designated
+             number of ticks, as well as specifying if it's turning in place
+    """
+    def driveForward(self, ticks,debug,inPlace):
+        self.wheelController.driveForward(ticks,debug,inPlace)
 
-    def rotateForward(self, ticks,debug,inPlace):
-        self.wheelController.rotateForward(ticks,debug,inPlace)
-
-
+    """
+    Method: rotatePods(angle, debug)
+    Purpose: sends a command to the podController to rotate the pods by a certain degree angle
+    """
     def rotatePods(self, angle,debug):
         self.podController.rotatePods(angle,debug)
 
-
-    def moveDistance(self, distance, debug,isZero):
+    """
+    Method: moveDistance(distance, debug, inPlace)
+    Purpose: takes in a distance (m), converts it into encoder ticks, and then calls the necessary
+             then calls the necessary method depending on if it's moving in the forward direction
+             or if it's turning inPlace
+    """
+    def moveDistance(self, distance, debug,turnInPlace):
         #ALL VALUES IN METERS
         cir = math.pi * 0.192
         #self.rotatePods(0,.5)
 
         ticks = (distance / cir) * 1425.1
         if(debug):
-            print(f"Ticks: {ticks} | distance: {distance} | isZero: {isZero}")
-        if(isZero and distance < 0):
+            print(f"Ticks: {ticks} | distance: {distance} | isZero: {turnInPlace}")
+        if(turnInPlace):
             self.wheelController.switchForTurning()
-            self.wheelController.rotateForward(ticks,debug,-1)
+            self.wheelController.driveForward(ticks,debug,-1)
             self.wheelController.switchForTurning()
-        elif(isZero and distance >0):
-            self.wheelController.switchForTurning()
-            self.wheelController.rotateForward(ticks, debug, -1)
-            self.wheelController.switchForTurning()
+
         else:
             if(debug):
                 print(f"Rotating forward...")
-            self.wheelController.rotateForward(ticks,debug,1)
+            self.wheelController.driveForward(ticks,debug,1)
 
-
+    """
+    Method: horizontalMode(debug)
+    Purpose: sends a command to the podController to rotate the pods so that the robot can crab
+             walk 
+    """
     def horizontalMode(self,debug):
         self.podController.rotatePods(-90,debug)
-            
+    """
+    Method: rotateXMotors(angle, motorList,debug)
+    Purpose: sends a command to the podController specifying which motors to rotate to
+             a specified degree angle
+    """
     def rotateXMotors(self,angle,motorList,debug):
         self.podController.rotateXMotors(angle,motorList,debug)
 
-    def rotateAllMotors(self,speed,angle,debug):
-        speed = 0.75
-        motors = self.rotational_motor_list.copy()
-        ticks = 1000
-        isBack = False
-        if(angle > 90 or angle < -90):
-            return
-        stopCond = False
-        while(not stopCond):
-            for i,motor in enumerate(motors):
-                if(i<4):
-                    isRotated = self.podController.checkRotate(motor,angle,speed,debug)
-                    if(isRotated):
-                        motors.pop(i)
-                if(i>3):
-                    if(i>5):
-                        isThere = self.wheelController.checkRotateForward(motor,ticks,speed,isBack,debug)
-                    else:
-                        isThere = self.wheelController.checkRotateForward(motor,-ticks,speed,isBack,debug)
-                    if(isThere):
-                        motors.pop(i)
-            stopCond = len(motors) < 4
-            time.sleep(0.02)
-        self.stopMotors()
+    """
+    Method: stopMotors()
+    Purpose: calls a command to the pod and wheel controllers that stops the motors from running
+             but provides the proper amount of current to enable them to not move freely
+    """
     def stopMotors(self):
-        for motor in self.rotational_motor_list:
-            motor.stopMotor()
+        self.podController.stopMotors()
+        self.wheelController.stopMotors()
+    """
+    Method: moveCord(cords, debug)
+    Purpose: given a x,y coordinate (in meters), send the proper commands to the wheel and pod
+             controllers to allow the robot to travel the shortest path to that destination
+    """
     def moveCord(self, cords,debug):
         x,y = cords
         hypo = math.sqrt((x**2) + (y**2))
         angle = (math.acos(abs(x)/hypo) * 180)/math.pi
-        if((x>0 and y < 0) or (x<0 and y >0)):
-            angle = abs(angle)
         if((x<0 and y <0) or (x>0 and y >0)):
             angle = -angle
         if(x == 0):
@@ -188,6 +209,12 @@ class MotorController():
         print(f"Moving distance...")
         self.moveDistance(hypo,debug,False)
         self.podController.adjustForward(debug)
+
+    """
+    Method: moveCurve(cords, endHeading,debug)
+    Purpose: travel to a designated x,y cord (in meters) whilst changing headings to a new specified heading
+    ===IN-DEVELOPMENT===
+    """
     def moveCurve(self,cords,heading,debug):
         #Do more research into ackermann steering
         """
@@ -196,6 +223,11 @@ class MotorController():
         """
 
         x,y = cords
+    """
+    Method: turn(angle,debug)
+    Purpose: given a degree angle, send the proper commands to the pod controllers to rotate the
+             wheels and then execute the logic to allow the robot to turn in place 
+    """
     def turn(self, angle, debug):
     #90 degrees = .38
         angle /= 90
@@ -205,31 +237,22 @@ class MotorController():
         self.podController.rotateXMotors(-45,[1,3],debug)
         self.moveDistance(angle,False,True)
         self.podController.adjustForward(False)
-    def boxDrill(self,dis,debug):
-        self.adjustForward(debug)
-        self.moveDistance(dis,debug,False)
-        time.sleep(1)
-        self.horizontalMode(debug)
-        time.sleep(1)
-        self.moveDistance(-dis,debug,False)
-        time.sleep(1)
-        self.adjustForward(debug)
-        time.sleep(1)
-        self.moveDistance(-dis,debug,False)
-        time.sleep(1)
-        self.horizontalMode(debug)
-        time.sleep(1)
-        self.moveDistance(dis,debug,False)
-        self.adjustForward(debug)
-
-        print("complete")
+    """
+    Method: getHeading()
+    Purpose: to retrieve the current heading of the Octoquad
+    """
     def getHeading(self):
-        return self.rotational_motor_list[0].getCurrentHeading()
+        self.heading = self.rotational_motor_list[0].getCurrentHeading()
+    """
+    Method: __del__()
+    Purpose: kills the power being supplied to the motors when the MotorController object gets
+             deleted
+    """
     def __del__(self):
 
 
-        for motor in self.rotational_motor_list:
-            motor.kill_motor()
+        self.podController.killMotors()
+        self.wheelController.killMotors()
         time.sleep(2)
 
         print("finished")
