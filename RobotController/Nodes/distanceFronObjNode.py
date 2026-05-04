@@ -37,18 +37,27 @@ class DistanceFromObj_node(Node):
             10)
         self.subscription2 = self.create_subscription(Image,
             '/camera/camera/depth/image_rect_raw', self.retrieveDistance, 10)
-        self.subscription  # prevent unused variable warning
+        self.auto_mode = self.create_subscription(Float32, 'auto_mode', self.get_dis, 10)  # prevent unused variable warning
+        self.depth_pub = self.create_publisher(Float32, 'auto_mode', 10)
+        self.depth= None
         self.bridge = CvBridge()
        
     #method to publishes the bounding box outwards
     def publish_topic(self):
         self.publisher_.publish(self.msg)
-
     #uses the data from the /color/image_raw topic and puts it in the YOLO model and gets the bounding box coordinates 
     def get_data_from_topic(self, data):
       self.x1,self.x2,self.y1,self.y2 =  data.x1, data.x2, data.y1, data.y2
-      
+    def get_dis(self):
+        centerx = 640/2
+        centery = 480/2
+        cv_depth_image = self.bridge.imgmsg_to_cv2(self.depth, desired_encoding='passthrough')
+        depth_value = cv_depth_image[centery, centerx]
+        self.msg.data = float(depth_value / 1000)
+        self.depth_pub.publish(self.msg)
+
     def retrieveDistance(self, depth):
+        self.depth = depth
         if self.x1 is None:
             return 0# Wait until we have a bounding box
         cv_depth_image = self.bridge.imgmsg_to_cv2(depth, desired_encoding='passthrough')

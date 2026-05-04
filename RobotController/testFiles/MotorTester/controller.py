@@ -12,8 +12,8 @@ def get_default(obj,num):
     return obj.get_axis(num)
 mc = MotorController()
 
-
-
+mc.adjustForward(False)
+SLOW_DOWN = 1.5
 """
 NUM | BUTTON
 0 - X
@@ -50,12 +50,13 @@ else:
                 #print(f"left and right {joy.get_axis(0)}")
                 mc.teleForward(joy.get_axis(0)/2)
             elif(abs(joy.get_axis(1)) >= 0.2 and not isSideways and not isTurn):
-                mc.teleForward(-joy.get_axis(1)/2)
+                mc.teleForward(-joy.get_axis(1)/SLOW_DOWN)
                 #print(f" up and down {joy.get_axis(1)}")
             elif(joy.get_button(0) and not isSideways):
                 mc.horizontalMode(False)
                 isSideways = True
-            elif(joy.get_button(1) and (isSideways or isTurn)):
+                isTurn = False
+            elif(joy.get_button(1)):
                 mc.adjustForward(False)
                 isSideways = False
                 isTurn = False
@@ -65,12 +66,22 @@ else:
                 break
             elif(joy.get_button(2) and not isTurn):
                 isTurn = True
+                isSideways = False
                 mc.teleTurn()
                 continue
             elif(abs(joy.get_axis(2)) >= 0.2 and isTurn and not isSideways):
                 mc.teleMoveTurn(joy.get_axis(2)/2)
+            elif(abs(joy.get_axis(2)) >= 0.2 and not isTurn and not isSideways):
+
+                mc.teleRotate(joy.get_axis(2)/2)
+            elif(joy.get_button(4) and SLOW_DOWN >1):
+                SLOW_DOWN =1.5
+            elif(joy.get_button(5) and SLOW_DOWN < 10):
+                SLOW_DOWN = 3
+            elif(joy.get_button(8)):
+                print(mc.getHeading())
             else:
-                mc.teleForward(0)
+                mc.stopMotors()
             pygame.time.wait(10) # Prevent 100% CPU usage
     except KeyboardInterrupt:
         pygame.quit()

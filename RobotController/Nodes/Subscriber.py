@@ -4,6 +4,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from .MotorController import MotorController
 from std_msgs.msg import Float32
+from .Controller import controller
 
 class MinimalSubscriber(Node):
 
@@ -26,16 +27,19 @@ class MinimalSubscriber(Node):
         self.autoDis = 0
         #self.subscription  # prevent unused variable warning
         self.motors = MotorController()
-        self.motors.adjustForward()
+        self.motors.adjustForward(False)
+        self.controller = controller(self.motors)
     def auto_mode(self,msg):
         print(msg.data)
         print(msg)
         if(self.autoDis != 0):
-            self.move_forward(self.autoDis)
+            self.move_distance(self.autoDis)
             self.autoDis = 0
     def vision_mode(self,msg):
         print(msg.data)
         print(msg)
+    def controller_mode(self):
+        self.controller.use_controller()
     def manual_mode(self,msg):
         data = msg.data
 
@@ -57,6 +61,9 @@ class MinimalSubscriber(Node):
             self.motors.rotatePods(rotate,0.5)
         if(data == 1005):
             self.motors.adjustForward()
+        if(data == 1006):
+            print(f"===Init Controller Mode===")
+            self.controller_mode()
             
     def setAutoMove(self,msg):
         self.autoDis = msg.data

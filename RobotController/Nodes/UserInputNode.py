@@ -13,12 +13,14 @@ class ExampleNode(Node):
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
+
     def timer_callback(self):
         msg = Float32()
         print("Farming Automaton for Row-Intercopping Systems")
-        choice = input("Input a for auto_move | Input c for camera move | Input m for manual move")
-        if(choice[0].upper == "A"):
-            msg.data = 1
+        choice = input("Input a for auto_move | Input c for controller | Input m for manual move")
+        choice = choice[0].upper()
+        if(choice[0].upper() == "A"):
+            msg.data = 1.0
             self.auto.publish(msg)
 
         if(choice == "M"):
@@ -38,9 +40,13 @@ class ExampleNode(Node):
             if(choice == "A"):
                 msg.data = 1005.0
             self.manual.publish(msg)
-        if(choice.upper == "C"):
-            msg.data = 1
+        if(choice[0].upper() == "V"):
+            msg.data = 1.0
             self.vision.publish(msg)
+        if(choice == "C"):
+            msg.data = 1006.0
+            self.manual.publish(msg)
+
             
         #msg.data = input("what distance?")
         #self.publisher_.publish(msg)

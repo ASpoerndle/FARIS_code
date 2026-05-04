@@ -1,15 +1,22 @@
 import struct
 import smbus2
 from smbus2 import i2c_msg
-from Motor import WheelMotor
+from Motor import Motor
 import board
 from adafruit_pca9685 import PCA9685
 import Jetson.GPIO as GPIO
 import time
 import math
 from simple_pid import PID
+"""
+Class: RotationlMotor
+@Author: Aidan Spoerndle
+Purpose: A subclass of the Motor class, the RotationalMotor class incorporates the encoder data received from an
+         Octoquad MK2 to aid the robot in precise movement of both the pod and the wheel motors.  
+"""
+
 bus = smbus2.SMBus(1)
-class RotationalMotor(WheelMotor):
+class RotationalMotor(Motor):
 
   I2C_ADDR = 0x30
 
@@ -22,14 +29,9 @@ class RotationalMotor(WheelMotor):
   WHEELDIAMETER = .144
 
   WHEELC = WHEELDIAMETER * math.pi
-  #=========
-  #pip install simple-pid
-  #=========
-  
-  #left is more pos, right is more neg
 
   def __init__(self, pca, pin, side, enc, fVal):
-    WheelMotor.__init__(self,pca,pin,side)
+    Motor.__init__(self,pca,pin,side)
 
     
     self.enc = enc
@@ -46,11 +48,7 @@ class RotationalMotor(WheelMotor):
     self.fVal = fVal
 
     self.currentCount = fVal
-    #Kp = 0.006
-    #Ki = 0.000008
-    #Kd = 0.000001
 
-    
     self.pid = PID(0.05,0.000003,0.000002, setpoint=(fVal)) 
     self.pid.output_limits=(-.6,.6)
   
@@ -77,10 +75,29 @@ class RotationalMotor(WheelMotor):
         # [Cmd, ParamID, Channel, Min_L, Min_H, Max_L, Max_H]
         bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x04, self.enc, 1, 0, 0, 4])
         bus.write_i2c_block_data(0x30,0x04, [0x01,0x05,0xF0])
-        #bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, self.enc, 0]) 
+        #bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, self.enc, 0])
+    packed_scalar = struct.pack('<f', float(1.0176661986832))
+
+    # 2. Prepare the full data payload for the command registers
+    # Format: [CommandID, ParamID, Byte0, Byte1, Byte2, Byte3]
+    payload = [0x01, 0x36] + list(packed_scalar)
+
+    # 3. Write the payload starting at the Command Register (0x04)
+    # All operand registers must be written in the same transaction [cite: 202]
+    bus.write_i2c_block_data(0x30, 0x04, payload)
     #save settings to octoquad
-    bus.write_byte_data(0x30, 0x04, 0x03)
+   # bus.write_byte_data(0x30, 0x04, 0x03)
     time.sleep(0.1)
+    #bus.write_byte_data(0x30, 0x04, 0x28)
+    while True:
+        status = bus.read_byte_data(0x30, 0x0D)
+        if status == 4:
+            print("Localizer Ready!")
+            break
+        elif status == 5:
+            raise Exception("IMU Fault: Device not detected")
+
+    
     print("Hardware ready.")
 
   
@@ -127,28 +144,21 @@ class RotationalMotor(WheelMotor):
      
      forward = ((self.fVal-1)/1023)*360 % 360
 
-     if(self.enc <=3):
-        current_degrees = (current/8192) * 360
-        angle += ((self.fVal-1)/1023)*360
-        target = angle
-        speed *= self.polarity
-        error = current_degrees - target    
-     else:
-        #current_degrees = ((current-1)/1023) * 360
-        current_degrees = ((current - 1)/1023) * 360 % 360
+         #current_degrees = ((current-1)/1023) * 360
+     current_degrees = ((current - 1)/1023) * 360 % 360
         
-        target = (forward  + angle) % 360
+     target = (forward  + angle) % 360
         
-        speed *= 0.75
-        error = (target -current_degrees + 180) % 360 - 180 
-        if (error > 90):
-            error -= 180
-            speed *= -1
-        if(error < -90):
-            error += 180
-            speed *= -1
-        target = current_degrees + error
+     speed *= 0.75
+     error = (target -current_degrees + 180) % 360 - 180 
+     if (error > 90):
+           error -= 180
+           speed *= -1
+     if(error < -90):
+        error += 180
         speed *= -1
+     target = current_degrees + error
+     speed *= -1
      self.pid.setpoint = target
      control_signal = self.pid(current_degrees)
         
@@ -174,12 +184,12 @@ class RotationalMotor(WheelMotor):
          return False
 
   """
-  Method: rotateForward(angle {degrees} ,speed)
+  Method: driveForward(angle {degrees} ,speed)
   Purpose: handles the logic for moving the wheel motors forward and backward    
   """
-  def rotateForward(self,position,speed, isBack,debug):
+  def driveForward(self,position,speed, isBack,debug):
     
-        if((position < 0 or (position > 0 and self.polarity < 0)) and isBack):
+        if(position < 0 or (position > 0 and self.polarity < 0 and isBack)):
             return self.drive_neg(self.polarity * position,speed,debug)
         self.pid.Kp = 0.06
         self.pid.Kd = 0.0002
@@ -200,7 +210,7 @@ class RotationalMotor(WheelMotor):
 
         bool = current >= target
         if(bool):
-            print(f"===Encoder: {self.enc} Stopped===")
+            print(f"===Encoder: {self.enc} Stopped=== Target: {target} | Current: {current}")
             self.move_motor(0)
 
         else:
@@ -210,7 +220,7 @@ class RotationalMotor(WheelMotor):
       else:
             bool = current <= -target
             if(bool):
-                print(f"Encoder: {self.enc} Stopped===")
+                print(f"Encoder: {self.enc} Stopped=== Current: {current} Target: {target}")
                 self.move_motor(0)
             else:
                 self.move_motor(motor_speed)
@@ -232,7 +242,7 @@ class RotationalMotor(WheelMotor):
 
         bool = current <= target
         if(bool):
-            print(f"===Encoder: {self.enc} Stopped===")
+            print(f"===Encoder: {self.enc} Stopped=== Current {current} | Target: {target}")
             self.move_motor(0)
 
         else:
@@ -240,12 +250,12 @@ class RotationalMotor(WheelMotor):
               print(f"Target: {target} | Current: {current} Encoder: {self.enc} |  Speed: {motor_speed}")
             self.move_motor(motor_speed)
       else:
-            bool = current >= -target
+            bool = current <= -target
             if(bool):
-                print(f"Encoder: {self.enc} Stopped===")
+                print(f"Encoder: {self.enc} Stopped=== Target: {target} Current: {current}")
                 self.move_motor(0)
             else:
-                self.move_motor(motor_speed)
+                self.move_motor(-motor_speed)
       return bool
   """
   Method: stopMotor()
@@ -308,6 +318,21 @@ class RotationalMotor(WheelMotor):
   def setSpeed(self,speed):
       self.move_motor(speed)
     
+  def getCurrentAngle(self):
+      currentPos = self.getCurrentPosition()
+      currentDeg = (currentPos-1)/1023 * 360
+      forward = (self.fVal-1)/1023 * 360 % 360
+      currentDeg -= forward
+      print(f"Encoder: {self.enc} | fVal {forward} | current {currentDeg}")
+      return currentDeg
+  def getCurrentHeading(self):
+      data = bus.read_i2c_block_data(0x30, 0x18, 2)
+      raw_heading = struct.unpack('<h', bytes(data))[0]
+
+      # Scale factor is 5000 for Radians
+      headingRad = raw_heading / 5000.0
+      headingDeg = headingRad * 180/math.pi
+      return headingDeg
 
 """
 TESTING GROUND FOR ROTATIONAL MOTOR
@@ -368,7 +393,7 @@ try:
     #target += 10 
     #print("new degrees",target)
     #while(not val): 
-    #    val = rotMotor.rotateForward(target,.1)
+    #    val = rotMotor.driveForward(target,.1)
     #val = True
     while(not val):
         val = rotMotor.adjustForward()
