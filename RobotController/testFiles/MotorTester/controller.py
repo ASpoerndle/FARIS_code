@@ -74,12 +74,14 @@ else:
             elif(abs(joy.get_axis(2)) >= 0.2 and not isTurn and not isSideways):
 
                 mc.teleRotate(joy.get_axis(2)/2)
-            elif(joy.get_button(4) and SLOW_DOWN >1):
+            elif(joy.get_button(4) and SLOW_DOWN >1 and not joy.get_button(5)):
                 SLOW_DOWN =1.5
-            elif(joy.get_button(5) and SLOW_DOWN < 10):
+            elif(joy.get_button(5) and SLOW_DOWN < 10 and not joy.get_button(4)):
                 SLOW_DOWN = 3
             elif(joy.get_button(8)):
                 print(mc.getHeading())
+            elif(joy.get_button(4) and joy.get_button(5)):
+                break
             else:
                 mc.stopMotors()
             pygame.time.wait(10) # Prevent 100% CPU usage

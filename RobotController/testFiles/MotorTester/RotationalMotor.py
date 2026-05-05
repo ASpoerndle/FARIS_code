@@ -88,7 +88,7 @@ class RotationalMotor(Motor):
     #save settings to octoquad
     bus.write_byte_data(0x30, 0x04, 0x03)
     time.sleep(0.1)
-    bus.write_byte_data(0x30, 0x04, 0x28)
+   # bus.write_byte_data(0x30, 0x04, 0x28)
     while True:
         status = bus.read_byte_data(0x30, 0x0D)
         if status == 4:
