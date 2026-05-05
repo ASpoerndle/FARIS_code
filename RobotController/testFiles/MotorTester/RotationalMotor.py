@@ -86,9 +86,9 @@ class RotationalMotor(Motor):
     # All operand registers must be written in the same transaction [cite: 202]
     bus.write_i2c_block_data(0x30, 0x04, payload)
     #save settings to octoquad
-   # bus.write_byte_data(0x30, 0x04, 0x03)
+    bus.write_byte_data(0x30, 0x04, 0x03)
     time.sleep(0.1)
-    #bus.write_byte_data(0x30, 0x04, 0x28)
+    bus.write_byte_data(0x30, 0x04, 0x28)
     while True:
         status = bus.read_byte_data(0x30, 0x0D)
         if status == 4:
@@ -328,8 +328,7 @@ class RotationalMotor(Motor):
   def getCurrentHeading(self):
       data = bus.read_i2c_block_data(0x30, 0x18, 2)
       raw_heading = struct.unpack('<h', bytes(data))[0]
-
-      # Scale factor is 5000 for Radians
+      print(raw_heading)
       headingRad = raw_heading / 5000.0
       headingDeg = headingRad * 180/math.pi
       return headingDeg

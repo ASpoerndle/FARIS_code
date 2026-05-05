@@ -37,7 +37,7 @@ class MotorController():
          #PodMotors
          [2, "l", 4, 900] , #BL - Pod
          [3, "l", 5, 420], #BR - Pod
-         [4, "l", 6, 930], #FR - Pod
+         [4, "l", 6, 918], #FR - Pod
          [6, "l", 7, 1065], #FL - Pod
          #WheelMotors
          [11, 'l', 2, 0],   #FL - Wheel
@@ -109,11 +109,9 @@ class MotorController():
     Purpose: if the current heading isn't 0, turn the robot so that it's facing 0
     """
     def faceForward(self,debug):
-        OFFSET = -2
         if(self.getHeading() != 0):
-            self.getHeading()
-            self.heading += OFFSET
-            self.turn(self.heading, False)
+            self.heading = self.getHeading()
+            self.turn(self.heading, debug)
 
     """
     Method: driveForward(ticks, debug, inPlace)
@@ -236,7 +234,8 @@ class MotorController():
     Purpose: to retrieve the current heading of the Octoquad
     """
     def getHeading(self):
-        self.heading = self.rotational_motor_list[0].getCurrentHeading()
+        heading = self.rotational_motor_list[0].getCurrentHeading()
+        return heading
     """
     Method: __del__()
     Purpose: kills the power being supplied to the motors when the MotorController object gets
