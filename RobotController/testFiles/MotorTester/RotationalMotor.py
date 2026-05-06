@@ -84,10 +84,10 @@ class RotationalMotor(Motor):
 
     # 3. Write the payload starting at the Command Register (0x04)
     # All operand registers must be written in the same transaction [cite: 202]
-    bus.write_i2c_block_data(0x30, 0x04, payload)
-    #save settings to octoquad
-    bus.write_byte_data(0x30, 0x04, 0x03)
-    time.sleep(0.1)
+    # bus.write_i2c_block_data(0x30, 0x04, payload)
+    # #save settings to octoquad
+    # bus.write_byte_data(0x30, 0x04, 0x03)
+    # time.sleep(0.1)
    # bus.write_byte_data(0x30, 0x04, 0x28)
     while True:
         status = bus.read_byte_data(0x30, 0x0D)
