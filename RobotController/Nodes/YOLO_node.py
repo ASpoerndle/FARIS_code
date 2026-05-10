@@ -23,7 +23,7 @@ class YOLO_node(Node):
         super().__init__('YOLO_node')
         #sets the msg variable to be equal to my custom topic 
         self.msg = BB()
-        self.model = YOLO("/home/aidan/ros2_humble/src/RobotController/RobotController/YOLOPencil.pt")
+        self.model = YOLO("/home/aidan/ros2_humble/src/RobotController/RobotController/best.pt")
         CLASS_NAMES = ["Pencil"]
         #creates a topic that the node can publish to (bounding_box) with the bounding_box message type and sends a max of 10 at any one time
         self.publisher_ = self.create_publisher(BB, 'bounding_box', 10)
