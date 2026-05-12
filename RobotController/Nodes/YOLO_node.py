@@ -11,7 +11,7 @@ torch.backends.cudnn.benchmark = False
 from ultralytics import YOLO
 from cv_bridge import CvBridge
 #model = YOLO("YOLOPencil.pt")
-#CLASS_NAMES = ["Pencil"] 
+CLASS_NAMES = ["Pencil"] 
 
 """
 In the future, change so it doesn't send out until the box is first generated
@@ -24,7 +24,7 @@ class YOLO_node(Node):
         #sets the msg variable to be equal to my custom topic 
         self.msg = BB()
         self.model = YOLO("/home/aidan/ros2_humble/src/RobotController/RobotController/best.pt")
-        CLASS_NAMES = ["radish", "tomato"]
+        CLASS_NAMES = ["radish","tomato"]
         #creates a topic that the node can publish to (bounding_box) with the bounding_box message type and sends a max of 10 at any one time
         self.publisher_ = self.create_publisher(BB, 'bounding_box', 10)
         timer_period = 0.5  # seconds
@@ -75,11 +75,10 @@ class YOLO_node(Node):
                 conf = box.conf.item() # Confidence score
                 cls = int(box.cls.item()) # Class ID
                 xyxy = box.xyxy[0].cpu().numpy() # Bounding box coordinates [x1, y1, x2, y2]
-    
                 if conf > score_threshold:
                     x1, y1, x2, y2 = map(int, xyxy)
                     return(x1,x2,y1,y2)
-        return 0,1,0,1
+        return 0,0,0,0
                  #    # Draw rectangle
                  #    color = (0, 255, 0) # Green color for bounding box
                  #    cv2.rectangle(image, (x1, y1), (x2, y2), color, 2)
