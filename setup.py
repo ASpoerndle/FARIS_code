@@ -7,7 +7,7 @@ package_name = 'RobotController'
 setup(
     name=package_name,
     version='0.0.0',
-    packages=find_packages(exclude=['test']),
+    packages=[package_name, package_name +'.Nodes'],
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
@@ -32,7 +32,7 @@ setup(
             'node = RobotController.Nodes.UserInputNode:main',
             'listener = RobotController.Nodes.Subscriber:main',
             'YOLO_node = RobotController.Nodes.YOLO_node:main',
-            'move_auto =RobotController.Nodes.auto_move:main',
+            'move_auto = RobotController.Nodes.auto_move:main',
             'distance_node = RobotController.Nodes.distanceFronObjNode:main'
 
         ],
