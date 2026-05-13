@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 from cv_bridge import CvBridge
 from std_msgs.msg import Float32
-
+#NOT FOR CV
 class move_auto(Node):
     
     def __init__(self):
@@ -21,19 +21,13 @@ class move_auto(Node):
         # timer_period = 0.5  # seconds
         # self.timer = self.create_timer(timer_period, self.publish_topic)
         #gets information from the /color/image_raw topic
-       
+
         self.subscription2 = self.create_subscription(Image,
             '/camera/camera/depth/image_rect_raw', self.retrieveDistance, 10)
-        self.subscription2  # prevent unused variable warning
-        self.bridge = CvBridge() 
-       
-    #method to publishes the bounding box outwards
-    # def publish_topic(self):
-    #     self.publisher_.publish(self.msg)
 
-    #uses the data from the /color/image_raw topic and puts it in the YOLO model and gets the bounding box coordinates 
-    # def get_data_from_topic(self, data):
-    #   self.x1,self.x2,self.y1,self.y2 =  data.x1, data.x2, data.y1, data.y2
+        self.bridge = CvBridge() 
+        self.distance = 0
+
       
     def retrieveDistance(self, depth):
         cv_depth_image = self.bridge.imgmsg_to_cv2(depth, desired_encoding='passthrough')
@@ -42,12 +36,12 @@ class move_auto(Node):
         centery = int(480/2)
         if(centerx < 848 and centery < 480):
             depth_value = cv_depth_image[centery, centerx]
-            self.msg.data = float(depth_value/ 1000)
-            self.publisher_.publish(self.msg)
+
+            self.distance = float(depth_value/ 1000)
         
         
       #method
-      
+
 
 
 def main(args=None):

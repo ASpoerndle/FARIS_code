@@ -22,7 +22,10 @@ class MinimalSubscriber(Node):
         #Modes
         self.manual = self.create_subscription(Float32, 'manual_mode',self.manual_mode,10)
         self.auto = self.create_subscription(Float32, 'auto_mode',self.auto_mode,10)
-        self.vision = self.create_subscription(Float32, 'vision_mode',self.vision_mode,10)
+
+
+
+
 
         self.autoDis = 0
         #self.subscription  # prevent unused variable warning
@@ -35,9 +38,7 @@ class MinimalSubscriber(Node):
         if(self.autoDis != 0):
             self.move_distance(self.autoDis)
             self.autoDis = 0
-    def vision_mode(self,msg):
-        print(msg.data)
-        print(msg)
+
     def controller_mode(self):
         self.controller.use_controller()
     def manual_mode(self,msg):
@@ -67,6 +68,8 @@ class MinimalSubscriber(Node):
             
     def setAutoMove(self,msg):
         self.autoDis = msg.data
+        print(msg.data)
+        self.motors.moveDistance(self.autoDis,False,False)
     def listener_callback(self, msg):
         msg = msg.data
         print(msg)
@@ -83,12 +86,12 @@ class MinimalSubscriber(Node):
             
         # self.motors.adjustForward()
         # self.motors.moveDistance(float(msg.data))
-    def move_forward(self, distance,speed):
+    def move_forward(self, distance):
 
         if(distance != 0 ):
             self.get_logger().info('Moving "%d"' % distance)
-            self.motors.moveDistance(distance,speed)
-            self.manualDis = 0
+            self.motors.moveDistance(distance, False,False)
+
 
 def main(args=None):
     rclpy.init(args=args)
