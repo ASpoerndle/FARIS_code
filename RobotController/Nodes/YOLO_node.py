@@ -60,29 +60,35 @@ class YOLO_node(Node):
     #uses the data from the /color/image_raw topic and puts it in the YOLO model and gets the bounding box coordinates 
     def get_data_from_topic(self, raw_image,depth_image):
         cv2image = self.bridge.imgmsg_to_cv2(raw_image, "bgr8")
-
+        cv2image = cv2.resize(cv2image,(848,480))
         results = self.model(cv2image, verbose=False, device = 'cpu')
         cords = self.grab_cords(results, score_threshold=0.66)
-        if((not cords == None) and (self.distance == 0)):
+        if((not cords == None)):
             x1,x2,y1,y2 = cords
+            if(x1 == 0):
+                return
             cv_depth_image = self.bridge.imgmsg_to_cv2(depth_image, desired_encoding='passthrough')
             self.msg2.x1 = x1
             self.msg2.x2 = x2
             self.msg2.y1 = y1
             self.msg2.y2 = y2
-            centerx = int((self.x2 + self.x1) / 2)
-            centery = int((self.y2 + self.y1) / 2)
+            centerx = int((x2 + x1) / 2)
+            centery = int((y2 + y1) / 2)
+            
+            print(x1,x2,y1,y2)
+            print(f'Centerx: {centerx} | Centery: {centery}')
             if (centerx < 848 and centery < 480):
-                depth_value = cv_depth_image[centery, centerx]
-                self.distance = float(depth_value / 1000)
+                depth_value = cv_depth_image[int(centery), int(centerx)]
+                if(depth_value < self.distance and depth_value != 0 or self.distance == 0):
+                    self.distance = float(depth_value / 1000)
                 print(self.distance, "mm")
                 self.publish_topic()
 
-    def push_distance_to_listener(self):
+    def push_distance_to_listener(self,msg):
         dis = self.distance
         self.distance =0
         msg = Float32()
-        msg.data = self.distance
+        msg.data = float(dis)
         self.distance_from_object.publish(msg)
         #actually gets the bounding box from the models results
     def grab_cords(self, results,score_threshold):
@@ -96,7 +102,7 @@ class YOLO_node(Node):
 
                 xyxy = box.xyxy[0].cpu().numpy()
                 if conf > score_threshold:
-                    print(cls)
+                    #print(cls)
                     x1, y1, x2, y2 = map(int, xyxy)
                     return(x1,x2,y1,y2)
         return 0,0,0,0
