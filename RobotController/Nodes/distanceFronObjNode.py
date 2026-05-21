@@ -39,8 +39,8 @@ class DistanceFromObj_node(Node):
         self.subscription2 = self.create_subscription(Image,
             '/camera/camera/depth/image_rect_raw', self.retrieveDepth, 10)
         # self.auto_mode = self.create_subscription(Float32, 'auto_mode', self.get_dis, 10)  # prevent unused variable warning
-        self.depth_pub = self.create_publisher(Float32, 'auto_mode', 10)
-        self.vision = self.create_subscription(Float32, 'vision_mode', self.vision_mode, 10)
+        # self.depth_pub = self.create_publisher(Float32, 'auto_mode', 10)
+        # self.vision = self.create_subscription(Float32, 'vision_mode', self.vision_mode, 10)
         self.depth= None
         self.bridge = CvBridge()
         self.distance = 0

@@ -88,9 +88,9 @@ class MinimalSubscriber(Node):
         # self.motors.moveDistance(float(msg.data))
     def move_forward(self, distance):
         dis = distance.data
-        if(distance != 0 ):
+        if(distance != 0):
             self.get_logger().info('Moving "%d"' % dis)
-            self.motors.moveDistance(dis/10, False,False)
+            self.motors.moveDistance(dis, False,False)
 
 
 def main(args=None):
