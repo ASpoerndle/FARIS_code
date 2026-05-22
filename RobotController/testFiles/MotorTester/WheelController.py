@@ -9,6 +9,7 @@ from adafruit_pca9685 import PCA9685
 import Jetson.GPIO as GPIO
 
 import time
+from simple_pid import PID
 import math
 
 # 50.9:1 and 71.2:1
@@ -24,6 +25,15 @@ Purpose: This class contains the necessary functions to move the Wheel Motors at
 class WheelController():
     def __init__(self,wheelMotors):
         self.wheelMotors = wheelMotors.copy()
+
+    """
+        Method: getHeading()
+        Purpose: to retrieve the current heading of the Octoquad
+        """
+
+    def getHeading(self):
+        heading = self.wheelMotors.getCurrentHeading()
+        return heading
 
     """
     Method: teleforward(speed)
@@ -106,6 +116,7 @@ class WheelController():
     """
     def driveForward(self, ticks, debug, inPlace):
         polar = 0
+        motor_speed = 0
         if (ticks < 0 and inPlace > 0):
             polar = -1
             speed = -.5
@@ -128,7 +139,12 @@ class WheelController():
             polar = 1
             speed = .5
             isBack = False
-                
+        target_heading = self.getHeading()
+
+        # Tune these values! Start with Kp, keep Ki and Kd at 0.
+        # output_limits restricts how radically the PID can alter the base speed
+        pid = PID(Kp=0.05, Ki=0.0, Kd=0.01, setpoint=target_heading)
+
 
         # Alter logic for determing ramp up and ramp down
         MotorList = self.wheelMotors.copy()
@@ -143,18 +159,30 @@ class WheelController():
             print(f"Reset encoder {MotorList[0]}")
 
         while (not stopCond):
+            current_heading = self.getHeading()
+            error = target_heading - current_heading
+            if error > 180:
+                current_heading += 360
+            elif error < -180:
+                current_heading -= 360
 
+            correction = pid(current_heading)
             for i, motor in enumerate(MotorList):
+                if(i>1 and abs(speed <= 1)): #Adjust rightside
+                    motor_speed = speed - correction
+                elif(i<=1 and abs(speed <=1)): #Adjust left
+                    motor_speed =speed +  correction
+
 
                 if (i > 1 and not isRight):
-                    isThere = self.checkDriveForward(motor, -ticks * inPlace, speed * inPlace, isBack, debug)
+                    isThere = self.checkDriveForward(motor, -ticks * inPlace, motor_speed, isBack, debug)
                 elif(i <= 1 and not isRight):
-                    isThere = self.checkDriveForward(motor, ticks, speed, isBack, debug)
-                elif(i > 1 and isRight):
-                    isThere= self.checkDriveForward(motor,ticks * inPlace,speed *inPlace, isBack,debug)
+                    isThere = self.checkDriveForward(motor, ticks, motor_speed, isBack, debug)
+                elif(i > 1 and isRight): #motor_speed * in place
+                    isThere= self.checkDriveForward(motor,ticks * inPlace,motor_speed, isBack,debug)
 
                 elif(i <= 1 and isRight):
-                    isThere = self.checkDriveForward(motor,ticks, speed, isBack,debug)
+                    isThere = self.checkDriveForward(motor,ticks, motor_speed, isBack,debug)
                 if (isThere):
                     MotorList.pop(i)
                     break
