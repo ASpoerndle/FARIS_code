@@ -11,7 +11,7 @@ def run_command(inp):
     input(inp)
 def demo1():
     run_command("Move Forward")
-    mc.moveCord([0,1],True)
+    mc.moveCord([0,2],True)
     input("Complete")
 
     run_command("Move Left")

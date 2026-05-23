@@ -41,7 +41,7 @@ def set_the_scalar(scalar):
 #Reset IMU
 reset_IMU()
 #Rotate the robot 3600 degrees - do an input pause in case it's not perfect straight
-mc.turn(3600,False)
+mc.turn(3600,True)
 #find the scalar value
 heading = read_heading()
 scalar = (3600-heading)/3600

@@ -32,7 +32,7 @@ class WheelController():
         """
 
     def getHeading(self):
-        heading = self.wheelMotors.getCurrentHeading()
+        heading = self.wheelMotors[0].getCurrentHeading()
         return heading
 
     """
@@ -143,8 +143,8 @@ class WheelController():
 
         # Tune these values! Start with Kp, keep Ki and Kd at 0.
         # output_limits restricts how radically the PID can alter the base speed
-        pid = PID(Kp=0.05, Ki=0.0, Kd=0.01, setpoint=target_heading)
-
+        pid = PID(Kp=1, Ki=0.0, Kd=0.01, setpoint=target_heading)
+        pid.output_limits = (-0.4, 0.4)
 
         # Alter logic for determing ramp up and ramp down
         MotorList = self.wheelMotors.copy()
@@ -155,11 +155,13 @@ class WheelController():
 
         MotorList[0].resetEncoder()
         time.sleep(0.05)
-        if (debug):
+        if(debug):
             print(f"Reset encoder {MotorList[0]}")
 
         while (not stopCond):
             current_heading = self.getHeading()
+            if(debug):
+                print(f"Current heading: {current_heading} | Target Heading: {target_heading}")
             error = target_heading - current_heading
             if error > 180:
                 current_heading += 360
@@ -167,22 +169,26 @@ class WheelController():
                 current_heading -= 360
 
             correction = pid(current_heading)
-            for i, motor in enumerate(MotorList):
-                if(i>1 and abs(speed <= 1)): #Adjust rightside
-                    motor_speed = speed - correction
-                elif(i<=1 and abs(speed <=1)): #Adjust left
-                    motor_speed =speed +  correction
 
+            for i, motor in enumerate(MotorList):
+                if(inPlace < 0):
+                    
+                    if(i>1 and abs(speed <= 1)): #Adjust rightside
+                        motor_speed = speed + correction
+                    elif(i<=1 and abs(speed <=1)): #Adjust left
+                        motor_speed =speed -  correction
+                else:
+                    motor_speed = speed
 
                 if (i > 1 and not isRight):
                     isThere = self.checkDriveForward(motor, -ticks * inPlace, motor_speed, isBack, debug)
                 elif(i <= 1 and not isRight):
                     isThere = self.checkDriveForward(motor, ticks, motor_speed, isBack, debug)
                 elif(i > 1 and isRight): #motor_speed * in place
-                    isThere= self.checkDriveForward(motor,ticks * inPlace,motor_speed, isBack,debug)
+                    isThere= self.checkDriveForward(motor,ticks * inPlace,motor_speed*inPlace, isBack,debug)
 
                 elif(i <= 1 and isRight):
-                    isThere = self.checkDriveForward(motor,ticks, motor_speed, isBack,debug)
+                    isThere = self.checkDriveForward(motor,ticks, motor_speed*inPlace, isBack,debug)
                 if (isThere):
                     MotorList.pop(i)
                     break
