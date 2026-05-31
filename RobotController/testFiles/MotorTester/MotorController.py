@@ -118,8 +118,8 @@ class MotorController():
     Purpose: sends a command to the wheelController to drive the robot forward a designated
              number of ticks, as well as specifying if it's turning in place
     """
-    def driveForward(self, ticks,debug,inPlace):
-        self.wheelController.driveForward(ticks,debug,inPlace)
+    def driveForward(self, ticks,debug,inPlace, podHeading):
+        self.wheelController.driveForward(ticks,debug,inPlace, podHeading)
 
     """
     Method: rotatePods(angle, debug)
@@ -144,13 +144,13 @@ class MotorController():
             print(f"Ticks: {ticks} | distance: {distance} | isZero: {turnInPlace}")
         if(turnInPlace):
             self.wheelController.switchForTurning()
-            self.wheelController.driveForward(ticks,debug,-1)
+            self.wheelController.driveForward(ticks,debug,-1,0)
             self.wheelController.switchForTurning()
 
         else:
             if(debug):
                 print(f"Rotating forward...")
-            self.wheelController.driveForward(ticks,debug,1)
+            self.wheelController.driveForward(ticks,debug,1,self.podController.getPodMotor(0).getCurrentAngle())
 
     """
     Method: horizontalMode(debug)

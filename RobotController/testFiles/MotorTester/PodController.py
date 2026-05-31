@@ -157,6 +157,8 @@ class PodController():
     def killMotors(self):
         for motor in self.podMotors:
             motor.kill_motor()
+    def getPodMotor(self,i):
+        return self.podMotors[i]
 
 
 
