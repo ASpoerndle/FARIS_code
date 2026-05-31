@@ -144,7 +144,7 @@ class MotorController():
             print(f"Ticks: {ticks} | distance: {distance} | isZero: {turnInPlace}")
         if(turnInPlace):
             self.wheelController.switchForTurning()
-            self.wheelController.driveForward(ticks,debug,-1,0)
+            self.wheelController.driveForward(ticks,debug,-1,0) #sets in place = -1 which allows turning
             self.wheelController.switchForTurning()
 
         else:

@@ -115,15 +115,15 @@ class WheelController():
     Purpose: controls the necessary logic to drive the robot either in the forward direction or to turn in place
     """
     def driveForward(self, ticks, debug, inPlace, podHeading):
-        polar = 0
+
         motor_speed = 0
         if (ticks < 0 and inPlace > 0):
             polar = -1
             speed = -.5
             isBack = True
-            isRight = False
+            isTurn = False
         elif(ticks > 0 and inPlace < 0):
-            isRight = True
+            isTurn = True
             speed = 0.3
             polar = 1
             isBack = True
@@ -133,9 +133,9 @@ class WheelController():
             polar = -1
             speed = -.3
             isBack = True
-            isRight = False
+            isTurn = False
         else:
-            isRight = False
+            isTurn = False
             polar = 1
             speed = .5
             isBack = False
@@ -178,18 +178,18 @@ class WheelController():
                         motor_speed =speed -  correction
                 else:
                     motor_speed = speed
-                if(podHeading < 45 and podHeading > -45):
-                    if(not isRight):
-                        if (i > 1 and not isRight):
-                            isThere = self.checkDriveForward(motor, -ticks * inPlace, motor_speed, isBack, debug)
-                        elif(i <= 1 and not isRight):
+                if(current_heading < 45 and current_heading > -45): # only allow forward heading when the currentHeading is between +- 45
+                    if(not isTurn):
+                        if (i > 1):
+                            isThere = self.checkDriveForward(motor, -ticks, motor_speed, isBack, debug)#CHANGE: -ticks * inPlace
+                        elif(i <= 1):
                             isThere = self.checkDriveForward(motor, ticks, motor_speed, isBack, debug)
-                    elif(isRight):
-                        if(i > 1 and isRight): #motor_speed * in place
-                            isThere= self.checkDriveForward(motor,ticks * inPlace,motor_speed*inPlace, isBack,debug)
+                    elif(isTurn):
+                        if(i > 1): #motor_speed * in place
+                            isThere= self.checkDriveForward(motor, ticks * inPlace, motor_speed*inPlace, isBack, debug)
 
-                        elif(i <= 1 and isRight):
-                            isThere = self.checkDriveForward(motor,ticks, motor_speed*inPlace, isBack,debug)
+                        elif(i <= 1):
+                            isThere = self.checkDriveForward(motor, ticks, motor_speed*inPlace, isBack, debug)
                 if (isThere):
                     MotorList.pop(i)
                     break
