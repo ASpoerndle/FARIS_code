@@ -339,7 +339,7 @@ TESTING GROUND FOR ROTATIONAL MOTOR
 given a pca address, pin value, and a side
 """
 
-"""
+
 try:
     i2c = board.I2C()
     pca = PCA9685(i2c)
@@ -357,27 +357,12 @@ try:
     # print("finshed")
     #print("Adjusting forward...")
     
-    
-    #while True:
-    
-    value = float(input("gimme a Kp"))
-        value2 = float(input("gimme a Kp"))
-        value3 = float(input("gimme a Kp"))
-         
-        rotMotor.setValue(value,value2,value3)
 
-
-
-
-
-        val = False
-        d+= 90
     val = False
     while(not val):
       
-            val = rotMotor.adjustForward()  
-            time.sleep(0.02)
-    
+            rotMotor.setSpeed(0.1)
+
     
     print("Forward adjustment complete!")
     time.sleep(1)
@@ -394,16 +379,13 @@ try:
     #while(not val): 
     #    val = rotMotor.driveForward(target,.1)
     #val = True
-    while(not val):
-        val = rotMotor.adjustForward()
-        time.sleep(0.02)
-    #print("Rotation complete!")  
+    #print("Rotation complete!")
     # startPos = rotMotor.getCurrentPosition()
     # val = rotMotor.move(0.5,.1,startPos)
     # while(val):
     rotMotor.stopMotor()
     #val = rotMotor.move(0.5,.1)
-except KeyboardInterrupt:
-    rotMotor.kill_motor()
-"""
+    except KeyboardInterrupt:
+        rotMotor.kill_motor()
+
 
