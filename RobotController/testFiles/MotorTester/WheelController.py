@@ -171,24 +171,22 @@ class WheelController():
 
             for i, motor in enumerate(MotorList):
 
-                    
-
-
                 if(not isTurning):
                         if (current_heading < 45 + target_heading and current_heading > -45 + target_heading):  # only allow forward heading when the currentHeading is between +- 45
                             if (i > 1 and abs(speed) <= 1):  # Adjust rightside
-                                motor_speedL = speed + correction
+                                motor_speedR = speed + correction
                             elif (i <= 1 and abs(speed) <= 1):  # Adjust left
-                                motor_speedR = speed - correction
+                                motor_speedL = speed - correction
                             else:
-                                motor_speed = speed
+                                motor_speedL = speed
+                                motor_speedR = speed
 
-                        if(abs(current_heading) > 45 and abs(current_heading) < 135):
-                            motor_speed = speed
+                        # if(abs(current_heading) > 45 and abs(current_heading) < 135):
+                        #     motor_speed = speed
                         if (i > 1):
-                            isThere = self.checkDriveForward(motor, -ticks, motor_speedL, isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
+                            isThere = self.checkDriveForward(motor, -ticks, motor_speedR, isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
                         elif (i <= 1):
-                            isThere = self.checkDriveForward(motor, ticks, motor_speedR, isGoingBackwards, debug)
+                            isThere = self.checkDriveForward(motor, ticks, motor_speedL, isGoingBackwards, debug)
                 elif(isTurning):
                         if(i > 1): #motor_speed * in place
                             isThere= self.checkDriveForward(motor, ticks * inPlace, motor_speed*inPlace, isGoingBackwards, debug)
@@ -205,8 +203,12 @@ class WheelController():
                     print(f'Ticks: {ticks} + Speed: {speed}')
 
                 if (polar > 0 and inPlace > 0):
+                    if(debug):
+                        print("Ramping forward")
                     speed = self.rampSpeedPos(MotorList[0], ticks, speed)
                 elif(polar < 0 and inPlace > 0):
+                    if(debug):
+                        print("Ramping backward")
                     speed = self.rampSpeedNeg(MotorList[0], ticks, speed)
                 time.sleep(0.02)
 
