@@ -173,16 +173,19 @@ class WheelController():
 
                 if(not isTurning):
                         if (current_heading < 45 + target_heading and current_heading > -45 + target_heading):  # only allow forward heading when the currentHeading is between +- 45
-                            if (i > 1 and abs(speed) <= 1):  # Adjust rightside
-                                motor_speedR = speed + correction
-                            elif (i <= 1 and abs(speed) <= 1):  # Adjust left
-                                motor_speedL = speed - correction
-                            else:
-                                motor_speedL = speed
-                                motor_speedR = speed
+                            # if (i > 1 and abs(speed) <= 1):  # Adjust rightside
+                            #     motor_speedR = speed + correction
+                            # elif (i <= 1 and abs(speed) <= 1):  # Adjust left
+                            #     motor_speedL = speed - correction
+                            # else:
+                            #     motor_speedL = speed
+                            #     motor_speedR = speed
+                            if(debug):
+                                print(f"Error: {error} ")
 
                         # if(abs(current_heading) > 45 and abs(current_heading) < 135):
                         #     motor_speed = speed
+                        motor_speedR = motor_speedL = speed
                         if (i > 1):
                             isThere = self.checkDriveForward(motor, -ticks, motor_speedR, isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
                         elif (i <= 1):
