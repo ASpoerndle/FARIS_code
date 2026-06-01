@@ -339,12 +339,12 @@ TESTING GROUND FOR ROTATIONAL MOTOR
 given a pca address, pin value, and a side
 """
 
-
+"""
 try:
     i2c = board.I2C()
     pca = PCA9685(i2c)
     pca.frequency = 50
-    pin = 6
+    pin = 3
     side = "r"
     idealfVal =538
     channel = 3
@@ -385,7 +385,7 @@ try:
     # while(val):
     rotMotor.stopMotor()
     #val = rotMotor.move(0.5,.1)
-    except KeyboardInterrupt:
+except KeyboardInterrupt:
         rotMotor.kill_motor()
-
+"""
 

@@ -5,14 +5,14 @@ _class = "MOTORCONTROLLER"
 print(f"===Welcome to the Demo code file for {_class} class")
 input("Press enter to continue")
 mc.adjustForward(False)
-mc.moveOne()
+#mc.moveOne()
 #mc.faceForward(False)
 def run_command(inp):
     os.system('cls' if os.name == 'nt' else 'clear')
     input(inp)
 def demo1():
     run_command("Move Forward")
-    mc.moveCord([0,2],True)
+    mc.moveCord([0,1],True)
     input("Complete")
 
     run_command("Move Left")

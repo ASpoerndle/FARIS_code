@@ -116,7 +116,7 @@ class WheelController():
     """
     def driveForward(self, ticks, debug, inPlace, podHeading):
 
-        motor_speed = 0
+        motor_speed = .3
         if (ticks < 0 and inPlace > 0):
             polar = -1
             speed = -.5
@@ -142,7 +142,7 @@ class WheelController():
         target_heading = self.getHeading()
 
 
-        pid = PID(Kp=1, Ki=0.0, Kd=0.01, setpoint=target_heading)
+        pid = PID(Kp=1, Ki=0.0, Kd=0, setpoint=target_heading)
         pid.output_limits = (-0.4, 0.4)
 
         # Alter logic for determing ramp up and ramp down
@@ -175,20 +175,20 @@ class WheelController():
 
 
                 if(not isTurning):
-                        if (current_heading < 45 and current_heading > -45):  # only allow forward heading when the currentHeading is between +- 45
+                        if (current_heading < 45 + target_heading and current_heading > -45 + target_heading):  # only allow forward heading when the currentHeading is between +- 45
                             if (i > 1 and abs(speed) <= 1):  # Adjust rightside
-                                motor_speed = speed + correction
+                                motor_speedL = speed + correction
                             elif (i <= 1 and abs(speed) <= 1):  # Adjust left
-                                motor_speed = speed - correction
+                                motor_speedR = speed - correction
                             else:
                                 motor_speed = speed
 
                         if(abs(current_heading) > 45 and abs(current_heading) < 135):
                             motor_speed = speed
                         if (i > 1):
-                            isThere = self.checkDriveForward(motor, -ticks, motor_speed, isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
+                            isThere = self.checkDriveForward(motor, -ticks, motor_speedL, isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
                         elif (i <= 1):
-                            isThere = self.checkDriveForward(motor, ticks, motor_speed, isGoingBackwards, debug)
+                            isThere = self.checkDriveForward(motor, ticks, motor_speedR, isGoingBackwards, debug)
                 elif(isTurning):
                         if(i > 1): #motor_speed * in place
                             isThere= self.checkDriveForward(motor, ticks * inPlace, motor_speed*inPlace, isGoingBackwards, debug)
@@ -199,16 +199,16 @@ class WheelController():
                     break
                 if (debug):
                     print(f"Loop: {i} | Ticks {ticks}")
-            stopCond = len(MotorList) <= 3
+                stopCond = len(MotorList) <= 3
 
-            if (debug):
-                print(f'Ticks: {ticks} + Speed: {speed}')
+                if (debug):
+                    print(f'Ticks: {ticks} + Speed: {speed}')
 
-            if (polar > 0 and inPlace > 0):
-                speed = self.rampSpeedPos(MotorList[0], ticks, speed)
-            elif(polar < 0 and inPlace > 0):
-                speed = self.rampSpeedNeg(MotorList[0], ticks, speed)
-            time.sleep(0.02)
+                if (polar > 0 and inPlace > 0):
+                    speed = self.rampSpeedPos(MotorList[0], ticks, speed)
+                elif(polar < 0 and inPlace > 0):
+                    speed = self.rampSpeedNeg(MotorList[0], ticks, speed)
+                time.sleep(0.02)
 
         self.stopMotors()
 
