@@ -35,8 +35,8 @@ class MotorController():
 
         pin_list_rotational = [
          #PodMotors
-         [2, "l", 4, 900] , #BL - Pod
-         [3, "l", 5, 420], #BR - Pod
+         [2, "l", 4, 36] , #BL - Pod
+         [3, "l", 5, 237], #BR - Pod
          [4, "l", 6, 918], #FR - Pod
          [6, "l", 7, 1065], #FL - Pod
          #WheelMotors
@@ -56,9 +56,12 @@ class MotorController():
         self.heading = self.getHeading()
         self.podController = PodController(self.rotational_motor_list[0:4])
         self.wheelController = WheelController(self.rotational_motor_list[4:8])
-
-
-    
+        #self.podController.adjustForward(True)
+ #       self.rotational_motor_list[5].move_motor(0.2)
+        #while(True):
+        #    self.teleForward(.1)
+        #    for i, motor in enumerate(self.rotational_motor_list):
+        #        print("Motor index: " +str(i)+  " | Encoder Value: " + str(motor.getCurrentPosition()))
     """
     Method: teleforward(speed)
     Purpose: For the TeleOp controller, allows for the controller to move the robot forward and backward
@@ -80,7 +83,9 @@ class MotorController():
     """
     def teleTurn(self):
         self.podController.teleTurn()
-       
+    
+    def moveOne(self):
+        self.podController.rotateXMotors(90,0,True)
     """
     Method: teleMoveTurn(Speed)
     Purpose: For the TeleOp controller, allows for the robot to turn in place in "Turn Mode"
@@ -254,6 +259,7 @@ class MotorController():
 """
 TESTING GROUNDS FOR MOTORCONTROLLER CLASS
 """
+mc = MotorController()
 
 #===CODE FOR ROTATING ROBOT 90 WHILE MOVING===
 #mc.rotateXMotors(45,self.rotational_motors_list[2:4],False)

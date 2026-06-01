@@ -5,6 +5,7 @@ _class = "MOTORCONTROLLER"
 print(f"===Welcome to the Demo code file for {_class} class")
 input("Press enter to continue")
 mc.adjustForward(False)
+mc.moveOne()
 #mc.faceForward(False)
 def run_command(inp):
     os.system('cls' if os.name == 'nt' else 'clear')
