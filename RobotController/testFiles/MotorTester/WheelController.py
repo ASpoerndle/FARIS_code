@@ -140,7 +140,7 @@ class WheelController():
             speed = .5
             isGoingBackwards = False
         target_heading = self.getHeading()
-
+        print(f"Init Speed: {speed} | isTurning: {isTurning} | Polar: {polar} | isGoingBackawrds: {isGoingBackwards}")
 
         pid = PID(Kp=1, Ki=0.0, Kd=0, setpoint=target_heading)
         pid.output_limits = (-0.4, 0.4)
