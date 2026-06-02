@@ -44,13 +44,31 @@ def demo2():
     mc.turn(-45,True)
 def demo3():
     while(True):
-        mc.moveCord([0,3],True)
+        mc.moveCord([0,1],True)
         input("Pause.")
+        mc.moveCord([0,-1], True)
+        input("Pause.")
+        mc.moveCord([1,0], True)
+        input("Pause.")
+def demo4():
+    while(True):
+        mc.moveCord([0,1],True)
+        mc.moveCord([1,0],True)
+        mc.moveCord([0,-1],True)
+        mc.moveCord([-1,0],True)
+        input("Pause.")
+def demoFree():
+    mc.moveCord([-1,-1], False)
 ind = input("Which demo?")
-if(int(ind) == 1):
-    demo1()
-if(int(ind) == 3):
-    demo3()
-else:
-    demo2()
+ind = int(ind)
 
+if(ind == 1):
+    demo1()
+if(ind == 2):
+    demo2()
+if(ind == 3):
+    demo3()
+if(ind==4):
+    demo4()
+else:
+    demoFree()

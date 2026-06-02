@@ -79,7 +79,7 @@ class WheelController():
 
     def rampSpeedPos(self, motor, ticks, speed):
         if (motor.getCurrentPosition() < 100):
-            speed = 0.5
+            speed = 0.6
         elif (abs(motor.getCurrentPosition()) < abs(3 * ticks // 8) and abs(ticks) > 1000 and speed < .8):
             speed += 0.01
         elif (abs(motor.getCurrentPosition()) > abs(5 * ticks // 8) and abs(ticks) > 1000 and speed > 0.3):
@@ -93,7 +93,7 @@ class WheelController():
 
     def rampSpeedNeg(self, motor, ticks, speed):
         if (motor.getCurrentPosition() > -100):
-            speed = -.5
+            speed = -.6
         elif (motor.getCurrentPosition() > 3 * ticks // 8 and ticks < 1000 and speed > -.8):
             speed -= 0.01
         elif (motor.getCurrentPosition() < 5 * ticks // 8 and ticks < 1000 and speed < -.3):
@@ -169,7 +169,7 @@ class WheelController():
                 current_heading -= 360
 
             #correction = pid(current_heading)
-            kP = .08
+            kP = .1
             correction = kP * error
             if(debug):
                 print(f"PID Correction: {correction}")
@@ -186,15 +186,20 @@ class WheelController():
                             #     motor_speedR = speed
                         if(debug):
                                 print(f"IMU Error: {error} ")
-                    if(currentMotorAngle < -45 and curretnMotorAngle > -135):
-                        if(
-
-                        # if(abs(current_heading) > 45 and abs(current_heading) < 135):
-                        #     motor_speed = speed
                         if (i > 1):
                             isThere = self.checkDriveForward(motor, -ticks*inPlace, motor_speedR, isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
                         elif (i <= 1):
                             isThere = self.checkDriveForward(motor, ticks, motor_speedL, isGoingBackwards, debug)
+
+                    if(currentMotorAngle < -45 and currentMotorAngle > -135): #when the wheels are facing sideways -90 degrees
+                        if(i%2 == 0 and abs(speed) <=1): #adjust forward motors
+                            motor_speedF = speed - correction
+                        if(i%2 == 1 and abs(speed) <=1): #adjust backward motors
+                            motor_speedB = speed + correction
+                        if (i  % 2 == 0):
+                            isThere = self.checkDriveForward(motor, -ticks*inPlace, motor_speedF, isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
+                        elif (i % 2 == 1):
+                            isThere = self.checkDriveForward(motor, ticks, motor_speedB, isGoingBackwards, debug)
                 elif(isTurning):
                         if(i > 1): #motor_speed * in place
                             isThere= self.checkDriveForward(motor, ticks * inPlace * polar, -.5 * inPlace, isGoingBackwards, debug)
