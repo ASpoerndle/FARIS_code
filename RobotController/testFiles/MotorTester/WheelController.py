@@ -114,7 +114,7 @@ class WheelController():
     Method: driveForward(ticks,debug,inPlace, podHeading)
     Purpose: controls the necessary logic to drive the robot either in the forward direction or to turn in place
     """
-    def driveForward(self, ticks, debug, inPlace, podHeading):
+    def driveForward(self, ticks, debug, inPlace, currentMotorAngle):
 
         motor_speed = .3
         if (ticks < 0 and inPlace > 0):
@@ -131,9 +131,9 @@ class WheelController():
                 print("===isRight===")
         elif(ticks<0 and inPlace < 0):
             polar = -1
-            speed = -.3
+            speed = .3
             isGoingBackwards = True
-            isTurning = False
+            isTurning = True
         else:
             isTurning = False
             polar = 1
@@ -143,8 +143,8 @@ class WheelController():
         if(debug):
             print(f"Init Speed: {speed} | isTurning: {isTurning} | Polar: {polar} | isGoingBackawrds: {isGoingBackwards} | InPlace: {inPlace}")
 
-        pid = PID(Kp=1, Ki=0.0, Kd=0, setpoint=target_heading)
-        pid.output_limits = (-0.3, 0.3)
+        #pid = PID(Kp=.1, Ki=0.0, Kd=0, setpoint=target_heading)
+        #pid.output_limits = (-.6, .6)
 
         # Alter logic for determing ramp up and ramp down
         MotorList = self.wheelMotors.copy()
@@ -168,34 +168,38 @@ class WheelController():
             elif error < -180:
                 current_heading -= 360
 
-            correction = pid(current_heading)
-
+            #correction = pid(current_heading)
+            kP = .08
+            correction = kP * error
+            if(debug):
+                print(f"PID Correction: {correction}")
             for i, motor in enumerate(MotorList):
 
                 if(not isTurning):
-                        if (current_heading < 45 + target_heading and current_heading > -45 + target_heading):  # only allow forward heading when the currentHeading is between +- 45
-                            # if (i > 1 and abs(speed) <= 1):  # Adjust rightside
-                            #     motor_speedR = speed + correction
-                            # elif (i <= 1 and abs(speed) <= 1):  # Adjust left
-                            #     motor_speedL = speed - correction
+                    if(currentMotorAngle > -45 and currentMotorAngle < 45):
+                        if (i > 1 and abs(speed) <= 1):  # Adjust rightside
+                                 motor_speedR = speed + correction
+                        elif (i <= 1 and abs(speed) <= 1):  # Adjust leftside
+                                 motor_speedL = speed - correction
                             # else:
                             #     motor_speedL = speed
                             #     motor_speedR = speed
-                            if(debug):
-                                print(f"Error: {error} ")
+                        if(debug):
+                                print(f"IMU Error: {error} ")
+                    if(currentMotorAngle < -45 and curretnMotorAngle > -135):
+                        if(
 
                         # if(abs(current_heading) > 45 and abs(current_heading) < 135):
                         #     motor_speed = speed
-                        motor_speedR = motor_speedL = speed
                         if (i > 1):
                             isThere = self.checkDriveForward(motor, -ticks*inPlace, motor_speedR, isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
                         elif (i <= 1):
                             isThere = self.checkDriveForward(motor, ticks, motor_speedL, isGoingBackwards, debug)
                 elif(isTurning):
                         if(i > 1): #motor_speed * in place
-                            isThere= self.checkDriveForward(motor, ticks * inPlace, motor_speed*inPlace, isGoingBackwards, debug)
+                            isThere= self.checkDriveForward(motor, ticks * inPlace * polar, -.5 * inPlace, isGoingBackwards, debug)
                         elif(i <= 1):
-                            isThere = self.checkDriveForward(motor, ticks, motor_speed*inPlace, isGoingBackwards, debug)
+                            isThere = self.checkDriveForward(motor, ticks, .5*inPlace, isGoingBackwards, debug)
                 if (isThere):
                     MotorList.pop(i)
                     break

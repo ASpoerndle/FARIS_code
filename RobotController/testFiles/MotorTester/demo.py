@@ -12,7 +12,7 @@ def run_command(inp):
     input(inp)
 def demo1():
     run_command("Move Forward")
-    mc.moveCord([0,1],True)
+    mc.moveCord([0,3],True)
     input("Complete")
 
     run_command("Move Left")
@@ -24,8 +24,8 @@ def demo1():
 
     input("Complete")
     run_command("Rotate in place")
-    mc.turn(90,False)
-    mc.adjustForward(False)
+    mc.turn(90,True)
+    mc.adjustForward(True)
 
     input("Complete")
 
@@ -38,14 +38,19 @@ def demo1():
 def demo2():
     print(mc.getHeading())
     input(".")
-    mc.turn(45,False)
+    mc.turn(45,True)
     print(mc.getHeading())
     input("..")
-    mc.turn(-45,False)
-
+    mc.turn(-45,True)
+def demo3():
+    while(True):
+        mc.moveCord([0,3],True)
+        input("Pause.")
 ind = input("Which demo?")
 if(int(ind) == 1):
     demo1()
+if(int(ind) == 3):
+    demo3()
 else:
     demo2()
 

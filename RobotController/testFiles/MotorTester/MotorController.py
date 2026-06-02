@@ -37,7 +37,7 @@ class MotorController():
          #PodMotors
          [0, "l", 4, 36] , #BL - Pod
          [1, "l", 5, 237], #BR - Pod
-         [2, "l", 6, 918], #FR - Pod
+         [2, "l", 6, 914], #FR - Pod
          [3, "l", 7, 1065], #FL - Pod
          #WheelMotors
          [11, 'l', 2, 0],   #FL - Wheel
