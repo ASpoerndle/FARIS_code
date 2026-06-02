@@ -140,10 +140,11 @@ class WheelController():
             speed = .5
             isGoingBackwards = False
         target_heading = self.getHeading()
-        print(f"Init Speed: {speed} | isTurning: {isTurning} | Polar: {polar} | isGoingBackawrds: {isGoingBackwards}")
+        if(debug):
+            print(f"Init Speed: {speed} | isTurning: {isTurning} | Polar: {polar} | isGoingBackawrds: {isGoingBackwards} | InPlace: {inPlace}")
 
         pid = PID(Kp=1, Ki=0.0, Kd=0, setpoint=target_heading)
-        pid.output_limits = (-0.4, 0.4)
+        pid.output_limits = (-0.3, 0.3)
 
         # Alter logic for determing ramp up and ramp down
         MotorList = self.wheelMotors.copy()
@@ -187,7 +188,7 @@ class WheelController():
                         #     motor_speed = speed
                         motor_speedR = motor_speedL = speed
                         if (i > 1):
-                            isThere = self.checkDriveForward(motor, -ticks, motor_speedR, isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
+                            isThere = self.checkDriveForward(motor, -ticks*inPlace, motor_speedR, isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
                         elif (i <= 1):
                             isThere = self.checkDriveForward(motor, ticks, motor_speedL, isGoingBackwards, debug)
                 elif(isTurning):
