@@ -259,7 +259,7 @@ class MotorController():
 """
 TESTING GROUNDS FOR MOTORCONTROLLER CLASS
 """
-mc = MotorController()
+#mc = MotorController()
 
 #===CODE FOR ROTATING ROBOT 90 WHILE MOVING===
 #mc.rotateXMotors(45,self.rotational_motors_list[2:4],False)

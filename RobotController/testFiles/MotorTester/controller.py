@@ -49,8 +49,19 @@ else:
             if(abs(joy.get_axis(0)) >= 0.2 and isSideways and not isTurn):
                 #print(f"left and right {joy.get_axis(0)}")
                 mc.teleForward(joy.get_axis(0)/2)
-            elif(abs(joy.get_axis(1)) >= 0.2 and not isSideways and not isTurn):
-                mc.teleForward(-joy.get_axis(1)/SLOW_DOWN)
+            elif((abs(joy.get_axis(1)) >= 0.2 or abs(joy.get_axis(0)) >= 0.2)  and not isSideways and not isTurn):
+                if(abs(joy.get_axis(1)) <= 0.4):
+                    fSpeed = 0
+                else:
+                    fSpeed = joy.get_axis(1)
+                if(abs(joy.get_axis(0)) <= 0.4):
+                    turnSpeed = 0
+                else:
+                    turnSpeed = joy.get_axis(0)
+                if(joy.get_axis(1) > 0.4):
+                    turnSpeed *= -1
+                mc.teleForward(-fSpeed/SLOW_DOWN)
+                mc.teleRotate(turnSpeed/2)
                 #print(f" up and down {joy.get_axis(1)}")
             elif(joy.get_button(0) and not isSideways):
                 mc.horizontalMode(False)
@@ -71,9 +82,9 @@ else:
                 continue
             elif(abs(joy.get_axis(2)) >= 0.2 and isTurn and not isSideways):
                 mc.teleMoveTurn(joy.get_axis(2)/2)
-            elif(abs(joy.get_axis(2)) >= 0.2 and not isTurn and not isSideways):
-
-                mc.teleRotate(joy.get_axis(2)/2)
+            elif(abs(joy.get_axis(0)) >= 0.2 and not isTurn and not isSideways):
+                print("hi")
+                #mc.teleRotate(joy.get_axis(0)/2)
             elif(joy.get_button(4) and SLOW_DOWN >1 and not joy.get_button(5)):
                 SLOW_DOWN =1.5
             elif(joy.get_button(5) and SLOW_DOWN < 10 and not joy.get_button(4)):
