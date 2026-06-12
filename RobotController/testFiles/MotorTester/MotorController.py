@@ -40,10 +40,10 @@ class MotorController():
          [2, "l", 6, 914], #FR - Pod-2
          [3, "l", 7, 1065], #FL - Pod-3
          #WheelMotors
-         [11, 'l', 2, 0],   #FL - Wheel-0
-         [10, 'l', 1, 0],   #BL - Wheel-1
-         [15, 'r', 3, 0],   #FR - Wheel-2
-         [13, 'r', 0, 0]]   #BR - Wheel-3
+         [4, 'l', 2, 0],   #FL - Wheel-0
+         [5, 'l', 1, 0],   #BL - Wheel-1
+         [6, 'r', 3, 0],   #FR - Wheel-2
+         [7, 'r', 0, 0]]   #BR - Wheel-3
 
 
 
@@ -114,9 +114,11 @@ class MotorController():
     Purpose: if the current heading isn't 0, turn the robot so that it's facing 0
     """
     def faceForward(self,debug):
-        if(self.getHeading() != 0):
-            self.heading = self.getHeading()
-            self.turn(self.heading, debug)
+        diff = abs(self.heading) - abs(self.getHeading())
+        if(debug):
+            print(f"Original Heading: {self.heading} | Current Heading: {self.getHeading()} | Difference: {diff}")
+        if(abs(diff) > 1):
+            self.turn(-diff, debug)
 
     """
     Method: driveForward(ticks, debug, inPlace)
@@ -148,9 +150,9 @@ class MotorController():
         if(debug):
             print(f"Ticks: {ticks} | distance: {distance} | isZero: {turnInPlace}")
         if(turnInPlace):
-            self.wheelController.switchForTurning()
+            #self.wheelController.switchForTurning()
             self.wheelController.driveForward(ticks,debug,-1,0) #sets in place = -1 which allows turning
-            self.wheelController.switchForTurning()
+            #self.wheelController.switchForTurning()
 
         else:
             if(debug):
@@ -189,10 +191,12 @@ class MotorController():
         x,y = cords
         hypo = math.sqrt((x**2) + (y**2))
         angle = (math.acos(abs(x)/hypo) * 180)/math.pi
-        if((x<0 and y <0) or (x>0 and y >0)):
+        if((x < 0 and y < 0) or (x > 0 and y > 0)):
             angle = -angle
         if(x == 0):
             angle = 0
+            if(y<0):
+                hypo = -hypo
         if(y == 0):
             angle = -90
             if(x < 0):
@@ -201,8 +205,6 @@ class MotorController():
             print(f"X,Y: {x},{y} | Hypotenuse: {hypo} | Angle (Degrees) {angle}")
             
         self.podController.rotatePods(angle,debug)
-        if(y < 0):
-            hypo = -hypo
         print(f"Moving distance...")
         self.moveDistance(hypo,debug,False)
         self.podController.adjustForward(debug)
@@ -241,6 +243,10 @@ class MotorController():
     def getHeading(self):
         heading = self.rotational_motor_list[0].getCurrentHeading()
         return heading
+    
+    def forceNewHeading(self):
+        heading = self.getHeading()
+        self.heading = heading
     """
     Method: __del__()
     Purpose: kills the power being supplied to the motors when the MotorController object gets

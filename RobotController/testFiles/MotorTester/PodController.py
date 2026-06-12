@@ -104,8 +104,9 @@ class PodController():
                 isAligned = self.checkRotate(motor, angle, speed, debug)
                 if (isAligned):
                     MotorList.pop(i)
-
-            stopCond = len(MotorList) == 0
+            if(debug):
+                print(f"{len(MotorList)} motors still rotating...")
+            stopCond = len(MotorList) <= 1
             time.sleep(0.02)
         self.stopMotors()
 
@@ -123,7 +124,7 @@ class PodController():
              a specified degree angle
     """
     def rotateXMotors(self, angle, motorList, debug):
-        speed = 0.75
+        speed = 1
         motors = []
         for i in range(len(motorList)):
             motors.append(self.podMotors[motorList[i]])

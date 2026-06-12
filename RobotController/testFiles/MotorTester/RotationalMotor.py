@@ -188,8 +188,10 @@ class RotationalMotor(Motor):
   Purpose: handles the logic for moving the wheel motors forward and backward    
   """
   def driveForward(self,position,speed, isBack,debug):
-    
-        if(position < 0 or (position > 0 and self.polarity < 0 and isBack)):
+ 
+        if(debug):
+                print(f"Encoder: {self.enc} | Tick Position: {position} | Polar: {self.polarity} | Back?: {isBack}")
+        if((position < 0 and self.polarity > 0) or (position > 0 and self.polarity < 0 and isBack)):
             return self.drive_neg(self.polarity * position,speed,debug)
         self.pid.Kp = 0.06
         self.pid.Kd = 0.0002
@@ -210,7 +212,8 @@ class RotationalMotor(Motor):
 
         bool = current >= target
         if(bool):
-            print(f"===Encoder: {self.enc} Stopped=== Target: {target} | Current: {current}")
+            if(debug):
+                print(f"===Encoder: {self.enc} Stopped=== Target: {target} | Current: {current}")
             self.move_motor(0)
 
         else:
@@ -220,7 +223,8 @@ class RotationalMotor(Motor):
       else:
             bool = current <= -target
             if(bool):
-                print(f"Encoder: {self.enc} Stopped=== Current: {current} Target: {target}")
+                if(debug):
+                    print(f"Encoder: {self.enc} Stopped=== Current: {current} Target: {target}")
                 self.move_motor(0)
             else:
                 self.move_motor(motor_speed)
@@ -242,7 +246,8 @@ class RotationalMotor(Motor):
 
         bool = current <= target
         if(bool):
-            print(f"===Encoder: {self.enc} Stopped=== Current {current} | Target: {target}")
+            if(debug):
+                print(f"===Encoder: {self.enc} Stopped=== Current {current} | Target: {target}")
             self.move_motor(0)
 
         else:
@@ -252,7 +257,8 @@ class RotationalMotor(Motor):
       else:
             bool = current <= -target
             if(bool):
-                print(f"Encoder: {self.enc} Stopped=== Target: {target} Current: {current}")
+                if(debug):
+                    print(f"Encoder: {self.enc} Stopped=== Target: {target} Current: {current}")
                 self.move_motor(0)
             else:
                 self.move_motor(-motor_speed)
@@ -328,7 +334,6 @@ class RotationalMotor(Motor):
   def getCurrentHeading(self):
       data = bus.read_i2c_block_data(0x30, 0x18, 2)
       raw_heading = struct.unpack('<h', bytes(data))[0]
-      print(raw_heading)
       headingRad = raw_heading / 5000.0
       headingDeg = headingRad * 180/math.pi
       return headingDeg
