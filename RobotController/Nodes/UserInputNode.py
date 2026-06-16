@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 from std_msgs.msg import Float32
-from robot_interfaces.msg import BoundingBox as BB
+#from robot_interfaces.msg import BoundingBox as BB
 
 
 class ExampleNode(Node):
@@ -13,7 +13,7 @@ class ExampleNode(Node):
         self.auto = self.create_publisher(Float32,'auto_mode',10)
         self.vision = self.create_publisher(Float32, 'vision_mode',10)
         
-        self.disFromObj = self.create_subscription(BB, 'bounding_box', self.moving_forward, 10)
+ #       self.disFromObj = self.create_subscription(BB, 'bounding_box', self.moving_forward, 10)
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0

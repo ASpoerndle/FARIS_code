@@ -1,6 +1,7 @@
 from RotationalMotor import RotationalMotor
 from PodController import PodController
 from WheelController import WheelController
+from PathController import PathController
 import board
 
 from adafruit_pca9685 import PCA9685
@@ -28,7 +29,7 @@ class MotorController():
         pca = PCA9685(i2c)
         pca.frequency = 50
         self.rotational_motor_list = []
-         
+        self.p_con = PathController()
         """
         PWM Pin, left or right side, encoder port, forwardValue 
         """
@@ -247,6 +248,20 @@ class MotorController():
     def forceNewHeading(self):
         heading = self.getHeading()
         self.heading = heading
+
+
+    def readPath(self):
+        path_list = self.p_con.readPath()
+        for i in range(len(path_list)):
+            x,y = path_list[i].split(",")
+            self.moveCord([float(x),float(y)], False)
+    """
+    Method: writePath()
+    Purpose: takes in a list of cords and writes them to the PathController
+    """
+    def writePath(self,cords):
+        for i in cords: #[[x,y],[x,y],...]
+           self.p_con.writePath(i) 
     """
     Method: __del__()
     Purpose: kills the power being supplied to the motors when the MotorController object gets

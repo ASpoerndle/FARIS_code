@@ -62,7 +62,10 @@ def demo4():
         mc.moveCord([-1,0],True)
         input("Pause.")
 def demoFree():
-    mc.moveCord([-1,-1], False)
+    path = [[0,3],[-1,0],[1,0],[0,1]]
+    mc.writePath(path)
+    mc.readPath()
+    
 def tele():
     while True:
         i = input("what do?")
