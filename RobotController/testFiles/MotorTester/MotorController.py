@@ -64,6 +64,10 @@ class MotorController():
         #    for i, motor in enumerate(self.rotational_motor_list):
         #        print("Motor index: " +str(i)+  " | Encoder Value: " + str(motor.getCurrentPosition()))
     """
+    ===TELE-OPERATION METHODS===
+    """
+
+    """
     Method: teleforward(speed)
     Purpose: For the TeleOp controller, allows for the controller to move the robot forward and backward
     """
@@ -71,9 +75,9 @@ class MotorController():
         self.wheelController.teleForward(speed)
 
     """
-        Method: teleTurn()
-        Purpose: For the TeleOp controller, sets the robot to "Turn Mode", allowing it to turn in place
-        """
+    Method: teleTurn()
+    Purpose: For the TeleOp controller, sets the robot to "Turn Mode", allowing it to turn in place
+    """
 
     def teleTurn(self):
         self.podController.teleTurn()
@@ -109,6 +113,55 @@ class MotorController():
         self.wheelController.adjustForward()
         self.podController.rotatePods(0,debug)
         return
+
+    """
+    ===PATH PLANNING METHODS===
+    """
+
+    """
+    Method: getWheelTicks()
+    Purpose: When the user pushes LSB, the robot should save how many ticks the wheel motors have run so far. We can take this value as well as some unit 
+             conversion to determine how far the robot traveled in both the x and y direction, very useful for saving and loading paths
+    """
+    def getWheelTicks(self,debug):
+        tick_list = self.wheelController.getWheelTicks()
+        if(debug):
+            print(f"Ticks for all wheel motors: {tick_list}")
+        return tick_list
+
+    """
+    Method: ticksToMeters()
+    Purpose: After getting the ticks, convert them into meters for saving them to a text file
+    """
+    def ticksToMeters(self,debug):
+        ticks = self.getWheelTick(debug)    
+        cir = math.pi * 0.192
+        #self.rotatePods(0,.5)
+        distance = (ticks[0]/1425.1) * cir
+        if(debug):
+            print(f"Tick of WheelMotor 0: {ticks[0]} | distance (m): {distance}")
+        return distance
+    """
+    Method: convertToCoordinates()
+    Purpose: converts the ticks measured by the encoders in the wheel motors, as well as the angle the pod motors are facing, first to meters and then 
+             into x,y coordiantes that can be saved and read via PathController
+    """
+    def convertToCoordinates(self,debug):
+        distance = ticksToMeters(debug) #in meters
+        podAngle = self.podController.getPodAngle() #We can do right triangle trig to find x and y 
+        podAngleRad = math.radians(podAngle)
+        x = math.sin(podAngleRad)*distance
+        y = math.cos(podAngleRad) * distance
+        return x,y
+
+    """
+    Method: telePathSave()
+    Purpose: When the user presses LSB whilst in Path Planning Mode, the path the robot took (including angle the pod motors are heading in) is saved to a
+             text file where it can be played back for automation purposes.
+    """
+    def telePathSave(self,debug):
+
+
 
     """
     Method: faceForward(debug)

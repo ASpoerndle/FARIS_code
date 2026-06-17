@@ -57,6 +57,13 @@ class WheelController():
                 motor.setSpeed(speed)
             if (i >= 2):
                 motor.setSpeed(-speed)
+    """
+    Method: getWheelTicks()
+    Purpose: When the user pushes LSB, the robot should save how many ticks the wheel motors have run so far. We can take this value as well as some unit
+             conversion to determine how far the robot traveled in both the x and y direction, very useful for saving and loading paths
+    """
+    def getWheelTicks(self,debug):
+        return self.wheelMotors[0:4].getCurrentPosition()
 
     """
     Method:adjustForward()
