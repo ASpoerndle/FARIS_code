@@ -29,6 +29,12 @@ NUM | BUTTON
 10 - LSTICK 
 11 - RSTICK
 """
+
+
+
+
+
+
 isSideways = False
 if pygame.joystick.get_count() == 0:
     print("No controller found! Check the X/D switch on the back.")
@@ -93,7 +99,10 @@ else:
                 print(mc.getHeading())
             elif(joy.get_button(4) and joy.get_button(5)):
                 break
+            elif(joy.get_button(7)):
+                mc.teleServoIn()
             else:
+                mc.teleServoOut()
                 mc.stopMotors()
             pygame.time.wait(10) # Prevent 100% CPU usage
     except KeyboardInterrupt:

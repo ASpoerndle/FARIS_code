@@ -2,6 +2,7 @@ from RotationalMotor import RotationalMotor
 from PodController import PodController
 from WheelController import WheelController
 from PathController import PathController
+from Servo import Servo
 import board
 
 from adafruit_pca9685 import PCA9685
@@ -29,11 +30,12 @@ class MotorController():
         pca = PCA9685(i2c)
         pca.frequency = 50
         self.rotational_motor_list = []
+        self.servo_list = []
         self.p_con = PathController()
         """
         PWM Pin, left or right side, encoder port, forwardValue 
         """
-
+        
         pin_list_rotational = [
          #PodMotors
          [0, "l", 4, 36] , #BL - Pod-0
@@ -45,7 +47,12 @@ class MotorController():
          [5, 'l', 1, 0],   #BL - Wheel-1
          [6, 'r', 3, 0],   #FR - Wheel-2
          [7, 'r', 0, 0]]   #BR - Wheel-3
-
+        
+        """
+        Init Servos
+        """
+        pin_list_servos = [8]
+            
 
 
         
@@ -54,15 +61,18 @@ class MotorController():
             motor = RotationalMotor(pca, i[0], i[1], i[2], i[3])
             self.rotational_motor_list.append(motor)
         print("motors ready!")
+        print("readying servos...")
+        for i in pin_list_servos:
+            servo = Servo(pca,i)
+            self.servo_list.append(servo)
+
+
+
         self.heading = self.getHeading()
         self.podController = PodController(self.rotational_motor_list[0:4])
         self.wheelController = WheelController(self.rotational_motor_list[4:8])
-        #self.podController.adjustForward(True)
- #       self.rotational_motor_list[5].move_motor(0.2)
-        #while(True):
-        #    self.teleForward(.1)
-        #    for i, motor in enumerate(self.rotational_motor_list):
-        #        print("Motor index: " +str(i)+  " | Encoder Value: " + str(motor.getCurrentPosition()))
+    
+
     """
     ===TELE-OPERATION METHODS===
     """
@@ -104,6 +114,19 @@ class MotorController():
     """
     def teleRotate(self,speed):
         self.podController.teleRotate(speed)
+    
+    """
+    Method: teleServoIn()
+    Purpose: Closes gripper as long as the specific button is pressed
+    """
+    def teleServoIn(self):
+        self.servo_list[0].setAngle(45)
+    """
+    Method: teleServoOut()
+    Purpose: Opens gripper
+    """
+    def teleServoOut(self):
+        self.servo_list[0].setAngle(180)
 
     """
     Method: adjustForward(debug)
@@ -155,13 +178,34 @@ class MotorController():
         return x,y
 
     """
-    Method: telePathSave()
+    Method: telePathSave() PathPlan-[b]
     Purpose: When the user presses LSB whilst in Path Planning Mode, the path the robot took (including angle the pod motors are heading in) is saved to a
              text file where it can be played back for automation purposes.
     """
     def telePathSave(self,debug):
-
-
+        x,y = convertToCoordinates(debug)
+        self.p_con.writePath([x,y])
+        self.wheelController.resetEncoder()
+    """
+    Method: telePathStart() PathPlan-[a]
+    Purpose: resets the encoders for accurate forward and backward tick data. Will also disable the ability for a user to rotate the pod wheels and lock
+             forward and backward motion
+    """
+    def telePathStart(self,debug):
+        self.wheelController.resetEncoder()
+        
+    """
+    Method: telePathPlay() PathPlan-[y]
+    Purpose: plays back the most recently saved path
+    """
+    def telePathPlay(self):
+        self.p_con.readPath()
+    """
+    Method: telePathClear() PathPlan-[LSB + RSB]
+    Purpose: clears the current Path.txt document of all recorded paths
+    """
+    def telePathClear(self):
+        self.p_con.clearPath()
 
     """
     Method: faceForward(debug)
@@ -326,7 +370,8 @@ class MotorController():
         self.podController.killMotors()
         self.wheelController.killMotors()
         time.sleep(2)
-
+        for servo in self.servo_list:
+            servo.killServo()
         print("finished")
 
 

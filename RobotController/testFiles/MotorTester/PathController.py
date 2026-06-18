@@ -15,7 +15,7 @@ class PathController():
 
     def writePath(self,cords):
         #x,y = cords
-        x,y = cords
+        x,y,a = cords
         saveCords = str(x) + "," + str(y) + ";"
         self.file = self.openFile(self.file,"a")
         self.file.write(saveCords)
@@ -24,11 +24,13 @@ class PathController():
     def readPath(self):
         self.file = self.openFile(self.file,"r")
         path = self.file.read()
-        self.openFile(self.file,"w")
-        self.file.close()
         p_list = path.split(";") #Now we have a list of [[x,y],[x,y],..]
         p_list = p_list[:-1]
         return p_list #Let MotorController handle turning the big list into smaller movement commands
+    def clearPath(self):
+        self.openFile(self.file,"w")
+        self.file.close()
+
     def test(self):
         for i in range(9):
             cords = [i,i*2]

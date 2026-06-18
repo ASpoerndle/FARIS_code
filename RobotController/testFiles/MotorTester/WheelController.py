@@ -78,7 +78,12 @@ class WheelController():
                 if(motor.getPolairty() != -1):
                     motor.switchPolarity()
 
-
+    """
+    Method: resetEncoder()
+    Purpose: resets the encoder of the wheel motors so that accurate forward and backward data can be recorded
+    """
+    def resetEncoder(self):
+        self.wheelMotors[0].resetEncoder()
     """
     Method: rampSpeedPos(motor, ticks, speed)
     Purpose: taking in speed input and current tick count, the method ramps the speed up and down. For moving forward
@@ -160,7 +165,7 @@ class WheelController():
         if (debug):
             print(f"Polar: {polar}")
 
-        MotorList[0].resetEncoder()
+        self.resetEncoder()
         time.sleep(0.05)
         if(debug):
             print(f"Reset encoder {MotorList[0]}")

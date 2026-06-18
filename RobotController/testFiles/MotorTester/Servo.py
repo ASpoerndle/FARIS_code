@@ -1,5 +1,6 @@
 import board
 import time
+import busio
 from adafruit_pca9685 import PCA9685
 import Jetson.GPIO as GPIO
 """
@@ -40,8 +41,8 @@ class Servo:
         #max = 10500
         #min = 1750
         self.max = maxi 
-       
-"""GPIO.cleanup()
+""" 
+GPIO.cleanup()
 GPIO.setmode(GPIO.BOARD)
 i2c = board.I2C()
 pca = PCA9685(i2c)
@@ -49,16 +50,14 @@ pca.frequency = 60
          
         
 servo = Servo(pca,8)
-servo2 = Servo(pca,9)
-servo.setAngle(0)
-servo2.setAngle(0)
+servo.setAngle(180)
 time.sleep(1)
-servo.setAngle(135)
-servo2.setAngle(135)
+servo.setAngle(90)
 time.sleep(1)
-servo.setAngle(270)
-servo2.setAngle(270)
+servo.setAngle(75)
 time.sleep(1)
 input("...")
 servo.killServo()
-servo2.killServo()"""
+
+GPIO.cleanup()
+"""
