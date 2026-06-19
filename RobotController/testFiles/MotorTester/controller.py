@@ -129,9 +129,12 @@ class controller():
         self.allowLY = False
         self.motorController.teleTurn()
     def handleJoyStick(self, axis, value):
-        if(axis == 0 and self.allowLY):
+        if(abs(value) < 0.2):
+            self.motorController.teleForward(0)
+            self.motorController.teleRotate(0)
+        if(axis == 1 and self.allowLY):
             self.motorController.teleForward(value/ self.SLOW_DOWN)
-        elif(axis == 1 and self.allowLX):
+        elif(axis == 0 and self.allowLX):
             self.motorController.teleRotate(value/self.SLOW_DOWN)
     def handleButtonInput(self, button):
         try:
@@ -156,17 +159,29 @@ class controller():
             try:
                 while True:
                     pygame.event.pump() # Internal pygame update
+                    joyLY = self.joy.get_axis(1)
+                    joyLX = self.joy.get_axis(0)
+                    joyRY = self.joy.get_axis(2)
+                    joyRX = self.joy.get_axis(3)
+
 
                     for event in pygame.event.get():
                         if (event.type == pygame.JOYBUTTONDOWN):
                             self.handleButtonInput(event.button)
 
-                        elif event.type == pygame.JOYAXISMOTION:
-                            self.handleJoyStick(event.axis, event.value)
+                        #elif event.type == pygame.JOYAXISMOTION:
+                            #self.handleJoyStick(event.axis, event.value)
+                        elif(abs(joyLY) >= 0.2 and self.allowLY):
 
+                            if(self.mode == "normal"):
+                                self.motorController.teleForward(-self.joy.get_axis(1))
+                        
+                        elif(abs(joyLX) >= 0.2 and self.allowLX):
+                            if(self.mode == "normal"):
+                                self.motorController.teleRotate(self.joy.get_axis(0))
                         else:
+                            mc.teleServoOut()
                             mc.stopMotors()
-
 
 
 
