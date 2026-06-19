@@ -69,28 +69,6 @@ class controller():
             }
 
         }
-        # self.controls = {
-        #     # SIDEWAYS MODE
-        #     self.joy.get_button(0) and not isSideways: self.toSideways,  # X
-        #     # NORMAL MODE
-        #     self.joy.get_button(1) and not self.isPlan: self.toForward,  # A
-        #     # TURN MODE
-        #     self.joy.get_button(2) and not self.isTurn: self.toTurn,  # B
-        #     # ALWAYS ON
-        #     self.joy.get_button(7): self.motorController.teleServoIn,  # RBB
-        #     not self.joy.get_button(7): self.motorController.teleServoOut,  # not RBB
-        #     self.joy.get_button(8): print(self.motorController.getHeading()),  # SEL
-        #     self.joy.get_button(4) and self.SLOW_DOWN > 1 and not self.joy.get_button(
-        #         5): self.slowDown,  # LSB
-        #     self.joy.get_button(5) and self.SLOW_DOWN < 10 and not self.joy.get_button(4): self.speedUp,  # RSB
-        #     # PLANNING MODE
-        #     self.isPlan and self.joy.get_button(2): self.motorController.telePathSave,  # B
-        #     self.isPlan and self.joy.get_button(1): self.telePathStart,  # A
-        #     self.isPlan and self.joy.get_button(3): self.motorController.telePathPlay,  # Y
-        #     not self.isPlan and self.joy.get_button(6): self.toPlan,  # LBB
-        #     #self.isPlan and self.joy.get_button(0): self.motorController.telePathClear  # X
-        # }
-        # time.sleep(3)
 
     def toPlan(self):
         print("Planning...")
@@ -128,14 +106,14 @@ class controller():
         self.allowLX = False
         self.allowLY = False
         self.motorController.teleTurn()
-    def handleJoyStick(self, axis, value):
-        if(abs(value) < 0.2):
-            self.motorController.teleForward(0)
-            self.motorController.teleRotate(0)
-        if(axis == 1 and self.allowLY):
-            self.motorController.teleForward(value/ self.SLOW_DOWN)
-        elif(axis == 0 and self.allowLX):
-            self.motorController.teleRotate(value/self.SLOW_DOWN)
+    # def handleJoyStick(self, axis, value):
+    #     if(abs(value) < 0.2):
+    #         self.motorController.teleForward(0)
+    #         self.motorController.teleRotate(0)
+    #     if(axis == 1 and self.allowLY):
+    #         self.motorController.teleForward(value/ self.SLOW_DOWN)
+    #     elif(axis == 0 and self.allowLX):
+    #         self.motorController.teleRotate(value/self.SLOW_DOWN)
     def handleButtonInput(self, button):
         try:
             mode_buttons = self.controls[self.mode]
@@ -171,15 +149,15 @@ class controller():
 
                         #elif event.type == pygame.JOYAXISMOTION:
                             #self.handleJoyStick(event.axis, event.value)
-                        elif(abs(joyLY) >= 0.2 and self.allowLY):
+                    if(abs(joyLY) >= 0.2 and self.allowLY):
 
-                            if(self.mode == "normal"):
+                        if(self.mode == "normal"):
                                 self.motorController.teleForward(-self.joy.get_axis(1))
                         
-                        elif(abs(joyLX) >= 0.2 and self.allowLX):
+                    elif(abs(joyLX) >= 0.2 and self.allowLX):
                             if(self.mode == "normal"):
                                 self.motorController.teleRotate(self.joy.get_axis(0))
-                        else:
+                    else:
                             mc.teleServoOut()
                             mc.stopMotors()
 
