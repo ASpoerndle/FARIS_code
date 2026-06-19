@@ -29,13 +29,13 @@ class controller():
     def __init__(self, MC):
         self.motorController = MC
         os.environ["SDL_VIDEODRIVER"] = "dummy"
-        SLOW_DOWN = 1.5
+        self.SLOW_DOWN = 1.5
         pygame.init()
         pygame.joystick.init()
         self.joy = pygame.joystick.Joystick(0)
-        isSideways = False
-        isTurn = False
-        isPlan = False
+        self.isSideways = False
+        self.isTurn = False
+        self.isPlan = False
        
         self.controls = {
             # SIDEWAYS MODE
@@ -56,7 +56,7 @@ class controller():
             self.isPlan and self.joy.get_button(1): self.telePathStart,  # A
             self.isPlan and self.joy.get_button(3): self.motorController.telePathPlay,  # Y
             not self.isPlan and self.joy.get_button(6): self.toPlan,  # LBB
-            self.isPlan and self.joy.get_button(0): self.motorController.telePathClear  # X
+            #self.isPlan and self.joy.get_button(0): self.motorController.telePathClear  # X
         }
         time.sleep(3)
 
@@ -159,9 +159,10 @@ class controller():
 
                     else:
                         for i in range(len(self.controls)):
-                            if(self.controls[i]):
+                            if(self.controls[i] == True):
                                 print(controller.controls[i])
                                 self.controls[i]()
+                                self.controls[i](False)
                         mc.stopMotors()
                     pygame.time.wait(10) # Prevent 100% CPU usage
             except KeyboardInterrupt:
