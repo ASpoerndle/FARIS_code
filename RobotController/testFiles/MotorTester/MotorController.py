@@ -206,7 +206,7 @@ class MotorController():
         for i in cords:
             print(i)
             x = i.split(",")
-            self.moveCord((float(x[1]), float(x[0])),False)
+            self.moveCord((float(x[0]), float(x[1])),False)
         print("path played!")
     """
     Method: telePathClear() PathPlan-[LSB + RSB]
@@ -298,6 +298,9 @@ class MotorController():
         x,y = cords
         hypo = math.sqrt((x**2) + (y**2))
         angle = (math.acos(abs(x)/hypo) * 180)/math.pi
+
+
+
         if((x < 0 and y < 0) or (x > 0 and y > 0)):
             angle = -angle
         if(x == 0):

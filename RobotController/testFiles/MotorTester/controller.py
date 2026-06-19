@@ -84,6 +84,7 @@ class controller():
     def toPlan(self):
         print("Planning...")
         self.mode = "planning"
+
     def telePathStart(self):
         print("Path starting...")
         self.allowLX = False
@@ -117,14 +118,7 @@ class controller():
         self.allowLX = False
         self.allowLY = False
         self.motorController.teleTurn()
-    # def handleJoyStick(self, axis, value):
-    #     if(abs(value) < 0.2):
-    #         self.motorController.teleForward(0)
-    #         self.motorController.teleRotate(0)
-    #     if(axis == 1 and self.allowLY):
-    #         self.motorController.teleForward(value/ self.SLOW_DOWN)
-    #     elif(axis == 0 and self.allowLX):
-    #         self.motorController.teleRotate(value/self.SLOW_DOWN)
+
     def handleButtonInput(self, button):
         try:
             mode_buttons = self.controls[self.mode]
@@ -138,14 +132,10 @@ class controller():
         if pygame.joystick.get_count() == 0:
             print("No controller found")
         else:
-
-
-            #joy2 = pygame.joystick.Joystick(1)
             self.joy.init()
-            #joy2.init()
 
             print(f"Detected: {self.joy.get_name()} | count {pygame.joystick.get_count()} | button num | {self.joy.get_numbuttons()}")
-            default = self.joy.get_axis(0)
+
             try:
                 while True:
                     pygame.event.pump() # Internal pygame update
@@ -160,7 +150,10 @@ class controller():
 
 
                     if self.mode == "normal" or self.mode == "planning":
-                        if abs(joyLY) >= 0.2 and self.allowLY:
+                        if(abs(joyLY) >=0.2 and self.allowLY and abs(joyLX) >= 0.2 and self.allowLX):
+                            self.motorController.teleForward(-joyLY/self.SLOW_DOWN)
+                            self.motorController.teleRotate(joyLX/self.SLOW_DOWN)
+                        elif abs(joyLY) >= 0.2 and self.allowLY:
                             self.motorController.teleForward(-joyLY / self.SLOW_DOWN)
                         elif abs(joyLX) >= 0.2 and self.allowLX:
                             self.motorController.teleRotate(joyLX / self.SLOW_DOWN)
@@ -182,49 +175,6 @@ class controller():
                     else:
                         mc.stopMotors()
 
-
-
-                    #
-                    # # Button 0 is usually 'A' on the F310 in X-mode
-                    # if (abs(self.joy.get_axis(0)) >= 0.2 and self.allowLY):
-                    #     # print(f"left and right {joy.get_axis(0)}")
-                    #     mc.teleForward(self.joy.get_axis(0) / self.SLOW_DOWN)
-                    # elif(abs(self.joy.get_axis(1) >= 0.2) and self.allowLX):
-                    #     mc.teleRotate(self.joy.get_axis(1)/self.SLOW_DOWN)
-                    # # elif ((abs(self.joy.get_axis(1)) >= 0.2 or abs(
-                    # #         self.joy.get_axis(0)) >= 0.2) and allowLY and allowLX):
-                    # #     if (abs(self.joy.get_axis(1)) <= 0.4):
-                    # #         fSpeed = 0
-                    # #     else:
-                    # #         fSpeed = self.joy.get_axis(1)
-                    # #     if (abs(self.joy.get_axis(0)) <= 0.4):
-                    # #         turnSpeed = 0
-                    # #     else:
-                    # #         turnSpeed = self.joy.get_axis(0)
-                    # #     if (self.joy.get_axis(1) > 0.4):
-                    # #         turnSpeed *= -1
-                    # #     mc.teleForward(-fSpeed / self.SLOW_DOWN)
-                    # #     mc.teleRotate(turnSpeed / self.SLOW_DOWN)
-                    # #     # print(f" up and down {joy.get_axis(1)}")
-                    # elif(self.joy.get_button(3) and self.joy.get_button(9)):
-                    #     mc.rotatePods(-45,False)
-                    #     mc.adjustForward(False)
-                    #     break
-                    #
-                    # elif(abs(self.joy.get_axis(2)) >= 0.2 and self.isTurn and not self.isSideways):
-                    #     mc.teleMoveTurn(self.joy.get_axis(2)/self.SLOW_DOWN)
-                    # elif(abs(self.joy.get_axis(2)) >= 0.2 and not self.isTurn and not self.isSideways):
-                    #
-                    #     mc.teleRotate(self.joy.get_axis(2)/self.SLOW_DOWN)
-                    #
-                    #
-                    # else:
-                    #     for i in range(len(self.controls)):
-                    #         if(self.controls[i] == True):
-                    #             print(controller.controls[i])
-                    #             self.controls[i]()
-                    #             self.controls[i](False)
-                    #     mc.stopMotors()
                     pygame.time.wait(10) # Prevent 100% CPU usage
             except KeyboardInterrupt:
                 pygame.quit()
