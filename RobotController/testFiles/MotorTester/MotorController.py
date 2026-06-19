@@ -186,6 +186,7 @@ class MotorController():
         x,y = self.convertToCoordinates(debug)
         self.p_con.writePath([x,y])
         self.wheelController.resetEncoder()
+        self.adjustForward()
     """
     Method: telePathStart() PathPlan-[a]
     Purpose: resets the encoders for accurate forward and backward tick data. Will also disable the ability for a user to rotate the pod wheels and lock
