@@ -38,13 +38,14 @@ class controller():
         self.allowLY = True
         self.allowRX = True
         self.allowRY = True
+        self.servoState = False
 
         self.controls = {
             "normal":{
                 0:self.toSideways,
                 1:self.toForward,
                 2:self.toTurn,
-                7:self.motorController.teleServoIn,
+                7:self.servoControl,
                 8:print(self.motorController.getHeading()),
                 4:self.slowDown,
                 5:self.speedUp,
@@ -69,7 +70,12 @@ class controller():
             }
 
         }
-
+    def servoControl(self):
+        self.servoState = not self.servoState #true = in False = out
+        if(self.servoState == True):
+            self.motorController.teleServoIn()
+        else:
+            self.motorController.teleServoOut()
     def toPlan(self):
         print("Planning...")
         self.mode = "planning"
@@ -118,8 +124,9 @@ class controller():
         try:
             mode_buttons = self.controls[self.mode]
             mode_buttons[button]()
-        except:
+        except Exception as e:
             print("ERR: Button not mapped")
+            print(e)
     def use_controller(self):
         mc = self.motorController
 
@@ -139,28 +146,36 @@ class controller():
                     pygame.event.pump() # Internal pygame update
                     joyLY = self.joy.get_axis(1)
                     joyLX = self.joy.get_axis(0)
-                    joyRY = self.joy.get_axis(2)
-                    joyRX = self.joy.get_axis(3)
-
+                    joyRY = self.joy.get_axis(3)
+                    joyRX = self.joy.get_axis(2)
 
                     for event in pygame.event.get():
                         if (event.type == pygame.JOYBUTTONDOWN):
                             self.handleButtonInput(event.button)
 
-                        #elif event.type == pygame.JOYAXISMOTION:
-                            #self.handleJoyStick(event.axis, event.value)
-                    if(abs(joyLY) >= 0.2 and self.allowLY):
 
-                        if(self.mode == "normal"):
-                                self.motorController.teleForward(-self.joy.get_axis(1))
-                        
-                    elif(abs(joyLX) >= 0.2 and self.allowLX):
-                            if(self.mode == "normal"):
-                                self.motorController.teleRotate(self.joy.get_axis(0))
-                    else:
-                            mc.teleServoOut()
+                    if self.mode == "normal":
+                        if abs(joyLY) >= 0.2 and self.allowLY:
+                            self.motorController.teleForward(-joyLY / self.SLOW_DOWN)
+                        elif abs(joyLX) >= 0.2 and self.allowLX:
+                            self.motorController.teleRotate(joyLX / self.SLOW_DOWN)
+                        else:
                             mc.stopMotors()
 
+                    elif self.mode == "sideways":
+                        if abs(joyLX) >= 0.2 and self.allowLX:
+                            self.motorController.teleForward(joyLX / self.SLOW_DOWN)
+                        else:
+                            mc.stopMotors()
+
+                    elif self.mode == "turning":
+                        if abs(joyRX) >= 0.2 and self.allowRX:
+                            self.motorController.teleMoveTurn(joyRX / self.SLOW_DOWN)
+                        else:
+                            mc.stopMotors()
+
+                    else:
+                        mc.stopMotors()
 
 
 
