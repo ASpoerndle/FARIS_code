@@ -170,7 +170,7 @@ class MotorController():
              into x,y coordiantes that can be saved and read via PathController
     """
     def convertToCoordinates(self,debug):
-        distance = ticksToMeters(debug) #in meters
+        distance = self.ticksToMeters(debug) #in meters
         podAngle = self.podController.getPodAngle() #We can do right triangle trig to find x and y 
         podAngleRad = math.radians(podAngle)
         x = math.sin(podAngleRad)*distance
@@ -183,7 +183,7 @@ class MotorController():
              text file where it can be played back for automation purposes.
     """
     def telePathSave(self,debug):
-        x,y = convertToCoordinates(debug)
+        x,y = self.convertToCoordinates(debug)
         self.p_con.writePath([x,y])
         self.wheelController.resetEncoder()
     """
