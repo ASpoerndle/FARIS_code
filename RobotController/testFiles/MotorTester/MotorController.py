@@ -193,6 +193,7 @@ class MotorController():
     """
     def telePathStart(self,debug):
         self.wheelController.resetEncoder()
+        self.podController.rotatePods(self.podController.getPodAngle(), debug)
         
     """
     Method: telePathPlay() PathPlan-[y]

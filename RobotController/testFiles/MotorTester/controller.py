@@ -23,6 +23,35 @@ NUM | BUTTON
 
 
 class controller():
+    SLOW_DOWN = 1.5
+    pygame.init()
+    pygame.joystick.init()
+    joy = pygame.joystick.Joystick(0)
+    isSideways = False
+    isTurn = False
+    isPlan = False 
+    motorController = MotorController()
+    controls = {
+            #SIDEWAYS MODE
+            joy.get_button(0) and not isSideways: self.toSideways(), #X
+            #NORMAL MODE
+            controller.joy.get_button(1) and not controller.isPlan:controller.toForward(), #A
+            #TURN MODE
+            controller.joy.get_button(2) and not controller.isTurn: controller.toTurn(), #B
+            #ALWAYS ON
+            controller.joy.get_button(7): controller.motorController.teleServoIn(), #RBB
+            not controller.joy.get_button(7): controller.motorController.teleServoOut(), #not RBB
+            controller.joy.get_button(8):  print(controller.motorController.getHeading()), #SEL
+            controller.joy.get_button(4) and controller.SLOW_DOWN > 1 and not controller.joy.get_button(5):self.slowDown(), #LSB
+            self.joy.get_button(5) and self.SLOW_DOWN < 10 and not controller.joy.get_button(4):self.speedUp(), #RSB
+            #PLANNING MODE
+            controller.isPlan and controller.joy.get_button(2):controller.motorController.telePathSave(False), #B
+            controller.isPlan and controller.joy.get_button(1):self.telePathStart(), #A
+            controller.isPlan and controller.joy.get_button(3):controller.motorController.telePathPlay(), #Y
+            not controller.isPlan and controller.joy.get_button(6):self.toPlan(), #LBB
+            controller.isPlan and controller.joy.get_button(0):controller.motorController.telePathClear() #X
+        }
+
     def __init__(self, MC):
         self.motorController = MC
         os.environ["SDL_VIDEODRIVER"] = "dummy"
@@ -30,36 +59,25 @@ class controller():
         pygame.init()
         pygame.joystick.init()
         time.sleep(3)
-        self.SLOW_DOWN = 1.5
-        self.joy = pygame.joystick.Joystick(0)
-        self.isSideways = False
-        self.isTurn = False
-        self.isPlan = False
-        self.dict = {
-            self.joy.get_button(0) and not self.isSideways: self.toSideways(),
-            self.joy.get_button(1) and not self.isPlan:self.toForward(),
-            self.joy.get_button(2) and not self.isTurn: self.toTurn(),
-            self.joy.get_button(7): self.motorController.teleServoIn(),
-            not self.joy.get_button(7): self.motorController.teleServoOut(),
-            self.joy.get_button(8):  print(self.motorController.getHeading()),
-            self.joy.get_button(4) and self.SLOW_DOWN > 1 and not self.joy.get_button(5):self.slowDown(),
-            self.joy.get_button(5) and self.SLOW_DOWN < 10 and not self.joy.get_button(4):self.speedUp(),
-            #PLANNING MODE
-            self.isPlan and self.joy.get_button(2):self.motorController.telePathSave(),
-            self.isPlan and self.joy.get_button(1):self.motorController.telePathStart(),
-            self.isPlan and self.joy.get_button(3):self.motorController.telePathPlay(),
-            not self.isPlan and self.joy.get_button(6):self.toPlan()
-    }
 
     def toPlan(self):
+        print("Planning...")
         self.isSideways = False
         self.isTurn = False
+
+    def telePathStart():
+        print("Path starting...")
+        self.allowLX = False
+        self.motorController.telePathStart(False)
 
     def speedUp(self):
         self.SLOW_DOWN = 3
+
     def slowDown(self):
         self.SLOW_DOWN = 1.5
+
     def toSideways(self):
+        print("sideways...")
         self.isSideways = True
         self.isTurn = False
         self.isPlan = False
@@ -67,6 +85,7 @@ class controller():
         self.allowRX = False
         self.allowRY = False
         self.motorController.horizontalMode(False)
+
     def toForward(self):
         self.isSideways = False
         self.isTurn = False
@@ -75,12 +94,15 @@ class controller():
         self.allowRX = True
         self.allowRY = True
         self.motorController.adjustForward(False)
+
     def toTurn(self):
+        print("turning...")
         self.isSideways = False
         self.isTurn = True
         self.allowLX = False
         self.allowLY = False
         self.motorController.teleTurn()
+
     def use_controller(self):
         mc = self.motorController
 
@@ -137,8 +159,9 @@ class controller():
 
                     else:
                         for i in range(len(self.dict)):
-                            if(dict[i]):
-                                t = dict[i][0]
+                            if(controller.controls[i]):
+                                print(controller.controls[i])
+                                t = controller.controls[i][0]
                         mc.stopMotors()
                     pygame.time.wait(10) # Prevent 100% CPU usage
             except KeyboardInterrupt:
