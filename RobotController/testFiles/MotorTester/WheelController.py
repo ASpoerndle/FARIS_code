@@ -63,7 +63,7 @@ class WheelController():
              conversion to determine how far the robot traveled in both the x and y direction, very useful for saving and loading paths
     """
     def getWheelTicks(self,debug):
-        return self.wheelMotors[0:4].getCurrentPosition()
+        return self.wheelMotors[0].getCurrentPosition()
 
     """
     Method:adjustForward()

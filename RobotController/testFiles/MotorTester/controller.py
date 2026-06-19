@@ -55,7 +55,7 @@ class controller():
             "planning":{
                 0:self.motorController.telePathClear,
                 1:self.telePathStart,
-                2:self.motorController.telePathSave,
+                2:self.telePathSave,
                 3:self.motorController.telePathPlay,
                 6:self.toForward,
             },
@@ -70,6 +70,11 @@ class controller():
             }
 
         }
+
+    def telePathSave(self):
+        self.motorController.telePathSave(True)
+        print("Path Saved")
+        self.allowLX = True
     def servoControl(self):
         self.servoState = not self.servoState #true = in False = out
         if(self.servoState == True):
@@ -82,7 +87,7 @@ class controller():
     def telePathStart(self):
         print("Path starting...")
         self.allowLX = False
-        self.motorController.telePathStart(False)
+        self.motorController.telePathStart(True)
 
     def speedUp(self):
         self.SLOW_DOWN = 3
@@ -154,7 +159,7 @@ class controller():
                             self.handleButtonInput(event.button)
 
 
-                    if self.mode == "normal":
+                    if self.mode == "normal" or self.mode == "planning":
                         if abs(joyLY) >= 0.2 and self.allowLY:
                             self.motorController.teleForward(-joyLY / self.SLOW_DOWN)
                         elif abs(joyLX) >= 0.2 and self.allowLX:

@@ -147,7 +147,7 @@ class MotorController():
              conversion to determine how far the robot traveled in both the x and y direction, very useful for saving and loading paths
     """
     def getWheelTicks(self,debug):
-        tick_list = self.wheelController.getWheelTicks()
+        tick_list = self.wheelController.getWheelTicks(debug)
         if(debug):
             print(f"Ticks for all wheel motors: {tick_list}")
         return tick_list
@@ -157,12 +157,12 @@ class MotorController():
     Purpose: After getting the ticks, convert them into meters for saving them to a text file
     """
     def ticksToMeters(self,debug):
-        ticks = self.getWheelTick(debug)    
+        ticks = self.getWheelTicks(debug)    
         cir = math.pi * 0.192
         #self.rotatePods(0,.5)
-        distance = (ticks[0]/1425.1) * cir
+        distance = (ticks/1425.1) * cir
         if(debug):
-            print(f"Tick of WheelMotor 0: {ticks[0]} | distance (m): {distance}")
+            print(f"Tick of WheelMotor 0: {ticks} | distance (m): {distance}")
         return distance
     """
     Method: convertToCoordinates()
@@ -171,7 +171,7 @@ class MotorController():
     """
     def convertToCoordinates(self,debug):
         distance = self.ticksToMeters(debug) #in meters
-        podAngle = self.podController.getPodAngle() #We can do right triangle trig to find x and y 
+        podAngle = self.podController.getPodAngle(debug) #We can do right triangle trig to find x and y 
         podAngleRad = math.radians(podAngle)
         x = math.sin(podAngleRad)*distance
         y = math.cos(podAngleRad) * distance
@@ -186,7 +186,7 @@ class MotorController():
         x,y = self.convertToCoordinates(debug)
         self.p_con.writePath([x,y])
         self.wheelController.resetEncoder()
-        self.adjustForward()
+        self.adjustForward(debug)
     """
     Method: telePathStart() PathPlan-[a]
     Purpose: resets the encoders for accurate forward and backward tick data. Will also disable the ability for a user to rotate the pod wheels and lock
@@ -194,19 +194,26 @@ class MotorController():
     """
     def telePathStart(self,debug):
         self.wheelController.resetEncoder()
-        self.podController.rotatePods(self.podController.getPodAngle(), debug)
+        self.podController.rotatePods(self.podController.getPodAngle(debug), debug)
         
     """
     Method: telePathPlay() PathPlan-[y]
     Purpose: plays back the most recently saved path
     """
     def telePathPlay(self):
-        self.p_con.readPath()
+        print("Playing path...")
+        cords = self.p_con.readPath()
+        for i in cords:
+            print(i)
+            x = i.split(",")
+            self.moveCord((float(x[1]), float(x[0])),False)
+        print("path played!")
     """
     Method: telePathClear() PathPlan-[LSB + RSB]
     Purpose: clears the current Path.txt document of all recorded paths
     """
     def telePathClear(self):
+        print("Path cleared")
         self.p_con.clearPath()
 
     """
