@@ -20,7 +20,7 @@
 	  <build_type>ament_python</build_type>
 	  <depend>rclcpp</depend>
 	  <depend>std_msgs</depend>
-	  <depend>bounding_box</depend>
-	  <depend>robot_interfaces</depend>
+	  <!-- <depend>bounding_box</depend> -->
+	  <!--<depend>robot_interfaces</depend>-->
   </export>
 </package>

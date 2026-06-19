@@ -1,6 +1,8 @@
 from RotationalMotor import RotationalMotor
 from PodController import PodController
 from WheelController import WheelController
+from PathController import PathController
+from Servo import Servo
 import board
 
 from adafruit_pca9685 import PCA9685
@@ -28,11 +30,12 @@ class MotorController():
         pca = PCA9685(i2c)
         pca.frequency = 50
         self.rotational_motor_list = []
-         
+        self.servo_list = []
+        self.p_con = PathController()
         """
         PWM Pin, left or right side, encoder port, forwardValue 
         """
-
+        
         pin_list_rotational = [
          #PodMotors
          [0, "l", 4, 36] , #BL - Pod-0
@@ -40,11 +43,16 @@ class MotorController():
          [2, "l", 6, 914], #FR - Pod-2
          [3, "l", 7, 1065], #FL - Pod-3
          #WheelMotors
-         [11, 'l', 2, 0],   #FL - Wheel-0
-         [10, 'l', 1, 0],   #BL - Wheel-1
-         [15, 'r', 3, 0],   #FR - Wheel-2
-         [13, 'r', 0, 0]]   #BR - Wheel-3
-
+         [4, 'l', 2, 0],   #FL - Wheel-0
+         [5, 'l', 1, 0],   #BL - Wheel-1
+         [6, 'r', 3, 0],   #FR - Wheel-2
+         [7, 'r', 0, 0]]   #BR - Wheel-3
+        
+        """
+        Init Servos
+        """
+        pin_list_servos = [8]
+            
 
 
         
@@ -53,15 +61,22 @@ class MotorController():
             motor = RotationalMotor(pca, i[0], i[1], i[2], i[3])
             self.rotational_motor_list.append(motor)
         print("motors ready!")
+        print("readying servos...")
+        for i in pin_list_servos:
+            servo = Servo(pca,i)
+            self.servo_list.append(servo)
+
+
+
         self.heading = self.getHeading()
         self.podController = PodController(self.rotational_motor_list[0:4])
         self.wheelController = WheelController(self.rotational_motor_list[4:8])
-        #self.podController.adjustForward(True)
- #       self.rotational_motor_list[5].move_motor(0.2)
-        #while(True):
-        #    self.teleForward(.1)
-        #    for i, motor in enumerate(self.rotational_motor_list):
-        #        print("Motor index: " +str(i)+  " | Encoder Value: " + str(motor.getCurrentPosition()))
+    
+
+    """
+    ===TELE-OPERATION METHODS===
+    """
+
     """
     Method: teleforward(speed)
     Purpose: For the TeleOp controller, allows for the controller to move the robot forward and backward
@@ -70,9 +85,9 @@ class MotorController():
         self.wheelController.teleForward(speed)
 
     """
-        Method: teleTurn()
-        Purpose: For the TeleOp controller, sets the robot to "Turn Mode", allowing it to turn in place
-        """
+    Method: teleTurn()
+    Purpose: For the TeleOp controller, sets the robot to "Turn Mode", allowing it to turn in place
+    """
 
     def teleTurn(self):
         self.podController.teleTurn()
@@ -99,6 +114,19 @@ class MotorController():
     """
     def teleRotate(self,speed):
         self.podController.teleRotate(speed)
+    
+    """
+    Method: teleServoIn()
+    Purpose: Closes gripper as long as the specific button is pressed
+    """
+    def teleServoIn(self):
+        self.servo_list[0].setAngle(45)
+    """
+    Method: teleServoOut()
+    Purpose: Opens gripper
+    """
+    def teleServoOut(self):
+        self.servo_list[0].setAngle(180)
 
     """
     Method: adjustForward(debug)
@@ -110,13 +138,85 @@ class MotorController():
         return
 
     """
+    ===PATH PLANNING METHODS===
+    """
+
+    """
+    Method: getWheelTicks()
+    Purpose: When the user pushes LSB, the robot should save how many ticks the wheel motors have run so far. We can take this value as well as some unit 
+             conversion to determine how far the robot traveled in both the x and y direction, very useful for saving and loading paths
+    """
+    def getWheelTicks(self,debug):
+        tick_list = self.wheelController.getWheelTicks()
+        if(debug):
+            print(f"Ticks for all wheel motors: {tick_list}")
+        return tick_list
+
+    """
+    Method: ticksToMeters()
+    Purpose: After getting the ticks, convert them into meters for saving them to a text file
+    """
+    def ticksToMeters(self,debug):
+        ticks = self.getWheelTick(debug)    
+        cir = math.pi * 0.192
+        #self.rotatePods(0,.5)
+        distance = (ticks[0]/1425.1) * cir
+        if(debug):
+            print(f"Tick of WheelMotor 0: {ticks[0]} | distance (m): {distance}")
+        return distance
+    """
+    Method: convertToCoordinates()
+    Purpose: converts the ticks measured by the encoders in the wheel motors, as well as the angle the pod motors are facing, first to meters and then 
+             into x,y coordiantes that can be saved and read via PathController
+    """
+    def convertToCoordinates(self,debug):
+        distance = ticksToMeters(debug) #in meters
+        podAngle = self.podController.getPodAngle() #We can do right triangle trig to find x and y 
+        podAngleRad = math.radians(podAngle)
+        x = math.sin(podAngleRad)*distance
+        y = math.cos(podAngleRad) * distance
+        return x,y
+
+    """
+    Method: telePathSave() PathPlan-[b]
+    Purpose: When the user presses LSB whilst in Path Planning Mode, the path the robot took (including angle the pod motors are heading in) is saved to a
+             text file where it can be played back for automation purposes.
+    """
+    def telePathSave(self,debug):
+        x,y = convertToCoordinates(debug)
+        self.p_con.writePath([x,y])
+        self.wheelController.resetEncoder()
+    """
+    Method: telePathStart() PathPlan-[a]
+    Purpose: resets the encoders for accurate forward and backward tick data. Will also disable the ability for a user to rotate the pod wheels and lock
+             forward and backward motion
+    """
+    def telePathStart(self,debug):
+        self.wheelController.resetEncoder()
+        
+    """
+    Method: telePathPlay() PathPlan-[y]
+    Purpose: plays back the most recently saved path
+    """
+    def telePathPlay(self):
+        self.p_con.readPath()
+    """
+    Method: telePathClear() PathPlan-[LSB + RSB]
+    Purpose: clears the current Path.txt document of all recorded paths
+    """
+    def telePathClear(self):
+        self.p_con.clearPath()
+
+    """
     Method: faceForward(debug)
     Purpose: if the current heading isn't 0, turn the robot so that it's facing 0
     """
     def faceForward(self,debug):
-        if(self.getHeading() != 0):
-            self.heading = self.getHeading()
-            self.turn(self.heading, debug)
+        diff = abs(self.heading) - abs(self.getHeading())
+        if(debug):
+            print(f"Original Heading: {self.heading} | Current Heading: {self.getHeading()} | Difference: {diff}")
+        if(abs(diff) > 1):
+            self.turn(-diff, debug)
 
     """
     Method: driveForward(ticks, debug, inPlace)
@@ -148,9 +248,9 @@ class MotorController():
         if(debug):
             print(f"Ticks: {ticks} | distance: {distance} | isZero: {turnInPlace}")
         if(turnInPlace):
-            self.wheelController.switchForTurning()
+            #self.wheelController.switchForTurning()
             self.wheelController.driveForward(ticks,debug,-1,0) #sets in place = -1 which allows turning
-            self.wheelController.switchForTurning()
+            #self.wheelController.switchForTurning()
 
         else:
             if(debug):
@@ -189,10 +289,12 @@ class MotorController():
         x,y = cords
         hypo = math.sqrt((x**2) + (y**2))
         angle = (math.acos(abs(x)/hypo) * 180)/math.pi
-        if((x<0 and y <0) or (x>0 and y >0)):
+        if((x < 0 and y < 0) or (x > 0 and y > 0)):
             angle = -angle
         if(x == 0):
             angle = 0
+            if(y<0):
+                hypo = -hypo
         if(y == 0):
             angle = -90
             if(x < 0):
@@ -201,8 +303,6 @@ class MotorController():
             print(f"X,Y: {x},{y} | Hypotenuse: {hypo} | Angle (Degrees) {angle}")
             
         self.podController.rotatePods(angle,debug)
-        if(y < 0):
-            hypo = -hypo
         print(f"Moving distance...")
         self.moveDistance(hypo,debug,False)
         self.podController.adjustForward(debug)
@@ -241,6 +341,24 @@ class MotorController():
     def getHeading(self):
         heading = self.rotational_motor_list[0].getCurrentHeading()
         return heading
+    
+    def forceNewHeading(self):
+        heading = self.getHeading()
+        self.heading = heading
+
+
+    def readPath(self):
+        path_list = self.p_con.readPath()
+        for i in range(len(path_list)):
+            x,y = path_list[i].split(",")
+            self.moveCord([float(x),float(y)], False)
+    """
+    Method: writePath()
+    Purpose: takes in a list of cords and writes them to the PathController
+    """
+    def writePath(self,cords):
+        for i in cords: #[[x,y],[x,y],...]
+           self.p_con.writePath(i) 
     """
     Method: __del__()
     Purpose: kills the power being supplied to the motors when the MotorController object gets
@@ -252,14 +370,15 @@ class MotorController():
         self.podController.killMotors()
         self.wheelController.killMotors()
         time.sleep(2)
-
+        for servo in self.servo_list:
+            servo.killServo()
         print("finished")
 
 
 """
 TESTING GROUNDS FOR MOTORCONTROLLER CLASS
 """
-mc = MotorController()
+#mc = MotorController()
 
 #===CODE FOR ROTATING ROBOT 90 WHILE MOVING===
 #mc.rotateXMotors(45,self.rotational_motors_list[2:4],False)
