@@ -39,7 +39,7 @@ class controller():
         self.allowRX = True
         self.allowRY = True
         self.servoState = False
-
+        self.end = False
         self.controls = {
             "normal":{
                 0:self.toSideways,
@@ -49,7 +49,8 @@ class controller():
                 8:print(self.motorController.getHeading()),
                 4:self.slowDown,
                 5:self.speedUp,
-                6: self.toPlan
+                6: self.toPlan,
+                9:self.endProgram 
 
             },
             "planning":{
@@ -70,7 +71,8 @@ class controller():
             }
 
         }
-
+    def endProgram(self):
+        self.end = True
     def telePathSave(self):
         self.motorController.telePathSave(True)
         print("Path Saved")
@@ -120,12 +122,12 @@ class controller():
         self.motorController.teleTurn()
 
     def handleButtonInput(self, button):
-        try:
+        #try:
             mode_buttons = self.controls[self.mode]
             mode_buttons[button]()
-        except Exception as e:
+        #except Exception as e:
             print("ERR: Button not mapped")
-            print(e)
+         #   print(e)
     def use_controller(self):
         mc = self.motorController
 
@@ -137,7 +139,7 @@ class controller():
             print(f"Detected: {self.joy.get_name()} | count {pygame.joystick.get_count()} | button num | {self.joy.get_numbuttons()}")
 
             try:
-                while True:
+                while self.end == False:
                     pygame.event.pump() # Internal pygame update
                     joyLY = self.joy.get_axis(1)
                     joyLX = self.joy.get_axis(0)
@@ -171,7 +173,6 @@ class controller():
                             self.motorController.teleMoveTurn(joyRX / self.SLOW_DOWN)
                         else:
                             mc.stopMotors()
-
                     else:
                         mc.stopMotors()
 

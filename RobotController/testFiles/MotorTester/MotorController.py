@@ -184,7 +184,13 @@ class MotorController():
     """
     def telePathSave(self,debug):
         x,y = self.convertToCoordinates(debug)
-        self.p_con.writePath([x,y])
+        x = round(x,1)
+        
+        y = round(y,1)
+        print(x,y)
+        #if(abs(x)<0.2):
+         #   x = 0
+        self.p_con.writePath([-x,y])
         self.wheelController.resetEncoder()
         self.adjustForward(debug)
     """
@@ -202,11 +208,18 @@ class MotorController():
     """
     def telePathPlay(self):
         print("Playing path...")
+        print(f"Pod Angle {self.podController.getPodAngle(False)}")
+
         cords = self.p_con.readPath()
         for i in cords:
             print(i)
             x = i.split(",")
-            self.moveCord((float(x[0]), float(x[1])),False)
+            cord = float(x[0]),float(x[1])
+            x,y = cord
+            if(x ==0 and y ==0):
+                continue
+            
+            self.moveCord((x, y),True)
         print("path played!")
     """
     Method: telePathClear() PathPlan-[LSB + RSB]
@@ -297,10 +310,9 @@ class MotorController():
     def moveCord(self, cords,debug):
         x,y = cords
         hypo = math.sqrt((x**2) + (y**2))
-        angle = (math.acos(abs(x)/hypo) * 180)/math.pi
+        angle = (math.acos(y/hypo) * 180)/math.pi
 
-
-
+        print(x,y,hypo,angle)
         if((x < 0 and y < 0) or (x > 0 and y > 0)):
             angle = -angle
         if(x == 0):
@@ -313,9 +325,17 @@ class MotorController():
                 hypo = -hypo
         if(debug):
             print(f"X,Y: {x},{y} | Hypotenuse: {hypo} | Angle (Degrees) {angle}")
-            
+        if(angle > 90):
+            angle -= 90
+        if(angle < -90):
+            angle += 90
+        if(y < 0 and hypo > 0):
+            hypo = -hypo
+        elif(x<0 and hypo < 0):
+            hypo = -hypo
         self.podController.rotatePods(angle,debug)
         print(f"Moving distance...")
+        print(x,y,hypo,angle)
         self.moveDistance(hypo,debug,False)
         self.podController.adjustForward(debug)
 
@@ -363,7 +383,7 @@ class MotorController():
         path_list = self.p_con.readPath()
         for i in range(len(path_list)):
             x,y = path_list[i].split(",")
-            self.moveCord([float(x),float(y)], False)
+            self.moveCord([float(x),float(y)], True)
     """
     Method: writePath()
     Purpose: takes in a list of cords and writes them to the PathController

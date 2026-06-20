@@ -7,7 +7,7 @@ class PathController():
     FILE_NAME = "Path.txt"
 
     def __init__(self):
-        self.file = None
+        self.file = self.openFile(PathController.FILE_NAME,"r")
 
     def openFile(self,file,mode):
         file = open(PathController.FILE_NAME,mode)

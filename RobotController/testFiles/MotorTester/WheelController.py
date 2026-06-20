@@ -128,7 +128,7 @@ class WheelController():
     """
     def driveForward(self, ticks, debug, inPlace, currentMotorAngle):
 
-        motor_speed = .3
+        motor_speed = .5
         if (ticks < 0 and inPlace > 0):
             polar = -1
             speed = -.5
@@ -136,14 +136,14 @@ class WheelController():
             isTurning = False
         elif(ticks > 0 and inPlace < 0):
             isTurning = True
-            speed = 0.3
+            speed = 0.5
             polar = 1
             isGoingBackwards = False
             if(debug):
                 print("===isRight===")
         elif(ticks<0 and inPlace < 0):
             polar = -1
-            speed = .3
+            speed = .5
             isGoingBackwards = True
             isTurning = True
         else:
@@ -222,7 +222,7 @@ class WheelController():
                     MotorList.pop(i)
                     break
                 if (debug):
-                    print(f"Loop: {i} | Ticks {ticks}")
+                    print(f"Loop: {i} | Ticks {ticks} | Current Motor Tick: {motor.getCurrentPosition()}")
                 stopCond = len(MotorList) <= 3
 
                 if (debug):
