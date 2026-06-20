@@ -57,7 +57,7 @@ class controller():
                 0:self.motorController.telePathClear,
                 1:self.telePathStart,
                 2:self.telePathSave,
-                3:self.motorController.telePathPlay,
+                3:self.telePathPlay,
                 6:self.toForward,
             },
             "sideways": {
@@ -71,8 +71,13 @@ class controller():
             }
 
         }
+    def telePathPlay(self):
+        self.allowLY = False
+        self.motorController.telePathPlay()
+        self.allowLY = True
     def endProgram(self):
         self.end = True
+        print("Goodbye...")
     def telePathSave(self):
         self.motorController.telePathSave(True)
         print("Path Saved")
@@ -84,13 +89,13 @@ class controller():
         else:
             self.motorController.teleServoOut()
     def toPlan(self):
-        print("Planning...")
+        print(f"Mode: {self.mode}")
         self.mode = "planning"
 
     def telePathStart(self):
-        print("Path starting...")
+        
         self.allowLX = False
-        self.motorController.telePathStart(True)
+        self.motorController.telePathStart(False)
 
     def speedUp(self):
         self.SLOW_DOWN = 3
@@ -99,15 +104,18 @@ class controller():
         self.SLOW_DOWN = 1.5
 
     def toSideways(self):
-        print("sideways...")
+        
+        print(f"Mode: {self.mode}")
         self.mode = "sideways"
         self.allowLY = False
         self.allowRX = False
         self.allowRY = False
+        self.allowLX = True
         self.motorController.horizontalMode(False)
 
     def toForward(self):
         self.mode = "normal"
+        print(f"Mode: {self.mode}")
         self.allowLX = True
         self.allowLY = True
         self.allowRX = True
@@ -119,15 +127,17 @@ class controller():
         self.mode = "turning"
         self.allowLX = False
         self.allowLY = False
+        self.allowRX = True
+        
         self.motorController.teleTurn()
 
     def handleButtonInput(self, button):
-        #try:
+        try:
             mode_buttons = self.controls[self.mode]
             mode_buttons[button]()
-        #except Exception as e:
+        except Exception as e:
             print("ERR: Button not mapped")
-         #   print(e)
+            print(e)
     def use_controller(self):
         mc = self.motorController
 
@@ -153,6 +163,9 @@ class controller():
 
                     if self.mode == "normal" or self.mode == "planning":
                         if(abs(joyLY) >=0.2 and self.allowLY and abs(joyLX) >= 0.2 and self.allowLX):
+                            
+                            if(joyLY > 0):
+                                joyLX = -joyLX
                             self.motorController.teleForward(-joyLY/self.SLOW_DOWN)
                             self.motorController.teleRotate(joyLX/self.SLOW_DOWN)
                         elif abs(joyLY) >= 0.2 and self.allowLY:

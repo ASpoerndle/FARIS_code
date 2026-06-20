@@ -189,7 +189,7 @@ class WheelController():
             for i, motor in enumerate(MotorList):
 
                 if(not isTurning):
-                    if(currentMotorAngle > -45 and currentMotorAngle < 45):
+                    if(currentMotorAngle > -80 and currentMotorAngle < 100):
                         if (i > 1 and abs(speed) <= 1):  # Adjust rightside
                                  motor_speedR = speed + correction
                         elif (i <= 1 and abs(speed) <= 1):  # Adjust leftside
