@@ -240,6 +240,58 @@ class WheelController():
 
         self.stopMotors()
 
+    """
+    Method: driveForwardTurning()
+    Purpose: A sister method to driveForward but only for the robot turning in place. This is necessary due to motor
+             polarities needing to be changed in order to get the turning in place effect.
+    """
+
+    def driveForwardTurning(self, ticks, debug):
+        speed = 0.5
+        if (ticks > 0):
+            polar = 1
+            isGoingBackwards = False
+
+        elif (ticks < 0):
+            polar = -1
+            isGoingBackwards = True
+
+
+        if (debug):
+            print(
+                f"Init Speed: {speed}  | Polar: {polar} | isGoingBackawrds: {isGoingBackwards} ")
+
+        MotorList = self.wheelMotors.copy()
+        stopCond = False
+        isThere = False
+        if (debug):
+                print(f"Polar: {polar}")
+        self.resetEncoder()
+        if (debug):
+                print(f"Reset encoder {MotorList[0]}")
+        stopCond = len(MotorList) <= 3
+        while (not stopCond):
+            for i, motor in enumerate(MotorList):
+                if (i > 1):  # motor_speed * in place
+                    isThere = self.checkDriveForward(motor, -polar * ticks, polar * .3 * -1, not isGoingBackwards,
+                                                     debug)
+                elif (i <= 1):
+                    isThere = self.checkDriveForward(motor, ticks * polar, polar * -.3 * -1, isGoingBackwards,
+                                                     debug)
+                if (isThere):
+                    MotorList.pop(i)
+                    break
+                if (debug):
+                    print(f"Loop: {i} | Ticks {ticks} | Current Motor Tick: {motor.getCurrentPosition()}")
+
+
+                if (debug):
+                    print(f'Ticks: {ticks} + Speed: {speed}')
+
+
+                time.sleep(0.02)
+
+        self.stopMotors()
 
     """
     Method: switchForTurning()

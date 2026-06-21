@@ -23,7 +23,7 @@ Purpose: This class is the brains of the logic for the robot, the following meth
 
 class MotorController():
     def __init__(self):
-        #Code for Jetson/PWM breakout board
+        #Code for Jetson/adafruit breakout board
         GPIO.cleanup()
         GPIO.setmode(GPIO.BOARD)
         i2c = board.I2C()
@@ -270,9 +270,9 @@ class MotorController():
         if(debug):
             print(f"Ticks: {ticks} | distance: {distance} | isZero: {turnInPlace}")
         if(turnInPlace):
-            #self.wheelController.switchForTurning()
-            self.wheelController.driveForward(ticks,debug,-1,0) #sets in place = -1 which allows turning
-            #self.wheelController.switchForTurning()
+
+            self.wheelController.driveForwardTurning(ticks,debug) #sets in place = -1 which allows turning
+
 
         else:
             if(debug):
