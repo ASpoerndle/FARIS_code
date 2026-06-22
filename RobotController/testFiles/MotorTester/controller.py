@@ -59,6 +59,7 @@ class controller():
                 2:self.telePathSave,
                 3:self.telePathPlay,
                 6:self.toForward,
+                7:self.motorController.faceForward(False)
             },
             "sideways": {
                 1:self.toForward,
@@ -89,9 +90,8 @@ class controller():
         else:
             self.motorController.teleServoOut()
     def toPlan(self):
-        print(f"Mode: {self.mode}")
         self.mode = "planning"
-
+        print(f"Mode: {self.mode}")
     def telePathStart(self):
         
         self.allowLX = False

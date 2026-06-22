@@ -1,10 +1,16 @@
 import time
-
+import board
 import adafruit_gps
 
 # Create a serial connection
 import serial
-uart = serial.Serial("/dev/ttyTHS1", baudrate=9600, timeout=3000)
+RX = board.RX
+TX = board.TX
+
+uart = busio.UART(TX, RX, baudrate=9600, timeout=30)
+
+
+#uart = serial.Serial("/dev/ttyTHS1", baudrate=9600, timeout=3000)
 # Create a GPS module instance
 gps = adafruit_gps.GPS(uart, debug=False)
 while True:
