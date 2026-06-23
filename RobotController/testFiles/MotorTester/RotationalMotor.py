@@ -84,11 +84,11 @@ class RotationalMotor(Motor):
 
     # 3. Write the payload starting at the Command Register (0x04)
     # All operand registers must be written in the same transaction [cite: 202]
-    bus.write_i2c_block_data(0x30, 0x04, payload)
-    #save settings to octoquad
-   # bus.write_byte_data(0x30, 0x04, 0x03)
-    time.sleep(0.1)
-    #bus.write_byte_data(0x30, 0x04, 0x28)
+    # bus.write_i2c_block_data(0x30, 0x04, payload)
+    # #save settings to octoquad
+    # bus.write_byte_data(0x30, 0x04, 0x03)
+    # time.sleep(0.1)
+   # bus.write_byte_data(0x30, 0x04, 0x28)
     while True:
         status = bus.read_byte_data(0x30, 0x0D)
         if status == 4:
@@ -188,8 +188,10 @@ class RotationalMotor(Motor):
   Purpose: handles the logic for moving the wheel motors forward and backward    
   """
   def driveForward(self,position,speed, isBack,debug):
-    
-        if(position < 0 or (position > 0 and self.polarity < 0 and isBack)):
+ 
+        if(debug):
+                print(f"Encoder: {self.enc} | Tick Position: {position} | Polar: {self.polarity} | Back?: {isBack}")
+        if((position < 0 and self.polarity > 0) or (position > 0 and self.polarity < 0 and isBack)):
             return self.drive_neg(self.polarity * position,speed,debug)
         self.pid.Kp = 0.06
         self.pid.Kd = 0.0002
@@ -210,7 +212,8 @@ class RotationalMotor(Motor):
 
         bool = current >= target
         if(bool):
-            print(f"===Encoder: {self.enc} Stopped=== Target: {target} | Current: {current}")
+            if(debug):
+                print(f"===Encoder: {self.enc} Stopped=== Target: {target} | Current: {current}")
             self.move_motor(0)
 
         else:
@@ -220,7 +223,8 @@ class RotationalMotor(Motor):
       else:
             bool = current <= -target
             if(bool):
-                print(f"Encoder: {self.enc} Stopped=== Current: {current} Target: {target}")
+                if(debug):
+                    print(f"Encoder: {self.enc} Stopped=== Current: {current} Target: {target}")
                 self.move_motor(0)
             else:
                 self.move_motor(motor_speed)
@@ -242,7 +246,8 @@ class RotationalMotor(Motor):
 
         bool = current <= target
         if(bool):
-            print(f"===Encoder: {self.enc} Stopped=== Current {current} | Target: {target}")
+            if(debug):
+                print(f"===Encoder: {self.enc} Stopped=== Current {current} | Target: {target}")
             self.move_motor(0)
 
         else:
@@ -252,7 +257,8 @@ class RotationalMotor(Motor):
       else:
             bool = current <= -target
             if(bool):
-                print(f"Encoder: {self.enc} Stopped=== Target: {target} Current: {current}")
+                if(debug):
+                    print(f"Encoder: {self.enc} Stopped=== Target: {target} Current: {current}")
                 self.move_motor(0)
             else:
                 self.move_motor(-motor_speed)
@@ -328,8 +334,6 @@ class RotationalMotor(Motor):
   def getCurrentHeading(self):
       data = bus.read_i2c_block_data(0x30, 0x18, 2)
       raw_heading = struct.unpack('<h', bytes(data))[0]
-
-      # Scale factor is 5000 for Radians
       headingRad = raw_heading / 5000.0
       headingDeg = headingRad * 180/math.pi
       return headingDeg
@@ -339,47 +343,32 @@ TESTING GROUND FOR ROTATIONAL MOTOR
 
 given a pca address, pin value, and a side
 """
+
 """
 try:
     i2c = board.I2C()
     pca = PCA9685(i2c)
     pca.frequency = 50
-    pin = 6
+    pin = 3
     side = "r"
     idealfVal =538
     channel = 3
-    rotMotor = RotationalMotor(pca,pin,side,channel,idealfVal,"P")
+    rotMotor = RotationalMotor(pca,pin,side,channel,idealfVal)
+    
     #val = rotMotor.adjustForward()
     # while(val):
     #     val = rotMotor.adjustForward()
     #     print(rotMotor.getCurrentPosition())
     # print("finshed")
-    print("Adjusting forward...")
+    #print("Adjusting forward...")
     
-    
-    while True:
-        value = float(input("gimme a Kp"))
-        value2 = float(input("gimme a Kp"))
-        value3 = float(input("gimme a Kp"))
-         
-        rotMotor.setValue(value,value2,value3)
 
-
-
-
-
-        val = False
-        d+= 90
-        while(not val):
+    val = False
+    while(not val):
       
-            val = rotMotor.adjustForward()  
-            time.sleep(0.02)
-            val = False
-        while(not val):
-            val = rotMotor.rotate(90,.1)
-            time.sleep(0.02)
-    
+            rotMotor.setSpeed(0.1)
 
+    
     print("Forward adjustment complete!")
     time.sleep(1)
     print("Rotating Motor 90 degrees...")
@@ -395,15 +384,13 @@ try:
     #while(not val): 
     #    val = rotMotor.driveForward(target,.1)
     #val = True
-    while(not val):
-        val = rotMotor.adjustForward()
-        time.sleep(0.02)
-    #print("Rotation complete!")  
+    #print("Rotation complete!")
     # startPos = rotMotor.getCurrentPosition()
     # val = rotMotor.move(0.5,.1,startPos)
     # while(val):
     rotMotor.stopMotor()
     #val = rotMotor.move(0.5,.1)
 except KeyboardInterrupt:
-    rotMotor.stopMotor()"""
+        rotMotor.kill_motor()
+"""
 

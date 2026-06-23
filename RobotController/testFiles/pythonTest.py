@@ -1,13 +1,30 @@
+import limelight
+import limelightresults
+import json
+import time
 
-stopCond = False
-motorList = [85,78,34]
-while (not stopCond):
+discovered_limelights = limelight.discover_limelights(debug=True)
+print("discovered limelights:", discovered_limelights)
+if discovered_limelights or True:
+   # limelight_address = discovered_limelights[0]
+    limelight_address = "172.29.0.1"
+    ll = limelight.Limelight(limelight_address)
+    ll.enable_websocket()
 
-    for i,motor in enumerate(motorList):
-        print(i)
-        motorList[i] = int(input("isRotated"))
-        isRotated = motorList[i] == 90
-        print(isRotated)
-        if (isRotated):
-            motorList.pop(i)
-    stopCond = len(motorList) == 0
+
+    try:
+        while True:
+            result = ll.get_latest_results()
+            parsed_result = limelightresults.parse_results(result)
+            if parsed_result is not None:
+                print("valid targets: ", parsed_result.validity, ", pipelineIndex: ", parsed_result.pipeline_id,
+                      ", Targeting Latency: ", parsed_result.targeting_latency)
+                for tag in parsed_result.fiducialResults:
+                   print(tag.robot_pose_target_space, tag.fiducial_id)
+            time.sleep(1)  # Set this to 0 for max fps
+
+
+    except KeyboardInterrupt:
+        print("Program interrupted by user, shutting down.")
+    finally:
+        ll.disable_websocket()

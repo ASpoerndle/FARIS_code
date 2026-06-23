@@ -37,11 +37,6 @@ class PodController():
         self.rotateXMotors(45, [2, 0], False)
 
         self.rotateXMotors(-45, [1, 3], False)
-       #===CODE FOR WHEEL MOTORS===
-        # for i, motor in enumerate(self.rotational_motor_list[4:8]):
-        #     if (i < 2):
-        #         if (motor.getPolarity() == 1):
-        #             motor.switchPolarity()
 
 
     """
@@ -61,6 +56,15 @@ class PodController():
                     motor.setSpeed(0)
             else:
                 motor.setSpeed(0)
+    """
+    Method: getPodAngle()
+    Purpose: return the current angle the swerve pods are facing
+    """
+    def getPodAngle(self,debug):
+        angle = self.podMotors[0].getCurrentAngle()
+        if(debug):
+            print(f"Angle of Pod Motor 0: {angle}")
+        return angle
 
     """
     Method: adjustForward(debug)
@@ -104,8 +108,9 @@ class PodController():
                 isAligned = self.checkRotate(motor, angle, speed, debug)
                 if (isAligned):
                     MotorList.pop(i)
-
-            stopCond = len(MotorList) == 0
+            if(debug):
+                print(f"{len(MotorList)} motors still rotating...")
+            stopCond = len(MotorList) <= 1
             time.sleep(0.02)
         self.stopMotors()
 
@@ -123,7 +128,7 @@ class PodController():
              a specified degree angle
     """
     def rotateXMotors(self, angle, motorList, debug):
-        speed = 0.75
+        speed = 1
         motors = []
         for i in range(len(motorList)):
             motors.append(self.podMotors[motorList[i]])
@@ -157,6 +162,8 @@ class PodController():
     def killMotors(self):
         for motor in self.podMotors:
             motor.kill_motor()
+    def getPodMotor(self,i):
+        return self.podMotors[i]
 
 
 
