@@ -32,8 +32,9 @@ class controller():
         self.SLOW_DOWN = 1.5
         pygame.init()
         pygame.joystick.init()
-        self.joy = pygame.joystick.Joystick(0)
+        self.joy = None
         self.mode = "normal"
+        self.subMode = "normal"
         self.allowLX = True
         self.allowLY = True
         self.allowRX = True
@@ -58,8 +59,10 @@ class controller():
                 1:self.telePathStart,
                 2:self.telePathSave,
                 3:self.telePathPlay,
+                4:self.toSideways,
+                5:self.toTurn,
                 6:self.toForward,
-                7:self.motorController.faceForward(False)
+                7:self.adjustForward
             },
             "sideways": {
                 1:self.toForward,
@@ -72,6 +75,12 @@ class controller():
             }
 
         }
+    def adjustForward(self):
+        self.motorController.adjustForward(False)
+        self.subMode = "normal"
+        self.allowLY = True
+        self.allowLX = True
+        
     def telePathPlay(self):
         self.allowLY = False
         self.motorController.telePathPlay()
@@ -93,8 +102,8 @@ class controller():
         self.mode = "planning"
         print(f"Mode: {self.mode}")
     def telePathStart(self):
-        
-        self.allowLX = False
+        if(self.subMode != "sideways"): 
+            self.allowLX = False
         self.motorController.telePathStart(False)
 
     def speedUp(self):
@@ -104,9 +113,13 @@ class controller():
         self.SLOW_DOWN = 1.5
 
     def toSideways(self):
-        
-        print(f"Mode: {self.mode}")
-        self.mode = "sideways"
+        if(self.mode != "planning"):
+            print(f"Mode: {self.mode}")
+            self.mode = "sideways"
+            self.subMode = "normal"
+        else:
+            self.subMode = "sideways"
+
         self.allowLY = False
         self.allowRX = False
         self.allowRY = False
@@ -115,6 +128,7 @@ class controller():
 
     def toForward(self):
         self.mode = "normal"
+        self.subMode = "normal"
         print(f"Mode: {self.mode}")
         self.allowLX = True
         self.allowLY = True
@@ -123,8 +137,12 @@ class controller():
         self.motorController.adjustForward(False)
 
     def toTurn(self):
-        print("turning...")
-        self.mode = "turning"
+        if(self.mode != "planning"):
+            print("turning...")
+            self.mode = "turning"
+            self.subMode = "normal"
+        else:
+            self.subMode = "turning"
         self.allowLX = False
         self.allowLY = False
         self.allowRX = True
@@ -140,10 +158,16 @@ class controller():
             print(e)
     def use_controller(self):
         mc = self.motorController
+        controller = True
 
-        if pygame.joystick.get_count() == 0:
+        while pygame.joystick.get_count() == 0:
             print("No controller found")
+            time.sleep(3)
+            if(pygame.joystick.get_count() > 0):
+                self.joy = pygame.joystick.Joystick(0)
+                self.joy.init()
         else:
+            self.joy = pygame.joystick.Joystick(0)
             self.joy.init()
 
             print(f"Detected: {self.joy.get_name()} | count {pygame.joystick.get_count()} | button num | {self.joy.get_numbuttons()}")
@@ -151,27 +175,42 @@ class controller():
             try:
                 while self.end == False:
                     pygame.event.pump() # Internal pygame update
+                    for event in pygame.event.get():
+                        if event.type == pygame.JOYDEVICEREMOVED:
+                            controller = False
+                            break
+                        if (event.type == pygame.JOYBUTTONDOWN):
+                            self.handleButtonInput(event.button)
                     joyLY = self.joy.get_axis(1)
                     joyLX = self.joy.get_axis(0)
                     joyRY = self.joy.get_axis(3)
                     joyRX = self.joy.get_axis(2)
 
-                    for event in pygame.event.get():
-                        if (event.type == pygame.JOYBUTTONDOWN):
-                            self.handleButtonInput(event.button)
-
-
+   
+                    if(controller == False):
+                        print("Please connect controller")
+                        mc.stopMotors()
+                        if(pygame.joystick.get_count() > 0):
+                            self.joy = pygame.joystick.Joystick(0)
+                            self.joy.init()
+                            controller = True
+                        else:
+                            time.sleep(1)
+                            pass
                     if self.mode == "normal" or self.mode == "planning":
-                        if(abs(joyLY) >=0.2 and self.allowLY and abs(joyLX) >= 0.2 and self.allowLX):
-                            
+                        if(abs(joyLY) >=0.2 and self.allowLY and abs(joyLX) >= 0.2 and self.allowLX and self.subMode != "sideways"):
                             if(joyLY > 0):
                                 joyLX = -joyLX
                             self.motorController.teleForward(-joyLY/self.SLOW_DOWN)
                             self.motorController.teleRotate(joyLX/self.SLOW_DOWN)
                         elif abs(joyLY) >= 0.2 and self.allowLY:
                             self.motorController.teleForward(-joyLY / self.SLOW_DOWN)
-                        elif abs(joyLX) >= 0.2 and self.allowLX:
+                        elif abs(joyLX) >= 0.2 and self.allowLX and self.subMode != "sideways":
                             self.motorController.teleRotate(joyLX / self.SLOW_DOWN)
+                        elif abs(joyRX) >= 0.2 and self.allowRX:
+                            self.motorController.teleMoveTurn(joyRX / self.SLOW_DOWN)
+                        elif abs(joyLX) >= 0.2 and self.allowLX and self.subMode == "sideways":
+                            self.motorController.teleForward(joyLX / self.SLOW_DOWN)
                         else:
                             mc.stopMotors()
 

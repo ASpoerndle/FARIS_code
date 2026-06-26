@@ -127,7 +127,6 @@ class WheelController():
     Purpose: controls the necessary logic to drive the robot either in the forward direction or to turn in place
     """
     def driveForward(self, ticks, debug, inPlace, currentMotorAngle):
-
         motor_speed = .5
         if (ticks < 0 and inPlace > 0):
             polar = -1
@@ -237,7 +236,7 @@ class WheelController():
                         print("Ramping backward")
                     speed = self.rampSpeedNeg(MotorList[0], ticks, speed)
                 time.sleep(0.02)
-
+        print(ticks)
         self.stopMotors()
 
     """

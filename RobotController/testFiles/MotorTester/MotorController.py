@@ -120,13 +120,13 @@ class MotorController():
     Purpose: Closes gripper as long as the specific button is pressed
     """
     def teleServoIn(self):
-        self.servo_list[0].setAngle(45)
+        self.servo_list[0].setAngle(60)
     """
     Method: teleServoOut()
     Purpose: Opens gripper
     """
     def teleServoOut(self):
-        self.servo_list[0].setAngle(180)
+        self.servo_list[0].setAngle(120)
 
     """
     Method: adjustForward(debug)
@@ -187,6 +187,8 @@ class MotorController():
         x = round(x,1)
         
         y = round(y,1)
+        if(self.podController.getPodAngle(False) == abs(90)):
+            y = 0
         print(x,y)
         #if(abs(x)<0.2):
          #   x = 0
@@ -209,8 +211,9 @@ class MotorController():
     def telePathPlay(self):
         print("Playing path...")
         print(f"Pod Angle {self.podController.getPodAngle(False)}")
-
+        self.wheelController.resetEncoder()  
         cords = self.p_con.readPath()
+        print(cords)
         for i in cords:
             print(i)
             x = i.split(",")
@@ -218,8 +221,8 @@ class MotorController():
             x,y = cord
             if(x ==0 and y ==0):
                 continue
-            
-            self.moveCord((x, y),True)
+            print(x,y)
+            self.moveCord((x, y),False)
         print("path played!")
     """
     Method: telePathClear() PathPlan-[LSB + RSB]
@@ -331,12 +334,12 @@ class MotorController():
             angle += 90
         if(y < 0 and hypo > 0):
             hypo = -hypo
-        elif(x<0 and hypo < 0):
+        elif(x<0 and hypo < 0 and y != 0):
             hypo = -hypo
         self.podController.rotatePods(angle,debug)
         print(f"Moving distance...")
         print(x,y,hypo,angle)
-        self.moveDistance(hypo,debug,False)
+        self.moveDistance(hypo,True,False)
         self.podController.adjustForward(debug)
 
     """
