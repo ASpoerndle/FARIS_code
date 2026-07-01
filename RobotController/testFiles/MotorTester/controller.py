@@ -51,7 +51,10 @@ class controller():
                 4:self.slowDown,
                 5:self.speedUp,
                 6: self.toPlan,
-                9:self.endProgram 
+                9:self.endProgram,
+                10:self.motorController.createWaypoint,
+                11:self.travelToWay
+
 
             },
             "planning":{
@@ -75,6 +78,8 @@ class controller():
             }
 
         }
+    def travelToWay(self):
+        self.motorController.travelToWaypoint(0,"l")
     def adjustForward(self):
         self.motorController.adjustForward(False)
         self.subMode = "normal"
