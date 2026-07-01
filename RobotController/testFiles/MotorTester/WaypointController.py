@@ -68,7 +68,7 @@ class WaypointController():
         return num
     def getCurrentCords(self):
         gps = self.gps
-        gps.update()
+
         if(self.gps.has_fix):
             return [gps.latitude,gps.longitude]
         else:
@@ -93,6 +93,9 @@ class WaypointController():
             x = self.waypoints[i][0]
             y = self.waypoints[i][1]
             print(f"Waypoint {i} X: {x} | Y: {y}")
+    def updateGPS(self):
+        while True:
+            self.gps.update()
 
 
 

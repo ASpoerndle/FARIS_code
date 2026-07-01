@@ -4,6 +4,7 @@ from WheelController import WheelController
 from PathController import PathController
 from WaypointController import WaypointController
 from Servo import Servo
+import threading
 import board
 
 from adafruit_pca9685 import PCA9685
@@ -34,7 +35,8 @@ class MotorController():
         self.servo_list = []
         self.pathController = PathController()
         self.waypointController = WaypointController()
-
+        self.gpsThread = threading.Thread(target=self.waypointController.updateGPS)
+        self.gpsThread.start()
         """
         PWM Pin, left or right side, encoder port, forwardValue 
         """
@@ -455,6 +457,7 @@ class MotorController():
         self.podController.killMotors()
         self.wheelController.killMotors()
         time.sleep(2)
+        self.gpsThread.join()
         for servo in self.servo_list:
             servo.killServo()
         print("finished")
