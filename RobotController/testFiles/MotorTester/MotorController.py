@@ -2,6 +2,7 @@ from RotationalMotor import RotationalMotor
 from PodController import PodController
 from WheelController import WheelController
 from PathController import PathController
+from WaypointController import WaypointController
 from Servo import Servo
 import board
 
@@ -31,7 +32,9 @@ class MotorController():
         pca.frequency = 50
         self.rotational_motor_list = []
         self.servo_list = []
-        self.p_con = PathController()
+        self.pathController = PathController()
+        self.waypointController = WaypointController()
+
         """
         PWM Pin, left or right side, encoder port, forwardValue 
         """
@@ -192,7 +195,7 @@ class MotorController():
         print(x,y)
         #if(abs(x)<0.2):
          #   x = 0
-        self.p_con.writePath([-x,y])
+        self.pathController.writePath([-x,y])
         self.wheelController.resetEncoder()
         self.adjustForward(debug)
     """
@@ -212,7 +215,7 @@ class MotorController():
         print("Playing path...")
         print(f"Pod Angle {self.podController.getPodAngle(False)}")
         self.wheelController.resetEncoder()  
-        cords = self.p_con.readPath()
+        cords = self.pathController.readPath()
         print(cords)
         for i in cords:
             print(i)
@@ -230,8 +233,50 @@ class MotorController():
     """
     def telePathClear(self):
         print("Path cleared")
-        self.p_con.clearPath()
+        self.pathController.clearPath()
 
+    """
+    WAYPOINT METHODS
+    """
+    """
+    Method: createWaypoint()
+    Purpose: creates a waypoint at the GPS' current position. Used mainly in teleop controlled situations.
+    """
+    def createWaypoint(self):
+        self.waypointController.setWaypoint()
+
+    """
+    Method: travelToWaypoint(int index, char path_shape)
+    Purpose: travels to specified waypoint using desired path shape ("d" == diagonal path, 
+             "l" == travel vertical distance then horizontal distance)
+    """
+    def travelToWaypoint(self, i, shape):
+        cords = None
+        cords = self.waypointController.travelToWaypoint(i)
+        if(cords != None):
+            if(shape == "d"):
+                self.travelDiagonal(cords)
+            if(shape == "l"):
+                self.travelLongWay(cords)
+    """
+    Method: travelLongWay(list<float> cords)
+    Purpose: the robot travels a longer path to the waypoint where it travels the vertical distance first
+             and then travels the horizontal distance
+    """
+    def travelLongWay(self,cords):
+        x,y = cords
+        self.moveCord([0,y],False)
+        self.moveCord([x,0], False)
+
+    """
+    Method: travelDiagonal(list<float> cords)
+    Purpose: the robot travels a diagonal path to the waypoint
+    """
+    def travelDiagonal(self, cords):
+        self.moveCord(cords,False)
+    """
+    GENERIC MOVEMENT METHODS
+    """
     """
     Method: faceForward(debug)
     Purpose: if the current heading isn't 0, turn the robot so that it's facing 0
@@ -383,7 +428,7 @@ class MotorController():
 
 
     def readPath(self):
-        path_list = self.p_con.readPath()
+        path_list = self.pathController.readPath()
         for i in range(len(path_list)):
             x,y = path_list[i].split(",")
             self.moveCord([float(x),float(y)], True)
@@ -393,7 +438,7 @@ class MotorController():
     """
     def writePath(self,cords):
         for i in cords: #[[x,y],[x,y],...]
-           self.p_con.writePath(i) 
+           self.pathController.writePath(i)
     """
     Method: __del__()
     Purpose: kills the power being supplied to the motors when the MotorController object gets
