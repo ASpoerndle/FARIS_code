@@ -13,8 +13,8 @@ def GPStoCords(GPS):
         list[i] = toRadians(list[i])
     lat1,long1,lat2,long2 = list
     distance = GPStoDistance(lat1,long1,lat2,long2)
-    x = GPSWestEast([lat1,long1], [lat2,long2])
-    y = GPSNorthSouth([lat1,long1], [lat2,long2])
+    x = GPSWestEast([lat1,long1], [lat2,long2]) * 1000 #in m
+    y = GPSNorthSouth([lat1,long1], [lat2,long2]) * 1000 #in m
     return x,y,distance
 def GPSWestEast(GPS_cords, start_cords):
     lat1, long1 = GPS_cords
@@ -30,7 +30,7 @@ def GPSNorthSouth(GPS_cords,start_cords):
     lat1 *= (180)/math.pi
     lat2 *= (180)/math.pi
     r = 111.32 #distance in km per degree of lat
-    dis_north_south = lat2 - lat1 * r
+    dis_north_south = (lat2 - lat1) * r
     return dis_north_south
 
 
@@ -64,10 +64,9 @@ while True:
     if gps.has_fix:  # Check if a fix is available
         if(start[0] == 0):
             start = gps.latitude,gps.longitude
-        prompt = input("Check dis from start?")
-        if(prompt == "y"):
-            x,y,dis = GPStoCords([gps.latitude,gps.longitude])
-            print(f"X: {x}, Y: {y}, Dis: {dis}, check: {math.sqrt(x ** 2 + y ** 2)}")
+        cords= [gps.latitude,gps.longitude]
+        x,y,dis = GPStoCords(cords)
+        print(f"X: {x}, Y: {y}, Dis: {dis}, check: {math.sqrt(x ** 2 + y ** 2)}")
         # print(f'Latitude: {gps.latitude:.6f} degrees')
         # print(f'Longitude: {gps.longitude:.6f} degrees')
     else:
