@@ -41,39 +41,58 @@ class controller():
         self.allowRY = True
         self.servoState = False
         self.end = False
+        buttonsXbox = {
+            "X":0,
+            "A":1,
+            "B":2,
+            "Y":3,
+            "LB":4,
+            "RB":5,
+            "LT":6,
+            "RT":7,
+            "SELECT":8,
+            "START":9,
+            "L3":10,
+            "R3":11,
+
+
+
+        }
+
+
         self.controls = {
             "normal":{
-                0:self.toSideways,
-                1:self.toForward,
-                2:self.toTurn,
-                7:self.servoControl,
-                8:print(self.motorController.getHeading()),
-                4:self.slowDown,
-                5:self.speedUp,
-                6: self.toPlan,
-                9:self.endProgram,
-                10:self.motorController.createWaypoint,
-                11:self.travelToWay
+                buttonsXbox["X"]:self.toSideways,
+                buttonsXbox["A"]:self.toForward,
+                buttonsXbox["B"]:self.toTurn,
+                buttonsXbox["RT"]:self.servoControl,
+                buttonsXbox["SELECT"]:print(self.motorController.getHeading()),
+                buttonsXbox["LB"]:self.slowDown,
+                buttonsXbox["RB"]:self.speedUp,
+                buttonsXbox["LT"]: self.toPlan,
+                buttonsXbox["START"]:self.endProgram,
+                buttonsXbox["L3"]:self.motorController.createWaypoint,
+                buttonsXbox["R3"]:self.travelToWay
 
 
             },
             "planning":{
-                0:self.motorController.telePathClear,
-                1:self.telePathStart,
-                2:self.telePathSave,
-                3:self.telePathPlay,
-                4:self.toSideways,
-                5:self.toTurn,
-                6:self.toForward,
-                7:self.adjustForward
+                buttonsXbox["X"]:self.motorController.telePathClear,
+                buttonsXbox["A"]:self.telePathStart,
+                buttonsXbox["B"]:self.telePathSave,
+                buttonsXbox["Y"]:self.telePathPlay,
+                buttonsXbox["LB"]:self.toSideways,
+                buttonsXbox["RB"]:self.toTurn,
+                buttonsXbox["LT"]:self.toForward,
+                buttonsXbox["RT"]:self.adjustForward
             },
             "sideways": {
-                1:self.toForward,
-                2:self.toTurn
+                buttonsXbox["A"]:self.toForward,
+                buttonsXbox["B"]:self.toTurn
             },
             "turning": {
-                0: self.toSideways,
-                1:self.toForward
+                buttonsXbox["X"]: self.toSideways,
+                buttonsXbox["A"]:self.toForward
 
             }
 
