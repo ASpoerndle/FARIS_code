@@ -74,10 +74,13 @@ class WaypointController():
         else:
             print("ERR: GPS does not have a fix on a satellite, please try again in a bit")
     def setWaypoint(self):
-        self.waypoints.append(self.getCurrentCords())
+        currentCords = self.getCurrentCords()
+        if(currentCords != None):
+            self.waypoints.append(currentCords)
+            print(self.waypoints)
 
     def travelToWaypoint(self,num):
-        if(len(self.waypoints) > num):
+        if(len(self.waypoints) > num + 1):
             current_cords = self.getCurrentCords()
             waypoint_cords = self.waypoints[num]
             x,y = self.GPStoCords(waypoint_cords,current_cords)

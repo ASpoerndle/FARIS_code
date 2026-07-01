@@ -253,11 +253,15 @@ class MotorController():
     def travelToWaypoint(self, i, shape):
         cords = None
         cords = self.waypointController.travelToWaypoint(i)
+        print(cords)
         if(cords != None):
             if(shape == "d"):
                 self.travelDiagonal(cords)
             if(shape == "l"):
                 self.travelLongWay(cords)
+            print(f"Travled Cords: {cords}")
+        else:
+            print("ERR: Failed to travel to specified Waypoint")
     """
     Method: travelLongWay(list<float> cords)
     Purpose: the robot travels a longer path to the waypoint where it travels the vertical distance first
@@ -358,9 +362,10 @@ class MotorController():
     def moveCord(self, cords,debug):
         x,y = cords
         hypo = math.sqrt((x**2) + (y**2))
-        angle = (math.acos(y/hypo) * 180)/math.pi
+        if(hypo != 0):
+            angle = (math.acos(y/hypo) * 180)/math.pi
+        print(f"X: {x} Y: {y} hypo: {hypo}") 
 
-        print(x,y,hypo,angle)
         if((x < 0 and y < 0) or (x > 0 and y > 0)):
             angle = -angle
         if(x == 0):

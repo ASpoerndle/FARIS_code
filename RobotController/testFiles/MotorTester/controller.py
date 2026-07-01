@@ -53,7 +53,7 @@ class controller():
             "SELECT":8,
             "START":9,
             "L3":10,
-            "R3":11,
+            "R3":11
 
 
 
@@ -98,6 +98,7 @@ class controller():
 
         }
     def travelToWay(self):
+        
         self.motorController.travelToWaypoint(0,"l")
     def adjustForward(self):
         self.motorController.adjustForward(False)
@@ -174,12 +175,12 @@ class controller():
         self.motorController.teleTurn()
 
     def handleButtonInput(self, button):
-        try:
+        #try:
             mode_buttons = self.controls[self.mode]
             mode_buttons[button]()
-        except Exception as e:
+        #except Exception as e:
             print("ERR: Button not mapped")
-            print(e)
+        #    print(e)
     def use_controller(self):
         mc = self.motorController
         controller = True
@@ -229,6 +230,7 @@ class controller():
                             self.motorController.teleRotate(joyLX/self.SLOW_DOWN)
                         elif abs(joyLY) >= 0.2 and self.allowLY:
                             self.motorController.teleForward(-joyLY / self.SLOW_DOWN)
+                            self.motorController.teleRotate(0)
                         elif abs(joyLX) >= 0.2 and self.allowLX and self.subMode != "sideways":
                             self.motorController.teleRotate(joyLX / self.SLOW_DOWN)
                         elif abs(joyRX) >= 0.2 and self.allowRX:

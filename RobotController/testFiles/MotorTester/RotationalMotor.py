@@ -329,7 +329,7 @@ class RotationalMotor(Motor):
       currentDeg = (currentPos-1)/1023 * 360
       forward = (self.fVal-1)/1023 * 360 % 360
       currentDeg -= forward
-      print(f"Encoder: {self.enc} | fVal {forward} | current {currentDeg}")
+      #print(f"Encoder: {self.enc} | fVal {forward} | current {currentDeg}")
       return currentDeg
   def getCurrentHeading(self):
       data = bus.read_i2c_block_data(0x30, 0x18, 2)

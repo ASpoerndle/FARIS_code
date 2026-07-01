@@ -50,7 +50,7 @@ class PodController():
             if ((motor.getCurrentAngle() < MAX_ROTATE and speed < 0) or (
                     motor.getCurrentAngle() > -MAX_ROTATE and speed > 0)):
                 if (abs(motor.getCurrentAngle()) < 90):
-                    print(f"Angle: {motor.getCurrentAngle()}, Speed: {speed}")
+                    #print(f"Angle: {motor.getCurrentAngle()}, Speed: {speed}")
                     motor.setSpeed(speed)
                 else:
                     motor.setSpeed(0)
