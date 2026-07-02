@@ -257,6 +257,8 @@ class controller():
                     pygame.time.wait(10) # Prevent 100% CPU usage
             except KeyboardInterrupt:
                 pygame.quit()
+                del self.motorController
+
 mc = MotorController()
 controller = controller(mc)
 controller.use_controller()

@@ -96,6 +96,7 @@ class WaypointController():
     def updateGPS(self):
         while True:
             self.gps.update()
+            time.sleep(1)
 
 
 

@@ -22,20 +22,18 @@ class RotationalMotor(Motor):
 
   I2C_BUS = 1
 
-  positions = [0,0,0,0,0,0,0,0]
 
-  velocities = [0,0,0,0,0,0,0,0]  
 
-  WHEELDIAMETER = .144
 
-  WHEELC = WHEELDIAMETER * math.pi
+
+
 
   def __init__(self, pca, pin, side, enc, fVal):
     Motor.__init__(self,pca,pin,side)
 
     
-    self.enc = enc
-    self.init_hardware()
+    self.encoder = enc
+    self.initHardware()
     
     if(side == "r"):
 
@@ -45,15 +43,15 @@ class RotationalMotor(Motor):
 
         self.polarity = 1
 
-    self.fVal = fVal
+    self.forwardValue = fVal #the value that results in the swerve pods to face "forward"
 
-    self.currentCount = fVal
+
 
     self.pid = PID(0.05,0.000003,0.000002, setpoint=(fVal)) 
     self.pid.output_limits=(-.6,.6)
   
   #Initilizes the Octoquad for a 4 relative, 4 abs set up where the abs values are allowed to wrap 
-  def init_hardware(self):
+  def initHardware(self):
     #===Format for manipulating registers===
     """
     I2C Address:               0x30
@@ -71,11 +69,11 @@ class RotationalMotor(Motor):
     bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x02, 2]) 
 
     #set min and max values for abs encoders (from 1-1024 based on REV ThroughBore encoder specs)
-    if(self.enc>=4):
+    if(self.encoder>=4):
         # [Cmd, ParamID, Channel, Min_L, Min_H, Max_L, Max_H]
-        bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x04, self.enc, 1, 0, 0, 4])
+        bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x04, self.encoder, 1, 0, 0, 4])
         bus.write_i2c_block_data(0x30,0x04, [0x01,0x05,0xF0])
-        #bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, self.enc, 0])
+        #bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, self.encoder, 0])
     packed_scalar = struct.pack('<f', float(1.0176661986832))
 
     # 2. Prepare the full data payload for the command registers
@@ -101,48 +99,18 @@ class RotationalMotor(Motor):
     print("Hardware ready.")
 
   
-  """
-  Method: adjustForward()
-  Purpose: handles the logic for adjusting the Pod motors to a "forward" position
-  """
-  def adjustForward(self,debug):
-      currentPos = self.getCurrentPosition()
-            #convert fVal pwm into degrees
-      target = ((self.fVal-1)/1023.0)*360
-      target = target %360
-            #convert current raw position to degrees
-      currentDeg = ((currentPos-1)/1023.0)*360
-      currentDeg = currentDeg %360
-            #calc the difference betweentarget and currentDeg
-            # error = (target - currentDeg + 180) % 360 - 180
-      error = (target - currentDeg)
-      feedback = currentDeg
-      error = (error + 180) % 360 - 180
-      self.pid.setpoint = currentDeg + error
-      control_signal = self.pid(feedback)
-      if(debug):
-        print(f"Target: {target%360} | Current: {currentDeg%360} Encoder: {self.enc} | Error: {error} | Speed: {control_signal}")      
-       
-      if abs(error) < .5 or abs(error) > 177:
-            
-            self.move_motor(0)
-            return True
-      else:
-          
-            self.move_motor(-control_signal * .75)
 
-            return False
 
   
   """
   Method: rotate(angle {degrees}, speed)
   Purpose: rotates the Pod motors to the designated location based on a degree input
   """
-  def rotate(self, angle, speed,debug):
+  def rotate(self, angle, speed,debug=False):
      speed = abs(speed)
      current = self.getCurrentPosition()
      
-     forward = ((self.fVal-1)/1023)*360 % 360
+     forward = ((self.forwardValue-1)/1023)*360 % 360
 
          #current_degrees = ((current-1)/1023) * 360
      current_degrees = ((current - 1)/1023) * 360 % 360
@@ -163,46 +131,46 @@ class RotationalMotor(Motor):
      control_signal = self.pid(current_degrees)
         
      # Absolute safety check
-     if angle > 91 and self.enc >= 4 or angle < -91 and self.enc >= 4:
-        self.move_motor(0)
+     if angle > 91 and self.encoder >= 4 or angle < -91 and self.encoder >= 4:
+        self.moveMotor(0)
         print("ERR: Cord limit reached!")
         return True
      if abs(error) <2.5:
-         self.move_motor(0)
+         self.moveMotor(0)
          if(debug):
            print(f"Centered at {current} kP: {self.pid.Kp} kI: {self.pid.Ki} kD: {self.pid.Kd}")
          return True
-     if(abs(error) < 10 and self.enc <= 3):
-         self.move_motor(0)
+     if(abs(error) < 10 and self.encoder <= 3):
+         self.moveMotor(0)
          return True
      else:
-         self.move_motor(control_signal * speed)
+         self.moveMotor(control_signal * speed)
            
          
          if(debug):  
-           print(f"Enc: {self.enc} | Error {error} Target: {target} | Current: {current_degrees} | Power: {control_signal}")
+           print(f"Enc: {self.encoder} | Error {error} Target: {target} | Current: {current_degrees} | Power: {control_signal}")
          return False
 
   """
   Method: driveForward(angle {degrees} ,speed)
   Purpose: handles the logic for moving the wheel motors forward and backward    
   """
-  def driveForward(self,position,speed, isBack,debug):
+  def driveForward(self,position,speed, isBack,debug=False):
  
         if(debug):
-                print(f"Encoder: {self.enc} | Tick Position: {position} | Polar: {self.polarity} | Back?: {isBack}")
+                print(f"Encoder: {self.encoder} | Tick Position: {position} | Polar: {self.polarity} | Back?: {isBack}")
         if((position < 0 and self.polarity > 0) or (position > 0 and self.polarity < 0 and isBack)):
-            return self.drive_neg(self.polarity * position,speed,debug)
+            return self.driveToNegative(self.polarity * position,speed,debug)
         self.pid.Kp = 0.06
         self.pid.Kd = 0.0002
         self.pid.Ki = 0.0002
-        return self.drive(self.polarity * position,speed,debug)
+        return self.driveToPositive(self.polarity * position,speed,debug)
 
   """
   Method: drive(target {Quadrature}, speed)
   Purpose: the logic that tells the motor to keep running until it reaches its desired location
   """
-  def drive(self,target,speed,debug):
+  def driveToPositive(self,target,speed,debug=False):
       current = self.getCurrentPosition()
       self.pid.setpoint = target
       motor_speed = self.pid(current)
@@ -213,21 +181,21 @@ class RotationalMotor(Motor):
         bool = current >= target
         if(bool):
             if(debug):
-                print(f"===Encoder: {self.enc} Stopped=== Target: {target} | Current: {current}")
-            self.move_motor(0)
+                print(f"===Encoder: {self.encoder} Stopped=== Target: {target} | Current: {current}")
+            self.moveMotor(0)
 
         else:
             if(debug):
-              print(f"Target: {target} | Current: {current} Encoder: {self.enc} |  Speed: {motor_speed}")
-            self.move_motor(motor_speed)
+              print(f"Target: {target} | Current: {current} Encoder: {self.encoder} |  Speed: {motor_speed}")
+            self.moveMotor(motor_speed)
       else:
             bool = current <= -target
             if(bool):
                 if(debug):
-                    print(f"Encoder: {self.enc} Stopped=== Current: {current} Target: {target}")
-                self.move_motor(0)
+                    print(f"Encoder: {self.encoder} Stopped=== Current: {current} Target: {target}")
+                self.moveMotor(0)
             else:
-                self.move_motor(motor_speed)
+                self.moveMotor(motor_speed)
       return bool
 
 
@@ -235,7 +203,7 @@ class RotationalMotor(Motor):
   Method: drive_neg(target {quadrature}, speed)
   Purpose: allows the motors that need to drive towards negative quadrature values to be able to move with the other motors
   """
-  def drive_neg(self,target,speed,debug):
+  def driveToNegative(self,target,speed,debug=False):
       current = self.getCurrentPosition()
       self.pid.setpoint = target
       motor_speed = self.pid(current)
@@ -247,21 +215,21 @@ class RotationalMotor(Motor):
         bool = current <= target
         if(bool):
             if(debug):
-                print(f"===Encoder: {self.enc} Stopped=== Current {current} | Target: {target}")
-            self.move_motor(0)
+                print(f"===Encoder: {self.encoder} Stopped=== Current {current} | Target: {target}")
+            self.moveMotor(0)
 
         else:
             if(debug):
-              print(f"Target: {target} | Current: {current} Encoder: {self.enc} |  Speed: {motor_speed}")
-            self.move_motor(motor_speed)
+              print(f"Target: {target} | Current: {current} Encoder: {self.encoder} |  Speed: {motor_speed}")
+            self.moveMotor(motor_speed)
       else:
             bool = current <= -target
             if(bool):
                 if(debug):
-                    print(f"Encoder: {self.enc} Stopped=== Target: {target} Current: {current}")
-                self.move_motor(0)
+                    print(f"Encoder: {self.encoder} Stopped=== Target: {target} Current: {current}")
+                self.moveMotor(0)
             else:
-                self.move_motor(-motor_speed)
+                self.moveMotor(-motor_speed)
       return bool
   """
   Method: stopMotor()
@@ -270,7 +238,7 @@ class RotationalMotor(Motor):
         
   def stopMotor(self):
 
-      self.move_motor(0)
+      self.moveMotor(0)
 
   """
   Method: getCurrentPosition()
@@ -278,10 +246,10 @@ class RotationalMotor(Motor):
   """
 
   def getCurrentPosition(self):
-      self.read_octoquad()
+      position = self.readOctoquad()
       # print(RotationalMotor.positions)
       
-      return RotationalMotor.positions[self.enc]
+      return position
 
   """
   Method: resetEncoder()
@@ -292,26 +260,15 @@ class RotationalMotor(Motor):
 
 
   #input distance in m, speed -1.0 to 1.0
-  def switchPolarity(self):
-      self.polarity = -self.polarity 
-  def getPolarity(self):
-      return self.polarity
-  def setPolairty(self, polar):
-      self.polarity = polar
-  """
-  Method: setValue(kP,Ki,Kd)
-  Purpose: mostly for debugging PID values.
-  """
-  def setValue(self,value,value2,value3):
-      self.pid.Kp = value
-      self.pid.Ki = value2
-      self.pid.Kd = value3
+
+
+
 
   """
   Method: read_octoquad()
   Purpose: returns a list of all of the current positions of the absolute and relative encoders
   """
-  def read_octoquad(self):
+  def readOctoquad(self):
     """Uses atomic I2C transactions to prevent data byte-shifting"""
     # Read 32 bytes (8 channels * 4 bytes each)
     write = i2c_msg.write(0x30, [0x1C])
@@ -319,17 +276,17 @@ class RotationalMotor(Motor):
     bus.i2c_rdwr(write, read)
     
     # Unpack as 8 signed 32-bit integers
-    RotationalMotor.positions = struct.unpack('<8i', bytes(list(read)))
-       
+    positions = struct.unpack('<8i', bytes(list(read)))
+    return positions[self.encoder]
   def setSpeed(self,speed):
-      self.move_motor(speed)
+      self.moveMotor(speed)
     
   def getCurrentAngle(self):
       currentPos = self.getCurrentPosition()
       currentDeg = (currentPos-1)/1023 * 360
-      forward = (self.fVal-1)/1023 * 360 % 360
+      forward = (self.forwardValue-1)/1023 * 360 % 360
       currentDeg -= forward
-      #print(f"Encoder: {self.enc} | fVal {forward} | current {currentDeg}")
+      #print(f"Encoder: {self.encoder} | fVal {forward} | current {currentDeg}")
       return currentDeg
   def getCurrentHeading(self):
       data = bus.read_i2c_block_data(0x30, 0x18, 2)

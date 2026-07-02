@@ -69,14 +69,14 @@ class WheelController():
     Method:adjustForward()
     Purpose: resets the polarity of each wheel in case it gets changed for any reason
     """
-    def adjustForward(self):
-        for i,motor in enumerate (self.wheelMotors):
-            if(i<6):
-                if(motor.getPolarity() != 1):
-                    motor.switchPolarity()
-            else:
-                if(motor.getPolairty() != -1):
-                    motor.switchPolarity()
+    # def adjustForward(self):
+    #     for i,motor in enumerate (self.wheelMotors):
+    #         if(i<6):
+    #             if(motor.getPolarity() != 1):
+    #                 motor.switchPolarity()
+    #         else:
+    #             if(motor.getPolairty() != -1):
+    #                 motor.switchPolarity()
 
     """
     Method: resetEncoder()
@@ -292,13 +292,13 @@ class WheelController():
 
         self.stopMotors()
 
-    """
-    Method: switchForTurning()
-    Purpose: switches the polarity of the motors on the right side of the robot, used primarily for turning in place
-    """
-    def switchForTurning(self):
-        for i in range(2, 4):
-            self.wheelMotors[i].switchPolarity()
+    # """
+    # Method: switchForTurning()
+    # Purpose: switches the polarity of the motors on the right side of the robot, used primarily for turning in place
+    # """
+    # def switchForTurning(self):
+    #     for i in range(2, 4):
+    #         self.wheelMotors[i].switchPolarity()
 
     """
     Method: stopMotors()
