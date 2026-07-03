@@ -142,7 +142,7 @@ class MotorController():
              conversion to determine how far the robot traveled in both the x and y direction, very useful for saving and loading paths
     """
     def getWheelTicks(self,debug=False):
-        tick_list = self.wheelController.getWheelTicks(debug)
+        tick_list = self.wheelController.getWheelTicks()
         if(debug):
             print(f"Ticks for all wheel motors: {tick_list}")
         return tick_list

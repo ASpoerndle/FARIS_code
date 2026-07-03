@@ -23,12 +23,6 @@ class RotationalMotor(Motor):
 
   I2C_BUS = 1
 
-
-
-
-
-
-
   def __init__(self, pca, pin, side, enc, fVal):
     Motor.__init__(self,pca,pin,side)
 
@@ -51,88 +45,8 @@ class RotationalMotor(Motor):
     self.pid = PID(0.05,0.000003,0.000002, setpoint=(fVal)) 
     self.pid.output_limits=(-.6,.6)
 
-  
-
-  """
-  Method: driveForward(angle {degrees} ,speed)
-  Purpose: handles the logic for moving the wheel motors forward and backward    
-  """
-  def driveForward(self,position,speed, isBack,debug=False):
- 
-        if(debug):
-                print(f"Encoder: {self.encoder} | Tick Position: {position} | Polar: {self.polarity} | Back?: {isBack}")
-        if((position < 0 and self.polarity > 0) or (position > 0 and self.polarity < 0 and isBack)):
-            return self.driveToNegative(self.polarity * position,speed,debug)
-        self.pid.Kp = 0.06
-        self.pid.Kd = 0.0002
-        self.pid.Ki = 0.0002
-        return self.driveToPositive(self.polarity * position,speed,debug)
-
-  """
-  Method: drive(target {Quadrature}, speed)
-  Purpose: the logic that tells the motor to keep running until it reaches its desired location
-  """
-  def driveToPositive(self,target,speed,debug=False):
-      current = self.encoder.getEncoderPosition()
-      self.pid.setpoint = target
-      motor_speed = self.pid(current)
-      motor_speed *= speed
-      if(self.polarity == 1):
-      
-
-        bool = current >= target
-        if(bool):
-            if(debug):
-                print(f"===Encoder: {self.encoder} Stopped=== Target: {target} | Current: {current}")
-            self.moveMotor(0)
-
-        else:
-            if(debug):
-              print(f"Target: {target} | Current: {current} Encoder: {self.encoder} |  Speed: {motor_speed}")
-            self.moveMotor(motor_speed)
-      else:
-            bool = current <= -target
-            if(bool):
-                if(debug):
-                    print(f"Encoder: {self.encoder} Stopped=== Current: {current} Target: {target}")
-                self.moveMotor(0)
-            else:
-                self.moveMotor(motor_speed)
-      return bool
 
 
-  """
-  Method: drive_neg(target {quadrature}, speed)
-  Purpose: allows the motors that need to drive towards negative quadrature values to be able to move with the other motors
-  """
-  def driveToNegative(self,target,speed,debug=False):
-      current = self.encoder.getEncoderPosition()
-      self.pid.setpoint = target
-      motor_speed = self.pid(current)
-      motor_speed *= -speed
-      
-      if(self.polarity == 1):
-      
-
-        bool = current <= target
-        if(bool):
-            if(debug):
-                print(f"===Encoder: {self.encoder} Stopped=== Current {current} | Target: {target}")
-            self.moveMotor(0)
-
-        else:
-            if(debug):
-              print(f"Target: {target} | Current: {current} Encoder: {self.encoder} |  Speed: {motor_speed}")
-            self.moveMotor(motor_speed)
-      else:
-            bool = current <= -target
-            if(bool):
-                if(debug):
-                    print(f"Encoder: {self.encoder} Stopped=== Target: {target} Current: {current}")
-                self.moveMotor(0)
-            else:
-                self.moveMotor(-motor_speed)
-      return bool
   """
   Method: stopMotor()
   Purpose: sets the motor speed equal to 0
