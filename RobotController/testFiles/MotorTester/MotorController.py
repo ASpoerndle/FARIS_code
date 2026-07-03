@@ -7,7 +7,7 @@ from Servo import Servo
 import threading
 import board
 from PodMotor import PodMotor
-
+from WheelMotor import WheelMotor
 from adafruit_pca9685 import PCA9685
 
 import Jetson.GPIO as GPIO
@@ -65,7 +65,7 @@ class MotorController():
         print("readying motors...")
         for i,motor in enumerate(pin_list_rotational):
             if(i > 3):
-                motor = RotationalMotor(pca, motor[0], motor[1], motor[2], motor[3])
+                motor = WheelMotor(pca, motor[0], motor[1], motor[2], motor[3])
             else:
                 motor = PodMotor(pca,motor[0],motor[1], motor[2], motor[3])
             rotational_motor_list.append(motor)

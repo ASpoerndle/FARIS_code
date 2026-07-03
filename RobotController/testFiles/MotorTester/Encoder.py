@@ -72,4 +72,9 @@ class Encoder():
         headingRad = raw_heading / 5000.0
         headingDeg = headingRad * 180 / math.pi
         return headingDeg
-
+    """
+    Method: resetEncoder()
+    Purpose: resets the relative quadrature encoder values for the wheel motors
+    """
+    def resetEncoder(self):
+        Encoder.bus.write_i2c_block_data(0x30, 0x04, [0x15, 0x0F])

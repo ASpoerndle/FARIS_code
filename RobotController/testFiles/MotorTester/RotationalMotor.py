@@ -50,107 +50,8 @@ class RotationalMotor(Motor):
 
     self.pid = PID(0.05,0.000003,0.000002, setpoint=(fVal)) 
     self.pid.output_limits=(-.6,.6)
-  
-  #Initilizes the Octoquad for a 4 relative, 4 abs set up where the abs values are allowed to wrap 
-  def initHardware(self):
-    #===Format for manipulating registers===
-    """
-    I2C Address:               0x30
-    Access a command register: 0x04
-    Set parameter:             0x01
-    
-    Example: set the command register to allow wrapping of abs encoders
-    bus.write_i2c_block_data(0x30,0x04,[0x01,0x05,0xF0])
-    
-    """
-        #Allow wrapping (0x05) of all absolute encoders (0xF0)
-    bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, 0xF0])
-
-    #Set bank mode for encoders to 2 to allow ports 4-7 to be abs and 0-3 to be quadrature
-    bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x02, 2]) 
-
-    #set min and max values for abs encoders (from 1-1024 based on REV ThroughBore encoder specs)
-    # if(self.encoder>=4):
-    #     # [Cmd, ParamID, Channel, Min_L, Min_H, Max_L, Max_H]
-    #     bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x04, self.encoder, 1, 0, 0, 4])
-    #     bus.write_i2c_block_data(0x30,0x04, [0x01,0x05,0xF0])
-    #     #bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, self.encoder, 0])
-    packed_scalar = struct.pack('<f', float(1.0176661986832))
-
-    # 2. Prepare the full data payload for the command registers
-    # Format: [CommandID, ParamID, Byte0, Byte1, Byte2, Byte3]
-    payload = [0x01, 0x36] + list(packed_scalar)
-
-    # 3. Write the payload starting at the Command Register (0x04)
-    # All operand registers must be written in the same transaction [cite: 202]
-    # bus.write_i2c_block_data(0x30, 0x04, payload)
-    # #save settings to octoquad
-    # bus.write_byte_data(0x30, 0x04, 0x03)
-    # time.sleep(0.1)
-   # bus.write_byte_data(0x30, 0x04, 0x28)
-    while True:
-        status = bus.read_byte_data(0x30, 0x0D)
-        if status == 4:
-            print("Localizer Ready!")
-            break
-        elif status == 5:
-            raise Exception("IMU Fault: Device not detected")
-
-    
-    print("Hardware ready.")
 
   
-
-
-  
-  # """
-  # Method: rotate(angle {degrees}, speed)
-  # Purpose: rotates the Pod motors to the designated location based on a degree input
-  # """
-  # def rotate(self, angle, speed,debug=False):
-  #    speed = abs(speed)
-  #    current = self.getCurrentPosition()
-  #
-  #    forward = ((self.forwardValue-1)/1023)*360 % 360
-  #
-  #        #current_degrees = ((current-1)/1023) * 360
-  #    current_degrees = ((current - 1)/1023) * 360 % 360
-  #
-  #    target = (forward  + angle) % 360
-  #
-  #    speed *= 0.75
-  #    error = (target -current_degrees + 180) % 360 - 180
-  #    if (error > 90):
-  #          error -= 180
-  #          speed *= -1
-  #    if(error < -90):
-  #       error += 180
-  #       speed *= -1
-  #    target = current_degrees + error
-  #    speed *= -1
-  #    self.pid.setpoint = target
-  #    control_signal = self.pid(current_degrees)
-  #
-  #    # Absolute safety check
-  #    if angle > 91 and self.encoder >= 4 or angle < -91 and self.encoder >= 4:
-  #       self.moveMotor(0)
-  #       print("ERR: Cord limit reached!")
-  #       return True
-  #    if abs(error) <2.5:
-  #        self.moveMotor(0)
-  #        if(debug):
-  #          print(f"Centered at {current} kP: {self.pid.Kp} kI: {self.pid.Ki} kD: {self.pid.Kd}")
-  #        return True
-  #    if(abs(error) < 10 and self.encoder <= 3):
-  #        self.moveMotor(0)
-  #        return True
-  #    else:
-  #        self.moveMotor(control_signal * speed)
-  #
-  #
-  #        if(debug):
-  #          print(f"Enc: {self.encoder} | Error {error} Target: {target} | Current: {current_degrees} | Power: {control_signal}")
-  #        return False
 
   """
   Method: driveForward(angle {degrees} ,speed)
@@ -241,60 +142,11 @@ class RotationalMotor(Motor):
 
       self.moveMotor(0)
 
-  """
-  Method: getCurrentPosition()
-  Purpose: returns the position of the object's encoder from the OctoQuad
-  """
-
-  # def getCurrentPosition(self):
-  #     position = self.readOctoquad()
-  #     # print(RotationalMotor.positions)
-  #
-  #     return position
-
-  """
-  Method: resetEncoder()
-  Purpose: resets the relative quadrature encoder values for the wheel motors
-  """
-  def resetEncoder(self):
-      bus.write_i2c_block_data(0x30, 0x04, [0x15, 0x0F])
-
-
-  #input distance in m, speed -1.0 to 1.0
-
-
-
-
-  # """
-  # Method: read_octoquad()
-  # Purpose: returns a list of all of the current positions of the absolute and relative encoders
-  # """
-  # def readOctoquad(self):
-  #   """Uses atomic I2C transactions to prevent data byte-shifting"""
-  #   # Read 32 bytes (8 channels * 4 bytes each)
-  #   write = i2c_msg.write(0x30, [0x1C])
-  #   read = i2c_msg.read(0x30, 32)
-  #   bus.i2c_rdwr(write, read)
-  #
-  #   # Unpack as 8 signed 32-bit integers
-  #   positions = struct.unpack('<8i', bytes(list(read)))
-  #   return positions[self.encoder]
   def setSpeed(self,speed):
       self.moveMotor(speed)
-    
-  # def getCurrentAngle(self):
-  #     currentPos = self.getCurrentPosition()
-  #     currentDeg = (currentPos-1)/1023 * 360
-  #     forward = (self.forwardValue-1)/1023 * 360 % 360
-  #     currentDeg -= forward
-  #     #print(f"Encoder: {self.encoder} | fVal {forward} | current {currentDeg}")
-  #     return currentDeg
+
   def getCurrentHeading(self):
-      data = bus.read_i2c_block_data(0x30, 0x18, 2)
-      raw_heading = struct.unpack('<h', bytes(data))[0]
-      headingRad = raw_heading / 5000.0
-      headingDeg = headingRad * 180/math.pi
-      return headingDeg
+      self.encoder.getCurrentHeading()
 
 """
 TESTING GROUND FOR ROTATIONAL MOTOR
