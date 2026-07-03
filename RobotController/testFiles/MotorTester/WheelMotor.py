@@ -15,6 +15,7 @@ class WheelMotor():
         if (debug):
             print(f"Encoder: {self.motor.encoder.encoder} | Tick Position: {position} | Polar: {self.motor.polarity} | Back?: {isBack}")
         if ((position < 0 and self.motor.polarity > 0) or (position > 0 and self.motor.polarity < 0 and isBack)):
+            print("!!!!!!DRIVETONEGATIVEVALUE!!!!!!!:")
             return self.driveToNegative(self.motor.polarity * position, speed, debug)
         self.motor.pid.Kp = 0.06
         self.motor.pid.Kd = 0.0002
