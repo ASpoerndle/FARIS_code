@@ -213,7 +213,7 @@ class WheelController():
                         if (i  % 2 == 0):
                             isThere = self.checkDriveForward(motor, -ticks*inPlace, motor_speedF, isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
                         elif (i % 2 == 1):
-                            isThere = self.checkDriveForward(motor, ticks, motor_speedB, isGoingBackwards, debug)
+                            isThere = self.checkDriveForward(motor, -ticks, motor_speedB, isGoingBackwards, debug)
                 elif(isTurning):
                         if(i > 1): #motor_speed * in place
                             isThere= self.checkDriveForward(motor, -polar*ticks, polar*.3 * inPlace,not isGoingBackwards, debug)

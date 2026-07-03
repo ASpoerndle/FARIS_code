@@ -68,7 +68,7 @@ class WheelMotor():
 
         if (self.motor.polarity == 1):
 
-            bool = current <= target
+            bool = abs(current) >= abs(target)
             if (bool):
                 if (debug):
                     print(f"===Encoder: {self.motor.encoder} Stopped=== Current {current} | Target: {target}")
@@ -79,7 +79,7 @@ class WheelMotor():
                     print(f"Target: {target} | Current: {current} Encoder: {self.motor.encoder} |  Speed: {motor_speed}")
                 self.motor.moveMotor(motor_speed)
         else:
-            bool = current <= target
+            bool = abs(current) >= abs(target)
             if (bool):
                 if (debug):
                     print(f"Encoder: {self.motor.encoder} Stopped=== Target: {target} Current: {current}")
