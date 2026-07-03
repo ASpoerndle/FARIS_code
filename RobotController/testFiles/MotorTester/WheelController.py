@@ -105,11 +105,12 @@ class WheelController():
     """
 
     def rampSpeedNeg(self, motor, ticks, speed):
-        if (motor.motor.encoder.getEncoderPosition() > -100):
+        current = motor.motor.encoder.getEncoderPosition()
+        if (current > -100):
             speed = -.6
-        elif (motor.getCurrentPosition() > 3 * ticks // 8 and ticks < 1000 and speed > -.8):
+        elif (current > 3 * ticks // 8 and ticks < 1000 and speed > -.8):
             speed -= 0.01
-        elif (motor.getCurrentPosition() < 5 * ticks // 8 and ticks < 1000 and speed < -.3):
+        elif (current < 5 * ticks // 8 and ticks < 1000 and speed < -.3):
             speed += 0.01
         return speed
 

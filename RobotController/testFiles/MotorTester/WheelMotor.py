@@ -79,11 +79,11 @@ class WheelMotor():
                     print(f"Target: {target} | Current: {current} Encoder: {self.motor.encoder} |  Speed: {motor_speed}")
                 self.motor.moveMotor(motor_speed)
         else:
-            bool = current <= -target
+            bool = current <= target
             if (bool):
                 if (debug):
                     print(f"Encoder: {self.motor.encoder} Stopped=== Target: {target} Current: {current}")
                 self.motor.moveMotor(0)
             else:
-                self.motor.moveMotor(-motor_speed)
+                self.motor.moveMotor(motor_speed)
         return bool
