@@ -32,7 +32,7 @@ class WheelController():
         """
 
     def getHeading(self):
-        heading = self.wheelMotors[0].getCurrentHeading()
+        heading = self.wheelMotors[0].motor.encoder.getCurrentHeading()
         return heading
 
     """
@@ -63,7 +63,7 @@ class WheelController():
              conversion to determine how far the robot traveled in both the x and y direction, very useful for saving and loading paths
     """
     def getWheelTicks(self):
-        return self.wheelMotors[0].getCurrentPosition()
+        return self.wheelMotors[0].motor.encoder.getEncoderPosition()
 
     """
     Method:adjustForward()
@@ -83,18 +83,19 @@ class WheelController():
     Purpose: resets the encoder of the wheel motors so that accurate forward and backward data can be recorded
     """
     def resetEncoder(self):
-        self.wheelMotors[0].resetEncoder()
+        self.wheelMotors[0].motor.encoder.resetEncoder()
     """
     Method: rampSpeedPos(motor, ticks, speed)
     Purpose: taking in speed input and current tick count, the method ramps the speed up and down. For moving forward
     """
 
     def rampSpeedPos(self, motor, ticks, speed):
-        if (motor.getCurrentPosition() < 100):
+        current = motor.motor.encoder.getEncoderPosition()
+        if (abs(current) < 100):
             speed = 0.6
-        elif (abs(motor.getCurrentPosition()) < abs(3 * ticks // 8) and abs(ticks) > 1000 and speed < .8):
+        elif (abs(current) < abs(3 * ticks // 8) and abs(ticks) > 1000 and speed < .8):
             speed += 0.01
-        elif (abs(motor.getCurrentPosition()) > abs(5 * ticks // 8) and abs(ticks) > 1000 and speed > 0.3):
+        elif (abs(current) > abs(5 * ticks // 8) and abs(ticks) > 1000 and speed > 0.3):
             speed -= 0.01
         return speed
 
@@ -104,7 +105,7 @@ class WheelController():
     """
 
     def rampSpeedNeg(self, motor, ticks, speed):
-        if (motor.getCurrentPosition() > -100):
+        if (motor.motor.encoder.getEncoderPosition() > -100):
             speed = -.6
         elif (motor.getCurrentPosition() > 3 * ticks // 8 and ticks < 1000 and speed > -.8):
             speed -= 0.01
@@ -221,7 +222,7 @@ class WheelController():
                     MotorList.pop(i)
                     break
                 if (debug):
-                    print(f"Loop: {i} | Ticks {ticks} | Current Motor Tick: {motor.getCurrentPosition()}")
+                    print(f"Loop: {i} | Ticks {ticks} | Current Motor Tick: {motor.motor.encoder.getEncoderPosition()}")
                 stopCond = len(MotorList) <= 3
 
                 if (debug):
@@ -281,7 +282,7 @@ class WheelController():
                     MotorList.pop(i)
                     break
                 if (debug):
-                    print(f"Loop: {i} | Ticks {ticks} | Current Motor Tick: {motor.getCurrentPosition()}")
+                    print(f"Loop: {i} | Ticks {ticks} | Current Motor Tick: {motor.motor.encoder.getEncoderPosition()}")
 
 
                 if (debug):
@@ -306,7 +307,7 @@ class WheelController():
     """
     def stopMotors(self):
         for motor in self.wheelMotors:
-            motor.stopMotor()
+            motor.motor.stopMotor()
 
     """
     Method: killMotors()
@@ -315,6 +316,6 @@ class WheelController():
     """
     def killMotors(self):
         for motor in self.wheelMotors:
-            motor.killMotor()
+            motor.motor.killMotor()
 
 
