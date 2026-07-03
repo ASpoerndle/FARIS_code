@@ -6,6 +6,7 @@ from WaypointController import WaypointController
 from Servo import Servo
 import threading
 import board
+from PodMotor import PodMotor
 
 from adafruit_pca9685 import PCA9685
 
@@ -62,8 +63,11 @@ class MotorController():
 
         
         print("readying motors...")
-        for i in pin_list_rotational:
-            motor = RotationalMotor(pca, i[0], i[1], i[2], i[3])
+        for i,motor in pin_list_rotational:
+            if(i > 3):
+                motor = RotationalMotor(pca, motor[0], motor[1], motor[2], motor[3])
+            else:
+                motor = PodMotor(pca,motor[0],motor[1], motor[2], motor[3])
             rotational_motor_list.append(motor)
         print("motors ready!")
         print("readying servos...")
