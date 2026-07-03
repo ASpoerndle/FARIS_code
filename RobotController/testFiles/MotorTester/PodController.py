@@ -21,9 +21,9 @@ Purpose: This class controls the main functions of rotating the swerve pods on t
 
 
 class PodController():
-    def __init__(self, rot_motors):
+    def __init__(self, rotMotors):
 
-        self.podMotors = rot_motors.copy()
+        self.podMotors = rotMotors.copy()
 
 
 
@@ -37,11 +37,6 @@ class PodController():
         self.rotateXMotors(45, [2, 0], False)
 
         self.rotateXMotors(-45, [1, 3], False)
-       #===CODE FOR WHEEL MOTORS===
-        # for i, motor in enumerate(self.rotational_motor_list[4:8]):
-        #     if (i < 2):
-        #         if (motor.getPolarity() == 1):
-        #             motor.switchPolarity()
 
 
     """
@@ -55,26 +50,29 @@ class PodController():
             if ((motor.getCurrentAngle() < MAX_ROTATE and speed < 0) or (
                     motor.getCurrentAngle() > -MAX_ROTATE and speed > 0)):
                 if (abs(motor.getCurrentAngle()) < 90):
-                    print(f"Angle: {motor.getCurrentAngle()}, Speed: {speed}")
+                    #print(f"Angle: {motor.getCurrentAngle()}, Speed: {speed}")
                     motor.setSpeed(speed)
                 else:
                     motor.setSpeed(0)
             else:
                 motor.setSpeed(0)
+    """
+    Method: getPodAngle()
+    Purpose: return the current angle the swerve pods are facing
+    """
+    def getPodAngle(self,debug=False):
+        angle = self.podMotors[0].getCurrentAngle()
+        if(debug):
+            print(f"Angle of Pod Motor 0: {angle}")
+        return angle
 
     """
     Method: adjustForward(debug)
     Purpose: resets the Pod motors so that they're facing forwards and are ready to rotate in the same direction together
     """
 
-    def adjustForward(self, debug):
-        for i, motor in enumerate(self.podMotors[4:8]):
-            if (i < 6):
-                if (motor.getPolarity() != 1):
-                    motor.switchPolarity()
-            else:
-                if (motor.getPolairty() != -1):
-                    motor.switchPolarity()
+    def adjustForward(self, debug=False):
+
         self.rotatePods(0, debug)
         return
 
@@ -83,14 +81,14 @@ class PodController():
     Purpose: calls the specified motors rotate() method which returns back a boolean value whilst also
              rotating the wheel
     """
-    def checkRotate(self, motor, angle, speed, debug):
+    def checkRotate(self, motor, angle, speed, debug=False):
         return motor.rotate(angle, speed, debug)
 
     """
     Method: rotatePods(angle,debug)
     Purpose: rotates all 4 swerve pods to a desired degree angle
     """
-    def rotatePods(self, angle, debug):
+    def rotatePods(self, angle, debug= False):
         speed = 0.75
         if angle > 90 or angle < -90:
             print(f"ROTATION ERR: Angle of {angle} degrees will cause wire damage")
@@ -104,7 +102,8 @@ class PodController():
                 isAligned = self.checkRotate(motor, angle, speed, debug)
                 if (isAligned):
                     MotorList.pop(i)
-
+            if(debug):
+                print(f"{len(MotorList)} motors still rotating...")
             stopCond = len(MotorList) == 0
             time.sleep(0.02)
         self.stopMotors()
@@ -114,7 +113,7 @@ class PodController():
     Purpose: sends a command to the podController to rotate the pods so that the robot can crab
              walk 
     """
-    def horizontalMode(self, debug):
+    def horizontalMode(self, debug=False):
         self.rotatePods(-90, debug)
 
     """
@@ -122,11 +121,11 @@ class PodController():
     Purpose: sends a command to the podController specifying which motors to rotate to
              a specified degree angle
     """
-    def rotateXMotors(self, angle, motorList, debug):
-        speed = 0.75
+    def rotateXMotors(self, angle, motorList, debug=False):
+        speed = 1
         motors = []
         for i in range(len(motorList)):
-            motors.append(self.podMotors[motorList[i]])
+            motors.append(self.podMotors[motorList[i]]) #copy only the motor indexes specified
 
         if angle > 90 or angle < -90:
             print(f"ROTATION ERR: Angle of {angle} degrees is will cause wire damage")
@@ -148,7 +147,7 @@ class PodController():
     """
     def stopMotors(self):
         for motor in self.podMotors:
-            motor.stopMotor()
+            motor.motor.stopMotor()
     """
     Method: killMotors()
     Purpose: kills all power to the motors allowing them to move freely, used mostly when MotorController
@@ -156,7 +155,9 @@ class PodController():
     """
     def killMotors(self):
         for motor in self.podMotors:
-            motor.kill_motor()
+            motor.motor.killMotor()
+    def getPodMotor(self,index):
+        return self.podMotors[index]
 
 
 
