@@ -6,7 +6,7 @@ class PodMotor():
 
    def rotate(self, angle, speed, debug=False):
        speed = abs(speed)
-       current = self.motor.encoder.getCurrentPosition()
+       current = self.motor.encoder.getEncoderPosition()
 
        forward = ((self.motor.forwardValue - 1) / 1023) * 360 % 360
 
@@ -38,13 +38,14 @@ class PodMotor():
            if (debug):
                 print(f"Centered at {current} kP: {self.motor.pid.Kp} kI: {self.motor.pid.Ki} kD: {self.motor.pid.Kd}")
                 return True
-
+       else:
+            self.motor.moveMotor(control_signal * speed)
 
        if (debug):
             print(f"Enc: {self.motor.encoder.encoder} | Error {error} Target: {target} | Current: {current_degrees} | Power: {control_signal}")
             return False
    def getCurrentAngle(self):
-      currentPos = self.motor.encoder.getCurrentPosition()
+      currentPos = self.motor.encoder.getEncoderPosition()
       currentDeg = (currentPos-1)/1023 * 360
       forward = (self.motor.forwardValue-1)/1023 * 360 % 360
       currentDeg -= forward

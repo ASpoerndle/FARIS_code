@@ -63,7 +63,7 @@ class MotorController():
 
         
         print("readying motors...")
-        for i,motor in pin_list_rotational:
+        for i,motor in enumerate(pin_list_rotational):
             if(i > 3):
                 motor = RotationalMotor(pca, motor[0], motor[1], motor[2], motor[3])
             else:
@@ -76,12 +76,12 @@ class MotorController():
             self.servo_list.append(servo)
 
 
-
-        self.heading = self.getHeading()
-        self.podController = PodController(rotational_motor_list[0:4])
         self.wheelController = WheelController(rotational_motor_list[4:8])
     
 
+        self.heading = self.getHeading()
+        self.podController = PodController(rotational_motor_list[0:4])
+        
     """
     ===TELE-OPERATION METHODS===
     """

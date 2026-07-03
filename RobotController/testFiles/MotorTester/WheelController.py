@@ -315,6 +315,6 @@ class WheelController():
     """
     def killMotors(self):
         for motor in self.wheelMotors:
-            motor.kill_motor()
+            motor.killMotor()
 
 

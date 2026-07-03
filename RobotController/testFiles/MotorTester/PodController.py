@@ -104,7 +104,7 @@ class PodController():
                     MotorList.pop(i)
             if(debug):
                 print(f"{len(MotorList)} motors still rotating...")
-            stopCond = len(MotorList) <= 1
+            stopCond = len(MotorList) == 0
             time.sleep(0.02)
         self.stopMotors()
 
@@ -147,7 +147,7 @@ class PodController():
     """
     def stopMotors(self):
         for motor in self.podMotors:
-            motor.stopMotor()
+            motor.motor.stopMotor()
     """
     Method: killMotors()
     Purpose: kills all power to the motors allowing them to move freely, used mostly when MotorController
@@ -155,7 +155,7 @@ class PodController():
     """
     def killMotors(self):
         for motor in self.podMotors:
-            motor.kill_motor()
+            motor.motor.killMotor()
     def getPodMotor(self,index):
         return self.podMotors[index]
 
