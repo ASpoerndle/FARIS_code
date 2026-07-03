@@ -99,8 +99,7 @@ class PodController():
 
 
 
-    def horizontalMode(self, debug):
-        self.rotatePods(-90, debug)
+
 
     def rotateXMotors(self, angle, motorList, debug):
         speed = 0.75

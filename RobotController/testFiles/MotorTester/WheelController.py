@@ -62,7 +62,7 @@ class WheelController():
     Purpose: When the user pushes LSB, the robot should save how many ticks the wheel motors have run so far. We can take this value as well as some unit
              conversion to determine how far the robot traveled in both the x and y direction, very useful for saving and loading paths
     """
-    def getWheelTicks(self,debug):
+    def getWheelTicks(self):
         return self.wheelMotors[0].getCurrentPosition()
 
     """
@@ -117,7 +117,7 @@ class WheelController():
     Purpose: calls the motors driveForward() method to check if the motor has reached it's intended destination
     """
 
-    def checkDriveForward(self, motor, ticks, speed, isGoingBackwards, debug):
+    def checkDriveForward(self, motor, ticks, speed, isGoingBackwards, debug=False):
 
         if (debug):
             print(f"Ticks: {ticks} | Speed: {speed}")
@@ -126,7 +126,7 @@ class WheelController():
     Method: driveForward(ticks,debug,inPlace, podHeading)
     Purpose: controls the necessary logic to drive the robot either in the forward direction or to turn in place
     """
-    def driveForward(self, ticks, debug, inPlace, currentMotorAngle):
+    def driveForward(self, ticks, inPlace, currentMotorAngle, debug=False):
         motor_speed = .5
         if (ticks < 0 and inPlace > 0):
             polar = -1
@@ -240,12 +240,12 @@ class WheelController():
         self.stopMotors()
 
     """
-    Method: driveForwardTurning()
+    Method: driveForwardTurning(int ticks, bool debug)
     Purpose: A sister method to driveForward but only for the robot turning in place. This is necessary due to motor
              polarities needing to be changed in order to get the turning in place effect.
     """
 
-    def driveForwardTurning(self, ticks, debug):
+    def driveForwardTurning(self, ticks, debug=False):
         speed = 0.5
         if (ticks > 0):
             polar = 1

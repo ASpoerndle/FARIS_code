@@ -36,11 +36,7 @@ class Servo:
     """ 
     def killServo(self):
         self.servo.duty_cycle = 0
-    def __init__(self,pca, pin, maxi=270):
-        self.servo = pca.channels[pin]
-        #max = 10500
-        #min = 1750
-        self.max = maxi 
+
 """ 
 GPIO.cleanup()
 GPIO.setmode(GPIO.BOARD)

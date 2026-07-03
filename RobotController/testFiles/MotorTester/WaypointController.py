@@ -27,18 +27,18 @@ class WaypointController():
         return x, y
 
 
-    def GPSWestEast(self,waypoint_cords, current_cords):
-        lat1, long1 = waypoint_cords
-        lat2, long2 = current_cords
+    def GPSWestEast(self,waypointCords, currentCords):
+        lat1, long1 = waypointCords
+        lat2, long2 = currentCords
         r = 6371  # approx radius of world
         delta_long = long2 - long1
         dis_west_east = delta_long * r * math.cos((lat1 + lat2) / 2)
         return dis_west_east
 
 
-    def GPSNorthSouth(self,waypoint_cords, current_cords):
-        lat1, _ = waypoint_cords
-        lat2, _ = current_cords
+    def GPSNorthSouth(self,waypointCords, currentCords):
+        lat1, _ = waypointCords
+        lat2, _ = currentCords
         lat1 *= (180) / math.pi
         lat2 *= (180) / math.pi
         r = 111.32  # distance in km per degree of lat
@@ -79,10 +79,10 @@ class WaypointController():
             self.waypoints.append(currentCords)
             print(self.waypoints)
 
-    def travelToWaypoint(self,num):
-        if(len(self.waypoints) > num + 1):
+    def travelToWaypoint(self,index):
+        if(len(self.waypoints) > index): #if len 1 than max index is 0
             current_cords = self.getCurrentCords()
-            waypoint_cords = self.waypoints[num]
+            waypoint_cords = self.waypoints[index]
             x,y = self.GPStoCords(waypoint_cords,current_cords)
             return x,y
         else:
