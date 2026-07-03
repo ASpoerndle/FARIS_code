@@ -421,7 +421,7 @@ class MotorController():
         self.podController.rotateXMotors(45,[2,0],debug)
 
         self.podController.rotateXMotors(-45,[1,3],debug)
-        self.moveDistance(angle,debug,True)
+        self.moveDistance(angle,True,debug=True)
         self.podController.adjustForward(False)
     """
     Method: getHeading()
