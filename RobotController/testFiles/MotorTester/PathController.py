@@ -10,26 +10,26 @@ class PathController():
         self.file = self.openFile(PathController.FILE_NAME,"r")
 
     def openFile(self, file, mode):
-        file = open(file,mode)
+        file = open("Path.txt",mode)
         return file
 
     def writePath(self,cords):
         #x,y = cords
         x,y = cords
         saveCords = str(x) + "," + str(y) + ";"
-        self.file = self.openFile(self.file,"a")
+        self.file = self.openFile(self.file,'a')
         self.file.write(saveCords)
         self.closeFile(self.file)
     def closeFile(self, file):
         file.close()
     def readPath(self):
-        self.file = self.openFile(self.file,"r")
+        self.file = self.openFile(self.file,'r')
         path = self.file.read()
         p_list = path.split(";") #Now we have a list of [[x,y],[x,y],..]
         p_list = p_list[:-1]
         return p_list #Let MotorController handle turning the big list into smaller movement commands
     def clearPath(self):
-        self.openFile(self.file,"w")
+        self.openFile(self.file,'w')
         self.closeFile(self.file)
 
     def test(self):

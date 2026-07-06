@@ -33,9 +33,9 @@ class PodMotor():
            self.motor.moveMotor(0)
            print("ERR: Cord limit reached!")
            return True
-       if abs(error) < 2.5:
+       if abs(error) < 4:
            self.motor.moveMotor(0)
-           if (debug):
+           if (debug or True):
                 print(f"Centered at {current} kP: {self.motor.pid.Kp} kI: {self.motor.pid.Ki} kD: {self.motor.pid.Kd}")
                 return True
        else:
