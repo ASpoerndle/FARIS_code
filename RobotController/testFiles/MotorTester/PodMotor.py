@@ -51,3 +51,5 @@ class PodMotor():
       currentDeg -= forward
       #print(f"Encoder: {self.encoder} | fVal {forward} | current {currentDeg}")
       return currentDeg
+   def setSpeed(self,speed):
+      self.motor.setSpeed(speed)

@@ -160,6 +160,7 @@ class controller():
         self.allowRX = True
         self.allowRY = True
         self.motorController.adjustForward(False)
+        print("Forward")
 
     def toTurn(self):
         if(self.mode != "planning"):
@@ -175,12 +176,12 @@ class controller():
         self.motorController.teleTurn()
 
     def handleButtonInput(self, button):
-        #try:
+        try:
             mode_buttons = self.controls[self.mode]
             mode_buttons[button]()
-        #except Exception as e:
+        except Exception as e:
             print("ERR: Button not mapped")
-        #    print(e)
+            print(e)
     def use_controller(self):
         mc = self.motorController
         controller = True
@@ -257,6 +258,7 @@ class controller():
                     pygame.time.wait(10) # Prevent 100% CPU usage
             except KeyboardInterrupt:
                 pygame.quit()
+                #self.motorController.forceJoin()
                 del self.motorController
 
 mc = MotorController()

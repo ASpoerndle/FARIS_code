@@ -35,9 +35,9 @@ class MotorController():
         rotational_motor_list = []
         self.servo_list = []
         self.pathController = PathController()
-        self.waypointController = WaypointController()
-        self.gpsThread = threading.Thread(target=self.waypointController.updateGPS)
-        self.gpsThread.start()
+        #self.waypointController = WaypointController()
+        #self.gpsThread = threading.Thread(target=self.waypointController.updateGPS)
+        #self.gpsThread.start()
         """
         PWM Pin, left or right side, encoder port, forwardValue 
         """
@@ -466,7 +466,7 @@ class MotorController():
         self.podController.killMotors()
         self.wheelController.killMotors()
         time.sleep(2)
-        self.gpsThread.join()
+        #self.gpsThread.join()
         for servo in self.servo_list:
             servo.killServo()
         print("finished")

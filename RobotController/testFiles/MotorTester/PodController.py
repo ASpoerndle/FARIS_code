@@ -33,10 +33,11 @@ class PodController():
     Method: teleTurn()
     Purpose: For the TeleOp controller, sets the robot to "Turn Mode", allowing it to turn in place
     """
-    def teleTurn(self):
-        self.rotateXMotors(45, [2, 0], False)
+    def teleTurn(self,debug=False):
+        self.rotateXMotors(45, [2, 0], debug)
 
-        self.rotateXMotors(-45, [1, 3], False)
+
+        self.rotateXMotors(-45, [1, 3], debug)
 
 
     """

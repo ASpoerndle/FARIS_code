@@ -87,3 +87,5 @@ class WheelMotor():
             else:
                 self.motor.moveMotor(motor_speed)
         return bool
+    def setSpeed(self,speed):
+        self.motor.setSpeed(speed)
