@@ -214,11 +214,6 @@ class WheelController():
                             isThere = self.checkDriveForward(motor, -ticks*inPlace, motor_speedF, isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
                         elif (i % 2 == 1):
                             isThere = self.checkDriveForward(motor, -ticks, motor_speedB, isGoingBackwards, debug)
-                elif(isTurning):
-                        if(i > 1): #motor_speed * in place
-                            isThere= self.checkDriveForward(motor, -polar*ticks, polar*.3 * inPlace,not isGoingBackwards, debug)
-                        elif(i <= 1):
-                            isThere = self.checkDriveForward(motor, ticks*polar, polar*-.3*inPlace,not isGoingBackwards, debug)
                 if (isThere):
                     MotorList.pop(i)
                     break
@@ -270,20 +265,20 @@ class WheelController():
         self.resetEncoder()
         if (debug):
                 print(f"Reset encoder {MotorList[0]}")
-        stopCond = len(MotorList) <= 3
         while (not stopCond):
+            stopCond = len(MotorList) <= 3
             for i, motor in enumerate(MotorList):
                 if (i > 1):  # motor_speed * in place
-                    isThere = self.checkDriveForward(motor, -polar * ticks, polar * .3 * -1, isGoingBackwards,
+                    isThere = self.checkDriveForward(motor, -polar * ticks, .3, not isGoingBackwards,
                                                      debug)
                 elif (i <= 1):
-                    isThere = self.checkDriveForward(motor, ticks * polar, polar * -.3 * -1, isGoingBackwards,
+                    isThere = self.checkDriveForward(motor, ticks * polar, .3, isGoingBackwards,
                                                      debug)
                 if (isThere):
                     MotorList.pop(i)
                     break
                 if (debug):
-                    print(f"Loop: {i} | Ticks {ticks} | Current Motor Tick: {motor.motor.encoder.getEncoderPosition()}")
+                    print(f"Loop: {i} | Desired Ticks {ticks} | Current Motor Tick: {motor.motor.encoder.getEncoderPosition()}")
 
 
                 if (debug):

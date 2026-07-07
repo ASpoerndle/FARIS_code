@@ -198,9 +198,10 @@ class MotorController():
              to save x,y data
     """
     def telePathSaveTurn(self,debug=False):
-        heading_difference = abs(self.heading) - abs(self.getHeading())
+        print(f"Start Heading: {self.heading % 180} | Current Heading: {self.getHeading() % 180}")
+        headingDifference = (self.getHeading() % 180) - (self.heading % 180)
         self.heading = self.getHeading()
-        self.pathController.writePath([0, 0, heading_difference])
+        self.pathController.writePath([0, 0, headingDifference])
         self.wheelController.resetEncoder()
         self.adjustForward(debug)
 
@@ -211,6 +212,7 @@ class MotorController():
     """
     def telePathStart(self,mode,debug=False):
         self.wheelController.resetEncoder()
+        self.heading = self.getHeading()
         if(mode != "turning"):
             self.podController.rotatePods(self.podController.getPodAngle(debug))
     """

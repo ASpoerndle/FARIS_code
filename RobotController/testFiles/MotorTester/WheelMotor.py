@@ -14,7 +14,7 @@ class WheelMotor():
 
         if (debug):
             print(f"Encoder: {self.motor.encoder.encoder} | Tick Position: {position} | Polar: {self.motor.polarity} | Back?: {isBack}")
-        if ((position < 0 and self.motor.polarity > 0) or (position > 0 and self.motor.polarity < 0 and isBack)):
+        if (isBack):
             print("!!!!!!DRIVETONEGATIVEVALUE!!!!!!!:")
             return self.driveToNegative(self.motor.polarity * position, speed, debug)
         self.motor.pid.Kp = 0.06
@@ -63,29 +63,21 @@ class WheelMotor():
     def driveToNegative(self, target, speed, debug=False):
         current = self.motor.encoder.getEncoderPosition()
         self.motor.pid.setpoint = target
-        motor_speed = self.motor.pid(current)
-        motor_speed *= -speed
+        motorSpeed = self.motor.pid(current)
+        motorSpeed *= speed
+        if(motorSpeed > 0):
+            motorSpeed *= -1
 
-        if (self.motor.polarity == 1):
+        bool = abs(current) >= abs(target)
+        if (bool):
+            if (debug):
+                print(f"===Encoder: {self.motor.encoder} Stopped=== Current {current} | Target: {target}")
+            self.motor.moveMotor(0)
 
-            bool = abs(current) >= abs(target)
-            if (bool):
-                if (debug):
-                    print(f"===Encoder: {self.motor.encoder} Stopped=== Current {current} | Target: {target}")
-                self.motor.moveMotor(0)
-
-            else:
-                if (debug):
-                    print(f"Target: {target} | Current: {current} Encoder: {self.motor.encoder} |  Speed: {motor_speed}")
-                self.motor.moveMotor(motor_speed)
         else:
-            bool = abs(current) >= abs(target)
-            if (bool):
-                if (debug):
-                    print(f"Encoder: {self.motor.encoder} Stopped=== Target: {target} Current: {current}")
-                self.motor.moveMotor(0)
-            else:
-                self.motor.moveMotor(motor_speed)
+            if (debug):
+                print(f"Target: {target} | Current: {current} Encoder: {self.motor.encoder} |  Speed: {motorSpeed}")
+            self.motor.moveMotor(motorSpeed)
         return bool
     def setSpeed(self,speed):
         self.motor.setSpeed(speed)
