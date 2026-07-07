@@ -132,7 +132,8 @@ class controller():
     def telePathStart(self):
         if(self.subMode != "sideways"): 
             self.allowLX = False
-        self.motorController.telePathStart(False)
+
+        self.motorController.telePathStart(self.subMode,False)
 
     def speedUp(self):
         self.SLOW_DOWN = 3

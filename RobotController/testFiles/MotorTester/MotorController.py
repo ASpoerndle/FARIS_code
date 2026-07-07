@@ -209,10 +209,10 @@ class MotorController():
     Purpose: resets the encoders for accurate forward and backward tick data. Will also disable the ability for a user to rotate the pod wheels and lock
              forward and backward motion
     """
-    def telePathStart(self,debug=False):
+    def telePathStart(self,mode,debug=False):
         self.wheelController.resetEncoder()
-        self.podController.rotatePods(self.podController.getPodAngle(debug), debug)
-        
+        if(mode != "turning"):
+            self.podController.rotatePods(self.podController.getPodAngle(debug))
     """
     Method: telePathPlay() PathPlan-[y]
     Purpose: plays back the most recently saved path
