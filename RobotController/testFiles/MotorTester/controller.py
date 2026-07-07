@@ -114,7 +114,10 @@ class controller():
         self.end = True
         print("Goodbye...")
     def telePathSave(self):
-        self.motorController.telePathSave(True)
+        if(self.subMode == "turning"):
+            self.motorController.telePathSaveTurn(True)
+        else:
+            self.motorController.telePathSaveCord(True)
         print("Path Saved")
         self.allowLX = True
     def servoControl(self):

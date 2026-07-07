@@ -177,7 +177,8 @@ class MotorController():
     Purpose: When the user presses LSB whilst in Path Planning Mode, the path the robot took (including angle the pod motors are heading in) is saved to a
              text file where it can be played back for automation purposes.
     """
-    def telePathSave(self,debug=False):
+    def telePathSaveCord(self,debug=False):
+
         x,y = self.convertToCoordinates(debug)
         x = round(x,1)
         
@@ -187,9 +188,22 @@ class MotorController():
         print(x,y)
         #if(abs(x)<0.2):
          #   x = 0
-        self.pathController.writePath([-x,y])
+        self.pathController.writePath([-x,y,0])
         self.wheelController.resetEncoder()
         self.adjustForward(debug)
+
+    """
+    Method: telePathSaveTurn()
+    Purpose: whenever the user wants to turn while doing path planning, it saves that turn without accidentally trying
+             to save x,y data
+    """
+    def telePathSaveTurn(self,debug=False):
+        heading_difference = abs(self.heading) - abs(self.getHeading())
+        self.heading = self.getHeading()
+        self.pathController.writePath([0, 0, heading_difference])
+        self.wheelController.resetEncoder()
+        self.adjustForward(debug)
+
     """
     Method: telePathStart() PathPlan-[a]
     Purpose: resets the encoders for accurate forward and backward tick data. Will also disable the ability for a user to rotate the pod wheels and lock
@@ -213,6 +227,10 @@ class MotorController():
             print(i)
             x = i.split(",")
             cord = float(x[0]),float(x[1])
+            angle = float(x[2])
+            if(angle != 0 ):
+                self.turn(angle)
+                continue
             x,y = cord
             if(x ==0 and y ==0):
                 continue

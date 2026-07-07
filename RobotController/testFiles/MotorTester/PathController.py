@@ -15,8 +15,8 @@ class PathController():
 
     def writePath(self,cords):
         #x,y = cords
-        x,y = cords
-        saveCords = str(x) + "," + str(y) + ";"
+        x,y,a = cords
+        saveCords = str(x) + "," + str(y) + "," + str(a) +  ";"
         self.file = self.openFile(self.file,'a')
         self.file.write(saveCords)
         self.closeFile(self.file)
