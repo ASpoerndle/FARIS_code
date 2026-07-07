@@ -42,10 +42,10 @@ def demo1():
 def demo2():
     print(mc.getHeading())
     input(".")
-    mc.turn(45,True)
+    mc.turn(100,True)
     print(mc.getHeading())
     input("..")
-    mc.turn(-45,True)
+    mc.turn(-100,True)
 def demo3():
     while(True):
         mc.moveCord([0,1],True)

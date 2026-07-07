@@ -14,6 +14,7 @@ class WaypointController():
         uart = serial.Serial(WaypointController.PORT, baudrate=9600, timeout=3000)
         self.gps = adafruit_gps.GPS(uart, debug=False)
         self.waypoints = []
+        self.stopUpdate = False
     def GPStoCords(self,waypoint, current):
         lat1, long1 = waypoint
         lat2, long2 = current
@@ -94,9 +95,10 @@ class WaypointController():
             y = self.waypoints[i][1]
             print(f"Waypoint {i} X: {x} | Y: {y}")
     def updateGPS(self):
-        while True:
+        while self.stopUpdate == False:
             self.gps.update()
             time.sleep(1)
-
+    def stopUpdating(self):
+        self.stopUpdate = True
 
 

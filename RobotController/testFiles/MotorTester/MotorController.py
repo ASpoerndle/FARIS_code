@@ -35,9 +35,9 @@ class MotorController():
         rotational_motor_list = []
         self.servo_list = []
         self.pathController = PathController()
-        #self.waypointController = WaypointController()
-        #self.gpsThread = threading.Thread(target=self.waypointController.updateGPS)
-        #self.gpsThread.start()
+        self.waypointController = WaypointController()
+        self.gpsThread = threading.Thread(target=self.waypointController.updateGPS)
+        self.gpsThread.start()
         """
         PWM Pin, left or right side, encoder port, forwardValue 
         """
@@ -199,7 +199,13 @@ class MotorController():
     """
     def telePathSaveTurn(self,debug=False):
         print(f"Start Heading: {self.heading % 180} | Current Heading: {self.getHeading() % 180}")
-        headingDifference = (self.getHeading() % 180) - (self.heading % 180)
+        headingDifference = (self.getHeading() % 360) - (self.heading % 360)
+        headingDifference *= -1
+        #if(headingDifference < -180):
+        #    headingDifference += 180
+        if(headingDifference > 180):
+            headingDifference -= 180
+        headingDifference = int(headingDifference)
         self.heading = self.getHeading()
         self.pathController.writePath([0, 0, headingDifference])
         self.wheelController.resetEncoder()
@@ -486,7 +492,10 @@ class MotorController():
         self.podController.killMotors()
         self.wheelController.killMotors()
         time.sleep(2)
-        #self.gpsThread.join()
+        self.waypointController.stopUpdating()
+        print("day")
+        self.gpsThread.join(3.0)
+        self.gpsThread.is_alive()
         for servo in self.servo_list:
             servo.killServo()
         print("finished")
