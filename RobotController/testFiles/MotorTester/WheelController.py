@@ -218,7 +218,7 @@ class WheelController():
                         if(i > 1): #motor_speed * in place
                             isThere= self.checkDriveForward(motor, -polar*ticks, polar*.3 * inPlace,not isGoingBackwards, debug)
                         elif(i <= 1):
-                            isThere = self.checkDriveForward(motor, ticks*polar, polar*-.3*inPlace,isGoingBackwards, debug)
+                            isThere = self.checkDriveForward(motor, ticks*polar, polar*-.3*inPlace,not isGoingBackwards, debug)
                 if (isThere):
                     MotorList.pop(i)
                     break
