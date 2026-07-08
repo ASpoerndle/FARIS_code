@@ -110,6 +110,10 @@ class MotorController():
     def teleMoveTurn(self,speed):
              
            self.wheelController.teleMoveTurn(speed)
+
+    def teleSideWays(self,speed):
+        self.wheelController.teleSideways(speed)
+
     """
     Method: teleRotate(speed)
     Purpose: For the TeleOp controller, allows the pod motors to rotate together while maintaining the same heading

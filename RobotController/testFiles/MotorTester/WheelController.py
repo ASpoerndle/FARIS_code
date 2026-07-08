@@ -44,6 +44,12 @@ class WheelController():
         for motor in self.wheelMotors:
             motor.setSpeed(speed)
 
+    def teleSideways(self, speed):
+        for i, motor in enumerate(self.wheelMotors):
+            if (i % 2 == 0):
+                motor.setSpeed(speed)
+            else:
+                motor.setSpeed(-speed)
 
     """
     Method: teleMoveTurn(Speed)
