@@ -378,7 +378,10 @@ class MotorController():
              walk 
     """
     def horizontalMode(self,debug=False):
-        self.podController.rotatePods(-90,debug)
+        self.podController.rotateXMotors(-90,[0,3])
+        self.podController.rotateXMotors(90, [1, 2])
+
+        # self.podController.rotatePods(-90,debug)
     """
     Method: rotateXMotors(angle, motorList,debug)
     Purpose: sends a command to the podController specifying which motors to rotate to
