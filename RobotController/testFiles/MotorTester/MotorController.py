@@ -378,8 +378,8 @@ class MotorController():
              walk 
     """
     def horizontalMode(self,debug=False):
-        self.podController.rotateXMotors(-90,[0,3])
-        self.podController.rotateXMotors(90, [1, 2])
+        self.podController.rotateXMotors(90,[0,2])
+        self.podController.rotateXMotors(-90, [1, 3])
 
         # self.podController.rotatePods(-90,debug)
     """
