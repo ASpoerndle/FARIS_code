@@ -165,7 +165,8 @@ class WheelController():
         time.sleep(0.05)
         if(debug):
             print(f"Reset encoder {MotorList[0]}")
-
+        motor_speedB = 0.4
+        motor_speedF = 0.4
         while (not stopCond):
             stopCond = len(MotorList) <= 3
             current_heading = self.getHeading()
@@ -183,7 +184,7 @@ class WheelController():
             if(debug):
                 print(f"PID Correction: {correction}")
             for i, motor in enumerate(MotorList):
-
+                print(f"Motor {i} is encoder {motor.motor.encoder.encoder}")
                 if(not isTurning):
                     if(currentMotorAngle > -80 and currentMotorAngle < 80):
                         if (i > 1 and abs(speed) <= 1):  # Adjust rightside
@@ -196,19 +197,23 @@ class WheelController():
                         if(debug):
                                 print(f"IMU Error: {error} ")
                         if (i > 1):
-                            isThere = self.checkDriveForward(motor, -ticks*inPlace, motor_speedR, isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
+                            isThere = self.checkDriveForward(motor, -ticks*inPlace*motor.motor.polarity, motor_speedR, isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
                         elif (i <= 1):
-                            isThere = self.checkDriveForward(motor, ticks, motor_speedL, isGoingBackwards, debug)
+                            isThere = self.checkDriveForward(motor, ticks * motor.motor.polarity, motor_speedL, isGoingBackwards, debug)
 
                     elif((currentMotorAngle < -80 and currentMotorAngle > -100) or currentMotorAngle > 80 and currentMotorAngle <  100): #when the wheels are facing sideways -90 degrees
-                        if((i == 2 or i == 1) and abs(speed) <=1): #adjust forward motors
+                        if((i == 2 or i == 0) and abs(speed) <=1): #adjust forward motors
                             motor_speedF = speed + correction
-                        if((i == 0 or i == 3) and abs(speed) <=1): #adjust backward motors
+                        if((i == 1 or i == 3) and abs(speed) <=1): #adjust backward motors
                             motor_speedB = speed - correction
-                        if (i == 1 or i == 2):
-                           isThere = self.checkDriveForward(motor, -ticks, -motor_speedF,False, debug)  # CHANGE: -ticks * inPlace
-                        elif (i == 0 or i==3):
-                            isThere = self.checkDriveForward(motor, ticks, motor_speedB,True, debug)
+                        if (i == 1):
+                           isThere = self.checkDriveForward(motor, ticks, motor_speedB,isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
+                        elif(i==2):
+                           isThere = self.checkDriveForward(motor,ticks,motor_speedF,isGoingBackwards,debug)
+                        elif(i==0):
+                           isthere = self.checkDriveForward(motor,-ticks,motor_speedF,not isGoingBackwards,debug)
+                        elif (i==3):
+                            isThere = self.checkDriveForward(motor, -ticks, motor_speedB,not isGoingBackwards, debug)
                 if (isThere):
                     MotorList.pop(i)
                     break
@@ -218,7 +223,8 @@ class WheelController():
 
                 if (debug):
                     print(f'Ticks: {ticks} + Speed: {speed}')
-
+                
+                    print(f"IMU Error: {error} ")
                 if (polar > 0 and inPlace > 0):
                     if(debug):
                         print("Ramping forward")

@@ -17,11 +17,11 @@ class WheelMotor():
             print(f"Encoder: {self.enc} | Tick Position: {position} | Polar: {self.motor.polarity} | Back?: {isBack}")
         if (isBack):
             print("!!!!!!DRIVETONEGATIVEVALUE!!!!!!!:")
-            return self.driveToNegative(self.motor.polarity * position, speed, debug)
+            return self.driveToNegative(position, speed, debug)
         self.motor.pid.Kp = 0.06
         self.motor.pid.Kd = 0.0002
         self.motor.pid.Ki = 0.0002
-        return self.driveToPositive(self.motor.polarity * position, speed, debug)
+        return self.driveToPositive(position, speed, debug)
 
     """
       Method: drive(target {Quadrature}, speed)
@@ -33,6 +33,7 @@ class WheelMotor():
         self.motor.pid.setpoint = target
         motor_speed = self.motor.pid(current)
         motor_speed *= speed
+        motor_speed = abs(motor_speed)
         if (self.motor.polarity == 1):
 
             bool = current >= target
