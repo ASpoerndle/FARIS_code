@@ -52,7 +52,7 @@ class PodController():
 
         
         for i, motor in enumerate(self.podMotors):
-            if (abs(motor.motor.encoder.getCurrentAngle() % 270) < MAX_ROTATE):
+            if (motor.motor.encoder.getCurrentAngle() % 270 < MAX_ROTATE and speed > 0) or (motor.motor.encoder.getCurrentAngle() % 270 > -MAX_ROTATE and speed < 0):
                     print(f"Motor: {i} Angle: {motor.motor.encoder.getCurrentAngle()}, Speed: {speed}")
                     motor.setSpeed(speed)
             else:
