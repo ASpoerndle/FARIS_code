@@ -195,12 +195,14 @@ def set_imu_scalar(bus, address, scalar_value):
 set_imu_scalar(bus, 0x30, 1.017656)
 
 print("Channel 0 set to Absolute (PWM) mode.")
+counts = readCounts()
+start = counts[4]
 # Start asking for the counts and printing to console in a tight loop
 while True:
     counts = readCounts()
     velocities = readVelocities()
     print(counts)
-    print((counts[0]-1)/1023 * 360)
+    print("Angle 0: "+str((counts[4]-start-1)/1023 * 360))
      
     de = bus.read_i2c_block_data(0x30,0x18,2)
     de = struct.unpack('<h', bytes(de))[0]

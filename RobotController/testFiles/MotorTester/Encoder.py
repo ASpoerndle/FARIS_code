@@ -60,10 +60,10 @@ class Encoder():
 
     def getCurrentAngle(self):
         currentPos = self.getEncoderPosition()
-        currentDeg = (currentPos - 1) / 1023 * 360
-        forward = (self.forwardValue - 1) / 1023 * 360 % 360
-        currentDeg -= forward
-        # print(f"Encoder: {self.encoder} | fVal {forward} | current {currentDeg}")
+        currentDeg = (self.forwardValue - currentPos - 1) / 1023 * 360 % 360
+        #forward = (self.forwardValue - 1) / 1023 * 360 % 360
+        #currentDeg -= forward
+        print(f"Encoder: {self.encoder} | fVal {self.forwardValue} | current {currentDeg}")
         return currentDeg
 
     def getCurrentHeading(self):

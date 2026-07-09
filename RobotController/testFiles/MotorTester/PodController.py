@@ -44,18 +44,19 @@ class PodController():
     Method: teleRotate(speed)
     Purpose: For the TeleOp controller, allows the pod motors to rotate together while maintaining the same heading
     """
+    #TO-DO <--fix this not working at all
 
     def teleRotate(self, speed):
         MAX_ROTATE = 60
+        print(len(self.podMotors))
+
+        
         for i, motor in enumerate(self.podMotors):
-            if ((motor.getCurrentAngle() < MAX_ROTATE and speed < 0) or (
-                    motor.getCurrentAngle() > -MAX_ROTATE and speed > 0)):
-                if (abs(motor.getCurrentAngle()) < 90):
-                    #print(f"Angle: {motor.getCurrentAngle()}, Speed: {speed}")
+            if (abs(motor.motor.encoder.getCurrentAngle() % 270) < MAX_ROTATE):
+                    print(f"Motor: {i} Angle: {motor.motor.encoder.getCurrentAngle()}, Speed: {speed}")
                     motor.setSpeed(speed)
-                else:
-                    motor.setSpeed(0)
             else:
+                print(f"Motor {i} maxxed: {motor.motor.encoder.getCurrentAngle()% 270}")
                 motor.setSpeed(0)
     """
     Method: getPodAngle()
