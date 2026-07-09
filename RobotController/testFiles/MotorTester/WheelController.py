@@ -206,9 +206,9 @@ class WheelController():
                         if((i == 0 or i == 3) and abs(speed) <=1): #adjust backward motors
                             motor_speedB = speed - correction
                         if (i == 1 or i == 2):
-                            isThere = self.checkDriveForward(motor, -ticks*inPlace, motor_speedF, isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
+                            isThere = self.checkDriveForward(motor, ticks*inPlace, motor_speedF, isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
                         elif (i == 0 or i==3):
-                            isThere = self.checkDriveForward(motor, -ticks, motor_speedB, isGoingBackwards, debug)
+                            isThere = self.checkDriveForward(motor, -ticks, motor_speedB, not isGoingBackwards, debug)
                 if (isThere):
                     MotorList.pop(i)
                     break

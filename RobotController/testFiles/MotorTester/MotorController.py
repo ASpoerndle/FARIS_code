@@ -427,8 +427,10 @@ class MotorController():
             hypo = -hypo
         elif(x<0 and hypo < 0 and y != 0):
             hypo = -hypo
-        if(angle != 0):
+        if(angle != 0 and angle != -90):
             self.podController.rotatePods(angle,debug)
+        elif(angle == -90):
+            self.horizontalMode()
         print(f"Moving distance...")
         print(x,y,hypo,angle)
         self.moveDistance(hypo,False,debug=True)
