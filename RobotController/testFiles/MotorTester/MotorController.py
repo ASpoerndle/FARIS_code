@@ -101,8 +101,7 @@ class MotorController():
     def teleTurn(self):
         self.podController.teleTurn()
     
-    def moveOne(self):
-        self.podController.rotateXMotors(90,[0],False)
+
     """
     Method: teleMoveTurn(Speed)
     Purpose: For the TeleOp controller, allows for the robot to turn in place in "Turn Mode"

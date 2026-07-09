@@ -112,13 +112,7 @@ class PodController():
             time.sleep(0.02)
         self.stopMotors()
 
-    """
-    Method: horizontalMode(debug)
-    Purpose: sends a command to the podController to rotate the pods so that the robot can crab
-             walk 
-    """
-    def horizontalMode(self, debug=False):
-        self.rotatePods(-90, debug)
+
 
     """
     Method: rotateXMotors(angle, motorList,debug)
