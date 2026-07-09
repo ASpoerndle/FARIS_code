@@ -200,14 +200,14 @@ class WheelController():
                         elif (i <= 1):
                             isThere = self.checkDriveForward(motor, ticks, motor_speedL, isGoingBackwards, debug)
 
-                    if(currentMotorAngle < -45 and currentMotorAngle > -135): #when the wheels are facing sideways -90 degrees
-                        if(i%2 == 0 and abs(speed) <=1): #adjust forward motors
+                    if((currentMotorAngle < -80 and currentMotorAngle > -100) or currentMotorAngle > 80 and currentMotorAngle <  100): #when the wheels are facing sideways -90 degrees
+                        if((i == 2 or i == 1) and abs(speed) <=1): #adjust forward motors
                             motor_speedF = speed + correction
-                        if(i%2 == 1 and abs(speed) <=1): #adjust backward motors
+                        if((i == 0 or i == 3) and abs(speed) <=1): #adjust backward motors
                             motor_speedB = speed - correction
-                        if (i  % 2 == 0):
+                        if (i == 1 or i == 2):
                             isThere = self.checkDriveForward(motor, -ticks*inPlace, motor_speedF, isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
-                        elif (i % 2 == 1):
+                        elif (i == 0 or i==3):
                             isThere = self.checkDriveForward(motor, -ticks, motor_speedB, isGoingBackwards, debug)
                 if (isThere):
                     MotorList.pop(i)
