@@ -185,7 +185,7 @@ class WheelController():
             for i, motor in enumerate(MotorList):
 
                 if(not isTurning):
-                    if(currentMotorAngle > -80 and currentMotorAngle < 100):
+                    if(currentMotorAngle > -80 and currentMotorAngle < 80):
                         if (i > 1 and abs(speed) <= 1):  # Adjust rightside
                                  motor_speedR = speed + correction
                         elif (i <= 1 and abs(speed) <= 1):  # Adjust leftside
@@ -200,20 +200,20 @@ class WheelController():
                         elif (i <= 1):
                             isThere = self.checkDriveForward(motor, ticks, motor_speedL, isGoingBackwards, debug)
 
-                    if((currentMotorAngle < -80 and currentMotorAngle > -100) or currentMotorAngle > 80 and currentMotorAngle <  100): #when the wheels are facing sideways -90 degrees
+                    elif((currentMotorAngle < -80 and currentMotorAngle > -100) or currentMotorAngle > 80 and currentMotorAngle <  100): #when the wheels are facing sideways -90 degrees
                         if((i == 2 or i == 1) and abs(speed) <=1): #adjust forward motors
                             motor_speedF = speed + correction
                         if((i == 0 or i == 3) and abs(speed) <=1): #adjust backward motors
                             motor_speedB = speed - correction
                         if (i == 1 or i == 2):
-                            isThere = self.checkDriveForward(motor, ticks, motor_speedF, not isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
+                           isThere = self.checkDriveForward(motor, -ticks, -motor_speedF,False, debug)  # CHANGE: -ticks * inPlace
                         elif (i == 0 or i==3):
-                            isThere = self.checkDriveForward(motor, -ticks, motor_speedB, isGoingBackwards, debug)
+                            isThere = self.checkDriveForward(motor, ticks, motor_speedB,True, debug)
                 if (isThere):
                     MotorList.pop(i)
                     break
-                if (debug):
-                    print(f"Loop: {i} | Ticks {ticks} | Current Motor Tick: {motor.motor.encoder.getEncoderPosition()}")
+                #if (debug):
+                    #print(f"Loop: {i} | Ticks {ticks} | Current Motor Tick: {motor.motor.encoder.getEncoderPosition()}")
                 stopCond = len(MotorList) <= 3
 
                 if (debug):

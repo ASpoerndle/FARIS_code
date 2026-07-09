@@ -3,6 +3,7 @@ from RotationalMotor import RotationalMotor
 class WheelMotor():
 
     def __init__(self, pca, pin, side, enc, fVal):
+        self.enc = enc
         self.motor = RotationalMotor(pca, pin, side, enc, fVal)
 
     """
@@ -13,7 +14,7 @@ class WheelMotor():
     def driveForward(self, position, speed, isBack, debug=False):
 
         if (debug):
-            print(f"Encoder: {self.motor.encoder.encoder} | Tick Position: {position} | Polar: {self.motor.polarity} | Back?: {isBack}")
+            print(f"Encoder: {self.enc} | Tick Position: {position} | Polar: {self.motor.polarity} | Back?: {isBack}")
         if (isBack):
             print("!!!!!!DRIVETONEGATIVEVALUE!!!!!!!:")
             return self.driveToNegative(self.motor.polarity * position, speed, debug)
@@ -37,18 +38,18 @@ class WheelMotor():
             bool = current >= target
             if (bool):
                 if (debug):
-                    print(f"===Encoder: {self.motor.encoder} Stopped=== Target: {target} | Current: {current}")
+                    print(f"===Encoder: {self.motor.encoder.encoder} Stopped=== Target: {target} | Current: {current}")
                 self.motor.moveMotor(0)
 
             else:
                 if (debug):
-                    print(f"Target: {target} | Current: {current} Encoder: {self.motor.encoder} |  Speed: {motor_speed}")
+                    print(f"Target: {target} | Current: {current} Encoder: {self.motor.encoder.encoder} |  Speed: {motor_speed}")
                 self.motor.moveMotor(motor_speed)
         else:
             bool = current <= -target
             if (bool):
                 if (debug):
-                    print(f"Encoder: {self.motor.encoder} Stopped=== Current: {current} Target: {target}")
+                    print(f"Encoder: {self.motor.encoder.encoder} Stopped=== Current: {current} Target: {target}")
                 self.motor.moveMotor(0)
             else:
                 self.motor.moveMotor(motor_speed)
@@ -71,12 +72,12 @@ class WheelMotor():
         bool = abs(current) >= abs(target)
         if (bool):
             if (debug):
-                print(f"===Encoder: {self.motor.encoder} Stopped=== Current {current} | Target: {target}")
+                print(f"===Encoder: {self.motor.encoder.encoder} Stopped=== Current {current} | Target: {target}")
             self.motor.moveMotor(0)
 
         else:
             if (debug):
-                print(f"Target: {target} | Current: {current} Encoder: {self.motor.encoder} |  Speed: {motorSpeed}")
+                print(f"Target: {target} | Current: {current} Encoder: {self.motor.encoder.encoder} |  Speed: {motorSpeed}")
             self.motor.moveMotor(motorSpeed)
         return bool
     def setSpeed(self,speed):
