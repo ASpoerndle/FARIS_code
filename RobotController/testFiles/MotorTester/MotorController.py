@@ -192,7 +192,7 @@ class MotorController():
         print(x,y)
         #if(abs(x)<0.2):
          #   x = 0
-        self.pathController.writePath([-x,y,0])
+        self.pathController.writePath([x,y,0])
         self.wheelController.resetEncoder()
         self.adjustForward(debug)
 
