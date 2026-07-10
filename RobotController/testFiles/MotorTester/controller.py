@@ -101,7 +101,7 @@ class controller():
         
         self.motorController.travelToWaypoint(0,"l")
     def adjustForward(self):
-        self.motorController.adjustForward(False)
+        self.motorController.teleOperationController.adjustForward(False)
         self.subMode = "normal"
         self.allowLY = True
         self.allowLX = True
@@ -155,7 +155,7 @@ class controller():
         self.allowRX = False
         self.allowRY = False
         self.allowLX = True
-        self.motorController.horizontalMode(False)
+        self.motorController.teleOperationController.horizontalMode(False)
 
     def toForward(self):
         self.mode = "normal"
@@ -165,7 +165,7 @@ class controller():
         self.allowLY = True
         self.allowRX = True
         self.allowRY = True
-        self.motorController.adjustForward(False)
+        self.motorController.teleOperationController.adjustForward(False)
         print("Forward")
 
     def toTurn(self):
@@ -179,7 +179,7 @@ class controller():
         self.allowLY = False
         self.allowRX = True
         
-        self.motorController.teleTurn()
+        self.motorController.teleOperationController.teleTurn()
 
     def handleButtonInput(self, button):
         try:
