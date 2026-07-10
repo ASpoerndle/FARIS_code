@@ -85,58 +85,6 @@ class MotorController():
         self.podController = PodController(rotational_motor_list[0:4])
         self.teleOperationController = TeleOperationController(self.podController,self.wheelController,self.servoList)
         
-    """
-    ===TELE-OPERATION METHODS===
-    """
-
-    """
-    Method: teleforward(speed)
-    Purpose: For the TeleOp controller, allows for the controller to move the robot forward and backward
-    """
-    def teleForward(self,speed):
-        self.wheelController.teleForward(speed)
-
-    """
-    Method: teleTurn()
-    Purpose: For the TeleOp controller, sets the robot to "Turn Mode", allowing it to turn in place
-    """
-
-    def teleTurn(self):
-        self.podController.teleTurn()
-    
-
-    """
-    Method: teleMoveTurn(Speed)
-    Purpose: For the TeleOp controller, allows for the robot to turn in place in "Turn Mode"
-    """
-    def teleMoveTurn(self,speed):
-             
-           self.wheelController.teleMoveTurn(speed)
-
-    def teleSideways(self,speed):
-        self.wheelController.teleSideways(speed)
-
-    """
-    Method: teleRotate(speed)
-    Purpose: For the TeleOp controller, allows the pod motors to rotate together while maintaining the same heading
-    """
-    def teleRotate(self,speed):
-        self.podController.teleRotate(speed)
-    
-    """
-    Method: teleServoIn()
-    Purpose: Closes gripper as long as the specific button is pressed
-    """
-    def teleServoIn(self):
-        self.servo_list[0].setAngle(60)
-    """
-    Method: teleServoOut()
-    Purpose: Opens gripper
-    """
-    def teleServoOut(self):
-        self.servo_list[0].setAngle(120)
-
-
 
     """
     ===PATH PLANNING METHODS===
@@ -157,21 +105,15 @@ class MotorController():
     Method: ticksToMeters()
     Purpose: After getting the ticks, convert them into meters for saving them to a text file
     """
-    def ticksToMeters(self,debug=False):
-        ticks = self.getWheelTicks(debug)    
-        cir = math.pi * 0.192
-        #self.rotatePods(0,.5)
-        distance = (ticks/1425.1) * cir
-        if(debug):
-            print(f"Tick of WheelMotor 0: {ticks} | distance (m): {distance}")
-        return distance
+
     """
     Method: convertToCoordinates()
     Purpose: converts the ticks measured by the encoders in the wheel motors, as well as the angle the pod motors are facing, first to meters and then 
              into x,y coordiantes that can be saved and read via PathController
     """
     def convertToCoordinates(self,debug=False):
-        distance = self.ticksToMeters(debug) #in meters
+        ticks = self.getWheelTicks(debug)
+        distance = self.pathController.ticksToMeters(ticks,debug) #in meters
         podAngle = self.podController.getPodAngle(debug) #We can do right triangle trig to find x and y 
         podAngleRad = math.radians(podAngle)
         x = math.sin(podAngleRad)*distance
@@ -186,11 +128,14 @@ class MotorController():
     def telePathSaveCord(self,debug=False):
 
         x,y = self.convertToCoordinates(debug)
-        x = round(x,1)
+        x = round(x,2)
         
-        y = round(y,1)
-        if(self.podController.getPodAngle(False) == abs(90)):
+        y = round(y,2)
+        if(x < 0.1):
+            x = 0
+        if(y < 0.1 or self.podController.getPodAngle() == abs(90)):
             y = 0
+
         print(x,y)
         #if(abs(x)<0.2):
          #   x = 0
@@ -260,20 +205,7 @@ class MotorController():
         print("Path cleared")
         self.pathController.clearPath()
 
-    def readPath(self):
-        path_list = self.pathController.readPath()
-        for i in range(len(path_list)):
-            x, y = path_list[i].split(",")
-            self.moveCord([float(x), float(y)], True)
 
-    """
-    Method: writePath()
-    Purpose: takes in a list of cords and writes them to the PathController
-    """
-
-    def writePath(self, cords):
-        for i in cords:  # [[x,y],[x,y],...]
-            self.pathController.writePath(i)
     """
     WAYPOINT METHODS
     """
@@ -340,20 +272,9 @@ class MotorController():
         if(abs(diff) > 1):
             self.turn(-diff, debug)
 
-    """
-    Method: driveForward(ticks, debug, inPlace)
-    Purpose: sends a command to the wheelController to drive the robot forward a designated
-             number of ticks, as well as specifying if it's turning in place
-    """
-    def driveForward(self, ticks,debug,inPlace, podHeading):
-        self.wheelController.driveForward(ticks,inPlace, podHeading, debug)
 
-    """
-    Method: rotatePods(angle, debug)
-    Purpose: sends a command to the podController to rotate the pods by a certain degree angle
-    """
-    def rotatePods(self, angle,debug):
-        self.podController.rotatePods(angle,debug)
+
+
 
     """
     Method: moveDistance(distance, debug, inPlace)
@@ -389,13 +310,7 @@ class MotorController():
         self.podController.rotateXMotors(-90, [1, 3])
 
         # self.podController.rotatePods(-90,debug)
-    """
-    Method: rotateXMotors(angle, motorList,debug)
-    Purpose: sends a command to the podController specifying which motors to rotate to
-             a specified degree angle
-    """
-    def rotateXMotors(self,angle,motorList,debug=False):
-        self.podController.rotateXMotors(angle,motorList,debug)
+
 
 
     """

@@ -1,4 +1,4 @@
-
+import math
 """
 Author: Aidan Spoerndle
 Purpose: Allows the user to save and write paths for the robot to automatically take, allowing them to chain commands together to get a desired outcome.
@@ -40,6 +40,15 @@ class PathController():
             print("Path written!")
         text = self.readPath()
         print(f"The Path read back is: {text}")
+
+    def ticksToMeters(self, ticks, debug=False):
+
+        cir = math.pi * 0.192
+        # self.rotatePods(0,.5)
+        distance = (ticks / 1425.1) * cir
+        if (debug):
+            print(f"Tick of WheelMotor 0: {ticks} | distance (m): {distance}")
+        return distance
         
 
 
