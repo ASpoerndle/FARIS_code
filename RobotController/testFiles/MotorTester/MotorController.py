@@ -37,9 +37,9 @@ class MotorController():
         self.servoList = []
         self.pathController = PathController()
         self.waypointController = WaypointController()
-        self.gpsThread = threading.Thread(target=self.waypointController.updateGPS)
+        self.gpsThread = threading.Thread(target=self.waypointController.updateGPS) 
+        self.gpsThread.daemon = True
         self.gpsThread.start()
-
         """
         PWM Pin, left or right side, encoder port, forwardValue 
         """
@@ -131,9 +131,9 @@ class MotorController():
         x = round(x,2)
         
         y = round(y,2)
-        if(x < 0.1):
+        if(abs(x) < 0.1):
             x = 0
-        if(y < 0.1 or self.podController.getPodAngle() == abs(90)):
+        if(abs(y) < 0.1 or self.podController.getPodAngle() == abs(90)):
             y = 0
 
         print(x,y)
@@ -300,16 +300,6 @@ class MotorController():
                 print(f"Rotating forward...")
             self.wheelController.driveForward(ticks,1,self.podController.getPodMotor(0).getCurrentAngle(), debug)
 
-    """
-    Method: horizontalMode(debug)
-    Purpose: sends a command to the podController to rotate the pods so that the robot can crab
-             walk 
-    """
-    def horizontalMode(self,debug=False):
-        self.podController.rotateXMotors(90,[0,2])
-        self.podController.rotateXMotors(-90, [1, 3])
-
-        # self.podController.rotatePods(-90,debug)
 
 
 
@@ -420,10 +410,9 @@ class MotorController():
         self.wheelController.killMotors()
         time.sleep(2)
         self.waypointController.stopUpdating()
-        print("day")
         self.gpsThread.join(3.0)
         self.gpsThread.is_alive()
-        for servo in self.servo_list:
+        for servo in self.servoList:
             servo.killServo()
         print("finished")
 

@@ -66,3 +66,15 @@ class TeleOperationController:
         self.servoList[0].setAngle(120)
 
 
+    """
+    Method: horizontalMode(debug)
+    Purpose: sends a command to the podController to rotate the pods so that the robot can crab
+             walk
+    """
+    def horizontalMode(self,debug=False):
+        self.podController.rotateXMotors(90,[0,2])
+        self.podController.rotateXMotors(-90, [1, 3])
+
+        # self.podController.rotatePods(-90,debug)
+    def adjustForward(self,debug=False):
+        self.podController.adjustForward()
