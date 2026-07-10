@@ -33,6 +33,8 @@ class WheelController():
 
     def getHeading(self):
         heading = self.wheelMotors[0].motor.encoder.getCurrentHeading()
+        if(heading < 0):
+            heading += 360
         return heading
 
     """
@@ -45,7 +47,6 @@ class WheelController():
             motor.setSpeed(speed)
 
     def teleSideways(self, speed):
-        print("good")
         for i, motor in enumerate(self.wheelMotors):
             if (i==1 or i ==2):
                 motor.setSpeed(speed)
@@ -244,6 +245,7 @@ class WheelController():
     """
 
     def driveForwardTurning(self, ticks, debug=False):
+        print("DriveForwardTurning")
         speed = 0.5
         if (ticks > 0):
             polar = 1
@@ -270,7 +272,7 @@ class WheelController():
             stopCond = len(MotorList) <= 3
             for i, motor in enumerate(MotorList):
                 if (i > 1):  # motor_speed * in place
-                    isThere = self.checkDriveForward(motor, -polar * ticks, .3, not isGoingBackwards,
+                    isThere = self.checkDriveForward(motor, polar * ticks, .3, not isGoingBackwards,
                                                      debug)
                 elif (i <= 1):
                     isThere = self.checkDriveForward(motor, ticks * polar, .3, isGoingBackwards,

@@ -110,6 +110,7 @@ class controller():
         self.allowLY = False
         self.motorController.telePathPlay()
         self.allowLY = True
+        
     def endProgram(self):
         self.end = True
         print("Goodbye...")
@@ -120,6 +121,7 @@ class controller():
             self.motorController.telePathSaveCord(True)
         print("Path Saved")
         self.allowLX = True
+        self.allowLY = True
     def servoControl(self):
         self.servoState = not self.servoState #true = in False = out
         if(self.servoState == True):
@@ -204,6 +206,7 @@ class controller():
 
             try:
                 while self.end == False:
+                    #print(mc.getHeading())
                     pygame.event.pump() # Internal pygame update
                     for event in pygame.event.get():
                         if event.type == pygame.JOYDEVICEREMOVED:

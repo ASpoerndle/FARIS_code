@@ -201,8 +201,8 @@ class MotorController():
              to save x,y data
     """
     def telePathSaveTurn(self,debug=False):
-        print(f"Start Heading: {self.heading % 180} | Current Heading: {self.getHeading() % 180}")
-        headingDifference = (self.getHeading() % 360) - (self.heading % 360)
+        print(f"Start Heading: {self.heading} | Current Heading: {self.getHeading()}")
+        headingDifference = (self.getHeading()) - (self.heading)
         headingDifference *= -1
         #if(headingDifference < -180):
         #    headingDifference += 180
@@ -247,6 +247,7 @@ class MotorController():
                 continue
             print(x,y)
             self.moveCord((x, y),False)
+            self.wheelController.resetEncoder()
         print("path played!")
     """
     Method: telePathClear() PathPlan-[LSB + RSB]

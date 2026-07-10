@@ -46,19 +46,20 @@ class PodController():
     """
     #TO-DO <--fix this not working at all
 
-    def teleRotate(self, speed):
+    def teleRotate(self, speed,debug=False):
         MAX_ROTATE = 60
         
         
         for i, motor in enumerate(self.podMotors):
             currentAngle = motor.getCurrentAngle()
             currentAngle = currentAngle
-            print(f"current angle {currentAngle}")
             if (currentAngle < MAX_ROTATE and speed < 0) or (currentAngle > -MAX_ROTATE and speed > 0):
+                if(debug):    
                     print(f"Motor: {i} Angle: {currentAngle}, Speed: {speed}")
-                    motor.setSpeed(speed)
+                motor.setSpeed(speed)
             else:
-                print(f"Motor {i} maxxed: {currentAngle}")
+                if(debug):
+                    print(f"Motor {i} maxxed: {currentAngle}")
                 motor.setSpeed(0)
     """
     Method: getPodAngle()
