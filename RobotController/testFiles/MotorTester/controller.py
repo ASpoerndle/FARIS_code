@@ -234,29 +234,29 @@ class controller():
                         if(abs(joyLY) >=0.2 and self.allowLY and abs(joyLX) >= 0.2 and self.allowLX and self.subMode != "sideways"):
                             if(joyLY > 0):
                                 joyLX = -joyLX
-                            self.motorController.teleForward(-joyLY/self.SLOW_DOWN)
-                            self.motorController.teleRotate(joyLX/self.SLOW_DOWN)
+                            self.motorController.teleOperationController.teleForward(-joyLY/self.SLOW_DOWN)
+                            self.motorController.teleOperationController.teleRotate(joyLX/self.SLOW_DOWN)
                         elif abs(joyLY) >= 0.2 and self.allowLY:
-                            self.motorController.teleForward(-joyLY / self.SLOW_DOWN)
-                            self.motorController.teleRotate(0)
+                            self.motorController.teleOperationController.teleForward(-joyLY / self.SLOW_DOWN)
+                            self.motorController.teleOperationController.teleRotate(0)
                         elif abs(joyLX) >= 0.2 and self.allowLX and self.subMode != "sideways":
-                            self.motorController.podController.teleRotate(joyLX / self.SLOW_DOWN)
+                            self.motorController.teleOperationController.teleRotate(joyLX / self.SLOW_DOWN)
                         elif abs(joyRX) >= 0.2 and self.allowRX:
-                            self.motorController.wheelController.teleMoveTurn(joyRX / self.SLOW_DOWN)
+                            self.motorController.teleOperationController.teleMoveTurn(joyRX / self.SLOW_DOWN)
                         elif abs(joyLX) >= 0.2 and self.allowLX and self.subMode == "sideways":
-                            self.motorController.wheelController.teleSideways(joyLX/self.SLOW_DOWN)
+                            self.motorController.teleOperationController.teleSideways(joyLX/self.SLOW_DOWN)
                         else:
                             mc.stopMotors()
 
                     elif self.mode == "sideways":
                         if abs(joyLX) >= 0.2 and self.allowLX:
-                            self.motorController.teleSideways(joyLX / self.SLOW_DOWN)
+                            self.motorController.teleOperationController.teleSideways(joyLX / self.SLOW_DOWN)
                         else:
                             mc.stopMotors()
 
                     elif self.mode == "turning":
                         if abs(joyRX) >= 0.2 and self.allowRX:
-                            self.motorController.teleMoveTurn(joyRX / self.SLOW_DOWN)
+                            self.motorController.teleOperationController.teleMoveTurn(joyRX / self.SLOW_DOWN)
                         else:
                             mc.stopMotors()
                     else:

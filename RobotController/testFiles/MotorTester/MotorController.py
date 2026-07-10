@@ -9,6 +9,7 @@ import board
 from PodMotor import PodMotor
 from WheelMotor import WheelMotor
 from adafruit_pca9685 import PCA9685
+from TeleOperationController import TeleOperationController
 
 import Jetson.GPIO as GPIO
 
@@ -33,11 +34,12 @@ class MotorController():
         pca = PCA9685(i2c)
         pca.frequency = 50
         rotational_motor_list = []
-        self.servo_list = []
+        self.servoList = []
         self.pathController = PathController()
         self.waypointController = WaypointController()
         self.gpsThread = threading.Thread(target=self.waypointController.updateGPS)
         self.gpsThread.start()
+
         """
         PWM Pin, left or right side, encoder port, forwardValue 
         """
@@ -73,7 +75,7 @@ class MotorController():
         print("readying servos...")
         for i in pin_list_servos:
             servo = Servo(pca,i)
-            self.servo_list.append(servo)
+            self.servoList.append(servo)
 
 
         self.wheelController = WheelController(rotational_motor_list[4:8])
@@ -81,6 +83,7 @@ class MotorController():
 
         self.heading = self.getHeading()
         self.podController = PodController(rotational_motor_list[0:4])
+        self.teleOperationController = TeleOperationController(self.podController,self.wheelController,self.servoList)
         
     """
     ===TELE-OPERATION METHODS===
