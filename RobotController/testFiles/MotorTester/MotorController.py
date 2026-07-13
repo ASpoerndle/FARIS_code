@@ -10,6 +10,7 @@ from RotationFocusedMotor import RotationFocusedMotor
 from DriveFocusedMotor import DriveFocusedMotor
 from adafruit_pca9685 import PCA9685
 from TeleOperationController import TeleOperationController
+from ArmController import ArmController
 
 import Jetson.GPIO as GPIO
 
@@ -55,11 +56,16 @@ class MotorController():
          [5, 'l', 1, 0],   #BL - Wheel-1
          [6, 'r', 3, 0],   #FR - Wheel-2
          [7, 'r', 0, 0]]   #BR - Wheel-3
-        
+        pinListArm = [
+            [12, 'l', 0,0],
+            [13,'l',1,0],
+            [14,'l',2,0]
+
+        ]
         """
         Init Servos
         """
-        pin_list_servos = [8]
+        pin_list_servos = [8,9,10]
             
 
 
@@ -71,13 +77,17 @@ class MotorController():
             else:
                 motor = RotationFocusedMotor(pca,motor[0],motor[1], motor[2], motor[3])
             rotational_motor_list.append(motor)
+        armMotors = []
+        for i,motor in enumerate(pinListArm):
+            motor = RotationFocusedMotor(pca,motor[0],motor[1],motor[2], motor[3])
+            armMotors.append(motor)
         print("motors ready!")
         print("readying servos...")
         for i in pin_list_servos:
             servo = Servo(pca,i)
             self.servoList.append(servo)
 
-
+        self.armController = ArmController(armMotors, self.servoList)
         self.wheelController = WheelController(rotational_motor_list[4:8])
     
 
