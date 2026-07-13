@@ -1,4 +1,4 @@
-from MotorWithEncoder import RotationalMotor
+from MotorWithEncoder import MotorWithEncoder
 from PodController import PodController
 from WheelController import WheelController
 from PathController import PathController

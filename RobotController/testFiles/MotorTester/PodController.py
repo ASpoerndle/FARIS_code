@@ -1,6 +1,5 @@
 import time
 
-from MotorWithEncoder import RotationalMotor
 
 import board
 

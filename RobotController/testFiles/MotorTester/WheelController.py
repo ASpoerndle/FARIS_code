@@ -1,6 +1,5 @@
 import time
 
-from MotorWithEncoder import RotationalMotor
 from PodController import PodController
 import board
 
