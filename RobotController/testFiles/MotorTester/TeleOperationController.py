@@ -4,10 +4,10 @@ from Servo import Servo
 
 
 class TeleOperationController:
-    def __init__(self, podController,wheelController, servoList):
+    def __init__(self, podController,wheelController, armController):
         self.podController = podController
         self.wheelController = wheelController
-        self.servoList = servoList
+        self.armController = armController
 
 
     """
@@ -55,7 +55,7 @@ class TeleOperationController:
     """
 
     def teleServoIn(self):
-        self.servoList[0].setAngle(60)
+        self.armController.teleServoIn()
 
     """
     Method: teleServoOut()
@@ -63,7 +63,7 @@ class TeleOperationController:
     """
 
     def teleServoOut(self):
-        self.servoList[0].setAngle(120)
+        self.armController.teleServoOut()
 
 
     """

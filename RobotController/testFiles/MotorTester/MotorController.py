@@ -89,11 +89,10 @@ class MotorController():
 
         self.armController = ArmController(armMotors, self.servoList)
         self.wheelController = WheelController(rotational_motor_list[4:8])
-    
 
         self.heading = self.getHeading()
         self.podController = PodController(rotational_motor_list[0:4])
-        self.teleOperationController = TeleOperationController(self.podController,self.wheelController,self.servoList)
+        self.teleOperationController = TeleOperationController(self.podController,self.wheelController,self.armController)
         
 
     """

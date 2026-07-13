@@ -52,3 +52,14 @@ class ArmController():
 
     def checkRotate(self, motor, angle, speed, debug=False):
             return motor.rotate(angle, speed, debug)
+
+    def teleServoIn(self):
+        self.armServos[0].setAngle(60)
+
+    """
+    Method: teleServoOut()
+    Purpose: Opens gripper
+    """
+
+    def teleServoOut(self):
+        self.armServos[0].setAngle(120)
