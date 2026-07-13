@@ -17,7 +17,7 @@ Purpose: A subclass of the Motor class, the RotationalMotor class incorporates t
 """
 
 bus = smbus2.SMBus(1)
-class RotationalMotor(Motor):
+class MotorWithEncoder(Motor):
 
   I2C_ADDR = 0x30
 

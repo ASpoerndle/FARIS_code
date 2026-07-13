@@ -1,8 +1,8 @@
-from RotationalMotor import RotationalMotor
+from MotorWithEncoder import MotorWithEncoder
 
-class PodMotor():
+class RotationFocusedMotor():
    def __init__(self, pca, pin, side, enc, fVal):
-       self.motor = RotationalMotor(pca, pin, side, enc, fVal)
+       self.motor = MotorWithEncoder(pca, pin, side, enc, fVal)
 
    def rotate(self, angle, speed, debug=False):
        speed = abs(speed)

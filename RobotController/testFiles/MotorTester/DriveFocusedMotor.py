@@ -1,10 +1,10 @@
-from RotationalMotor import RotationalMotor
+from MotorWithEncoder import MotorWithEncoder
 
-class WheelMotor():
+class DriveFocusedMotor():
 
     def __init__(self, pca, pin, side, enc, fVal):
         self.enc = enc
-        self.motor = RotationalMotor(pca, pin, side, enc, fVal)
+        self.motor = MotorWithEncoder(pca, pin, side, enc, fVal)
 
     """
       Method: driveForward(angle {degrees} ,speed)

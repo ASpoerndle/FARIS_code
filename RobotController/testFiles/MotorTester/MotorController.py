@@ -1,4 +1,4 @@
-from RotationalMotor import RotationalMotor
+from MotorWithEncoder import RotationalMotor
 from PodController import PodController
 from WheelController import WheelController
 from PathController import PathController
@@ -6,8 +6,8 @@ from WaypointController import WaypointController
 from Servo import Servo
 import threading
 import board
-from PodMotor import PodMotor
-from WheelMotor import WheelMotor
+from RotationFocusedMotor import RotationFocusedMotor
+from DriveFocusedMotor import DriveFocusedMotor
 from adafruit_pca9685 import PCA9685
 from TeleOperationController import TeleOperationController
 
@@ -67,9 +67,9 @@ class MotorController():
         print("readying motors...")
         for i,motor in enumerate(pin_list_rotational):
             if(i > 3):
-                motor = WheelMotor(pca, motor[0], motor[1], motor[2], motor[3])
+                motor = DriveFocusedMotor(pca, motor[0], motor[1], motor[2], motor[3])
             else:
-                motor = PodMotor(pca,motor[0],motor[1], motor[2], motor[3])
+                motor = RotationFocusedMotor(pca,motor[0],motor[1], motor[2], motor[3])
             rotational_motor_list.append(motor)
         print("motors ready!")
         print("readying servos...")
