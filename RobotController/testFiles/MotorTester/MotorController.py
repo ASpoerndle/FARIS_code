@@ -84,7 +84,7 @@ class MotorController():
         print("motors ready!")
         print("readying servos...")
         for i in pin_list_servos:
-            servo = Servo(pca,i)
+            servo = Servo(pca,i,15)
             self.servoList.append(servo)
 
         self.armController = ArmController(armMotors, self.servoList)

@@ -125,9 +125,9 @@ class controller():
     def servoControl(self):
         self.servoState = not self.servoState #true = in False = out
         if(self.servoState == True):
-            self.motorController.teleServoIn()
+            self.motorController.teleOperationController.teleServoIn()
         else:
-            self.motorController.teleServoOut()
+            self.motorController.teleOperationController.teleServoOut()
     def toPlan(self):
         self.mode = "planning"
         print(f"Mode: {self.mode}")

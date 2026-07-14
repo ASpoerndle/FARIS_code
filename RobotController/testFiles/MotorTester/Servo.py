@@ -11,11 +11,15 @@ Purpose: The Motor class is the most basic version of the code required to move 
 """
 class Servo:
     
-    def __init__(self,pca, pin, maxi=270):
+    def __init__(self,pca, pin,GPIO_pin = None, maxi=270):
         self.servo = pca.channels[pin]
         #max = 10500
         #min = 1750
-        self.max = maxi 
+        self.stopped = False
+        self.max = maxi
+        if(GPIO_pin != None):
+            GPIO.setmode(GPIO.BOARD)
+            GPIO.setup(15, GPIO.IN)
     
     """
     Method: setAngle(angle)
@@ -29,6 +33,7 @@ class Servo:
         angle /= self.max
         duty = angle * 8750 +1750
         self.servo.duty_cycle = int(duty)
+        print(GPIO.input(15))
     """
     Method: kill_motor()
     Purpose: sets the duty cycle to 0 so that the motor neither moves nor provides resistance to outside forces
@@ -36,7 +41,13 @@ class Servo:
     """ 
     def killServo(self):
         self.servo.duty_cycle = 0
+    
 
+    def getGPIOOutput(self):
+        while self.stopped == False:
+            print(GPIO.input(15))
+    def stopGPIO(self):
+        self.stopped = True
 """ 
 GPIO.cleanup()
 GPIO.setmode(GPIO.BOARD)
