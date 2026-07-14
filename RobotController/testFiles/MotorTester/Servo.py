@@ -46,6 +46,7 @@ class Servo:
     def getGPIOOutput(self):
         while self.stopped == False:
             print(GPIO.input(15))
+            time.sleep(2)
     def stopGPIO(self):
         self.stopped = True
 """ 

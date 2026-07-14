@@ -179,7 +179,7 @@ class WheelController():
                 current_heading -= 360
 
             #correction = pid(current_heading)
-            kP = .1
+            kP = .15
             correction = kP * error
             if(debug):
                 print(f"PID Correction: {correction}")

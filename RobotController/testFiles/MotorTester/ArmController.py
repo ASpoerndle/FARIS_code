@@ -127,7 +127,7 @@ thetaList = torch.tensor([90, 0, 0],dtype=torch.float64)
 M = torch.tensor(M, dtype=torch.float64)
 
 
-output = mr.FKinSpace(M, Slist, thetaList)
-print(output)
+#output = mr.FKinSpace(M, Slist, thetaList)
+#print(output)
 
 

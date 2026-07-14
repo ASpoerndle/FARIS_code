@@ -37,10 +37,10 @@ class MotorController():
         rotational_motor_list = []
         self.servoList = []
         self.pathController = PathController()
-        self.waypointController = WaypointController()
-        self.gpsThread = threading.Thread(target=self.waypointController.updateGPS) 
-        self.gpsThread.daemon = True
-        self.gpsThread.start()
+        #self.waypointController = WaypointController()
+        #self.gpsThread = threading.Thread(target=self.waypointController.updateGPS) 
+        #self.gpsThread.daemon = True
+        #self.gpsThread.start()
         """
         PWM Pin, left or right side, encoder port, forwardValue 
         """
@@ -93,9 +93,9 @@ class MotorController():
         self.heading = self.getHeading()
         self.podController = PodController(rotational_motor_list[0:4])
         self.teleOperationController = TeleOperationController(self.podController,self.wheelController,self.armController)
-        self.servoThread = threading.Thread(target=self.servoList[0].getGPIOOutput())
-        self.servoThread.daemon = True
-        self.servoThread.start()
+        #self.servoThread = threading.Thread(target=self.servoList[0].getGPIOOutput)
+        #self.servoThread.daemon = True
+        #self.servoThread.start()
 
     """
     ===PATH PLANNING METHODS===
@@ -349,7 +349,7 @@ class MotorController():
         if(angle != 0 and angle != -90):
             self.podController.rotatePods(angle,debug)
         elif(angle == -90):
-            self.horizontalMode()
+            self.teleOperationController.horizontalMode()
         print(f"Moving distance...")
         print(x,y,hypo,angle)
         self.moveDistance(hypo,False,debug=True)
