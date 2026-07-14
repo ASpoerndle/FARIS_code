@@ -93,7 +93,9 @@ class MotorController():
         self.heading = self.getHeading()
         self.podController = PodController(rotational_motor_list[0:4])
         self.teleOperationController = TeleOperationController(self.podController,self.wheelController,self.armController)
-        
+        self.servoThread = threading.Thread(target=self.servoList[0].getGPIOOutput())
+        self.servoThread.daemon = True
+        self.servoThread.start()
 
     """
     ===PATH PLANNING METHODS===
@@ -419,6 +421,9 @@ class MotorController():
         self.wheelController.killMotors()
         time.sleep(2)
         self.waypointController.stopUpdating()
+        self.servoList[0].stopGPIO()
+        self.servoThread.join(3.0)
+        self.servoThread.is_alive()
         self.gpsThread.join(3.0)
         self.gpsThread.is_alive()
         for servo in self.servoList:
