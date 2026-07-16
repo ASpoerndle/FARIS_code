@@ -1,4 +1,6 @@
 #from RotationFocusedMotor import RotationFocusedMotor
+import math
+
 import torch
 
 
@@ -98,36 +100,171 @@ def screw_axis(omega, q):
     q     = np.array(q,     dtype=float)
     v     = -np.cross(omega, q)
     return np.concatenate([omega, v])
-L1 = 2
-L2 = 3
-L3 = 1.5
+L1 = .15
+L2 = .2
+L3 = .18
 
 
 M= [
-    [1,0,0,L1+L2+L3],
-    [0,1,0,0],
+    [1,0,0,L2+L3],
     [0,0,1,0],
+    [0,-1,0,L1],
     [0,0,0,1]
     ]
 #omega | q
-S1 = torch.tensor(screw_axis([1,0,0],[0,0,0]))
+S1 = torch.tensor(screw_axis([0,0,1],[0,0,0]))
 S1 = S1.view((6,1))
-S2 = torch.tensor(screw_axis([1,0,0],[L1,0,0]))
+S2 = torch.tensor(screw_axis([0,-1,0],[0,0,L1]))
 S2 = S2.view(6,1)
-S3 = torch.tensor(screw_axis([1,0,0],[L1+L2,0,0]))
+S3 = torch.tensor(screw_axis([0,-1,0],[L2,0,L1]))
 S3 = S3.view(6,1)
-S4 = torch.tensor(screw_axis([0,1,0],[L1+L2+L3,0,0]))
+S4 = torch.tensor(screw_axis([0,1,0],[L2+L3,0,L1]))
 S4 = S4.view(6,1)
 
-# Assuming 3-DOF based on S1, S2, S3 definitions
-Slist = torch.stack([S4,S3, S2, S1]).view(4, 6).T  # Transpose to shape (6, 3)
 
+# S3 = torch.tensor(screw_axis([1,0,0],[L1+L2,0,0]))
+# S3 = S3.view(6,1)
+# S4 = torch.tensor(screw_axis([0,1,0],[L1+L2+L3,0,0]))
+# S4 = S4.view(6,1)
+#Slist = torch.stack([S1.squeeze(), S2.squeeze(), S3.squeeze(), S4.squeeze()], dim=1)
+# Assuming 3-DOF based on S1, S2, S3 definitions
+Slist = torch.stack([S1, S2,S3,S4]).view(4, 6).T  # Transpose to shape (6, 3)
+#print(Slist)
+x_angle = 0
+y_angle = 0
+z_angle = 0
 # Matches the 3 degrees of freedom defined by your screw axes
-thetaList = torch.tensor([90, 0, 0],dtype=torch.float64)
+thetaList = torch.tensor([math.radians(x_angle),math.radians(y_angle),math.radians(z_angle),0],dtype=torch.float64)
 M = torch.tensor(M, dtype=torch.float64)
 
 
-#output = mr.FKinSpace(M, Slist, thetaList)
-#print(output)
+output = mr.FKinSpace(M, Slist, thetaList)
+output = torch.round(output,decimals=4)
+print(output)
 
+# ---------------------------------------------------------------------------
+# 4.  SANITY CHECK — Forward Kinematics at home (θ = 0)
+# ---------------------------------------------------------------------------
+# FKinSpace with all-zero joint angles should return M exactly.
+
+theta_home = np.zeros(4)
+#M = torch.from_numpy(M)
+theta_home = torch.from_numpy(theta_home)
+T_home_check = mr.FKinSpace(M, Slist, theta_home)
+print("\n=== FK at home (all θ=0, should equal M) ===")
+print("Check is good")
+print(np.round(T_home_check, 5))
+
+
+# ---------------------------------------------------------------------------
+# 5.  DEFINE A TARGET POSE  T_desired
+# ---------------------------------------------------------------------------
+# Example: move EE 400 mm forward (along X) and 300 mm up from origin,
+# tilted 45° forward (pitch −45° about Y, i.e. pointing diagonally).
+#
+# Build the rotation matrix for 180° about X:
+
+x, y, z = .09, .2, .03  # target coordinates (e.g., in mm)
+pitch_deg = 10            # point gripper downward at 30 degrees
+
+# 2. Calculate angles in radians
+theta_y = np.arctan2(y, x)   # Base yaw is calculated automatically
+theta_p = np.radians(pitch_deg)
+
+# 3. Compute trig values
+cy, sy = np.cos(theta_y), np.sin(theta_y)
+cp, sp = np.cos(theta_p), np.sin(theta_p)
+
+# 4. Construct T_des
+
+# Construct T_desired matching your robot's kinematics
+yaw_matrix = np.array([
+    [cy,-sy,0],
+    [sy,cy,0],
+    [0,0,1]
+
+])
+
+pitch_matrix = np.array([
+    [cp,0,sp],
+    [0,1,0],
+    [-sp,0,cp]
+
+])
+M_rotation = np.array([[1,0,0],
+                        [0,0,1],
+                        [0,-1,0]])
+#base yaw * wrist pitch * the M matrix which is messy bc of axis of rotation
+T_test = yaw_matrix @ pitch_matrix @ M_rotation
+print(T_test, "test")
+T_desired = np.array([
+    [cy * cp, -cy * sp, -sy,  x],
+    [sy * cp, -sy * sp,  cy,  y],
+    [-sp,     -cp,       0.0, z],
+    [0.0,      0.0,      0.0, 1.0]
+])
+print(T_desired)
+input("wait...")
+angle = np.radians(179) # avoiding singularity of 180°
+c, s = np.cos(angle), np.sin(angle)
+
+# T_desired = np.array([
+#     [c,  0,  -s, 0.2],
+#     [0,  1, 0, 0.2],
+#     [s,  0,  c, -.1],
+#     [0,  0,  0, 1.00]
+# ])
+
+print("\n=== Target pose T_desired ===")
+print(np.round(T_desired, 4))
+
+
+# ---------------------------------------------------------------------------
+# 6.  INITIAL JOINT ANGLE GUESS
+# ---------------------------------------------------------------------------
+# Starting from a slightly bent pose gives Newton-Raphson a better chance
+# of finding the physically meaningful solution (avoids the degenerate
+# straight-up singularity for this particular target).
+
+# theta_init = np.array([0.0, 0.3, -0.6, 0.0, 0.3])
+theta_init = np.array([0.1, 0.2, -0.2, 0.1])
+
+# ---------------------------------------------------------------------------
+# 7.  SOLVE INVERSE KINEMATICS
+# ---------------------------------------------------------------------------
+eomg = 0.0005   # angular convergence tolerance (rad)
+ev   = 0.0005 # 1e-4   # linear  convergence tolerance (m)
+T_desired = torch.from_numpy(T_desired)
+theta_init = torch.from_numpy(theta_init)
+
+theta_sol, success = mr.IKinSpace( # calls from file w/ 200 iterations rather than default 20
+    Slist,
+    M,
+    T_desired,
+    theta_init,
+    eomg,
+    ev
+)
+
+
+
+print("\n=== IK Result ===")
+print(f"Converged : {success}")
+print(f"θ (rad)   : {np.round(theta_sol, 5)}")
+theta_deg = theta_sol * 180/math.pi
+theta_deg = np.round(theta_deg, 2)
+
+# theta_deg = (theta_deg + 180) % 360 - 180
+
+print(f"θ (deg)   : {np.round(theta_deg, 2)}") # np can do math within list easier than list comprehension
+
+# ---------------------------------------------------------------------------
+# 8.  VERIFY — FK with IK solution should reproduce T_desired
+# ---------------------------------------------------------------------------
+T_achieved = mr.FKinSpace(M, Slist, theta_sol)
+print("\n=== FK verification (should match T_desired) ===")
+print(np.round(T_achieved, 5))
+
+pos_err = np.linalg.norm(T_achieved[:3, 3] - T_desired[:3, 3])
+print(f"\nPosition error : {pos_err*1000:.4f} mm")
 
