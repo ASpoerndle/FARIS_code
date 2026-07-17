@@ -87,7 +87,6 @@ Units: METRES throughout (mm values divided by 1000).
 Install:
     pip install modern-robotics numpy
 """
-
 import numpy as np
 #import modern_robotics as mr
 import pytorch_mr as mr
@@ -100,9 +99,9 @@ def screw_axis(omega, q):
     q     = np.array(q,     dtype=float)
     v     = -np.cross(omega, q)
     return np.concatenate([omega, v])
-L1 = .15
-L2 = .2
-L3 = .18
+L1 = .08
+L2 = .312
+L3 = .312
 
 
 M= [
@@ -164,7 +163,7 @@ print(np.round(T_home_check, 5))
 #
 # Build the rotation matrix for 180° about X:
 
-x, y, z = .09, .2, .03  # target coordinates (e.g., in mm)
+x, y, z = 0.3676, -0.2122,0.2261  # target coordinates (e.g., in mm)
 pitch_deg = 10            # point gripper downward at 30 degrees
 
 # 2. Calculate angles in radians
@@ -197,14 +196,14 @@ M_rotation = np.array([[1,0,0],
 #base yaw * wrist pitch * the M matrix which is messy bc of axis of rotation
 T_test = yaw_matrix @ pitch_matrix @ M_rotation
 print(T_test, "test")
-T_desired = np.array([
-    [cy * cp, -cy * sp, -sy,  x],
-    [sy * cp, -sy * sp,  cy,  y],
-    [-sp,     -cp,       0.0, z],
-    [0.0,      0.0,      0.0, 1.0]
-])
-print(T_desired)
-input("wait...")
+# T_desired = np.array([
+#     [cy * cp, -cy * sp, -sy,  x],
+#     [sy * cp, -sy * sp,  cy,  y],
+#     [-sp,     -cp,       0.0, z],
+#     [0.0,      0.0,      0.0, 1.0]
+# ])
+# print(T_desired)
+# input("wait...")
 angle = np.radians(179) # avoiding singularity of 180°
 c, s = np.cos(angle), np.sin(angle)
 
@@ -216,16 +215,28 @@ c, s = np.cos(angle), np.sin(angle)
 # ])
 
 print("\n=== Target pose T_desired ===")
-print(np.round(T_desired, 4))
-
-
+print(np.round(T_test, 4))
+T_desired = np.eye(4)
+T_desired[:3, :3] = T_test
+T_desired[:3, 3] = [x, y, z]
+print(T_desired)
 # ---------------------------------------------------------------------------
 # 6.  INITIAL JOINT ANGLE GUESS
 # ---------------------------------------------------------------------------
 # Starting from a slightly bent pose gives Newton-Raphson a better chance
 # of finding the physically meaningful solution (avoids the degenerate
 # straight-up singularity for this particular target).
+MAX_RAD = np.radians([70, 65, 0, 0])
+MIN_RAD = np.radians([-70, 0, -80, -80])
+def checkSafety(theta_sol):
+    angles = theta_sol.flatten()
+    angles = angles % np.pi/4 - np.pi/8
 
+    for i in range(len(angles)-1):
+        print(f"Joint {i} Normalized Rad: {angles[i]:.4f}")
+        if angles[i] < MIN_RAD[i] or angles[i] > MAX_RAD[i]:
+            return False
+    return True
 # theta_init = np.array([0.0, 0.3, -0.6, 0.0, 0.3])
 theta_init = np.array([0.1, 0.2, -0.2, 0.1])
 
@@ -251,20 +262,56 @@ theta_sol, success = mr.IKinSpace( # calls from file w/ 200 iterations rather th
 print("\n=== IK Result ===")
 print(f"Converged : {success}")
 print(f"θ (rad)   : {np.round(theta_sol, 5)}")
+
+maxAttempts = 20
+while(checkSafety(theta_sol.numpy())==False or success == False):
+
+    print("Bad Solution: trying again.")
+
+    theta_init = torch.tensor(np.random.uniform(MIN_RAD, MAX_RAD))
+
+    theta_sol, success = mr.IKinSpace(  # calls from file w/ 200 iterations rather than default 20
+        Slist,
+        M,
+        T_desired,
+        theta_init,
+        eomg,
+        ev
+    )
+
+    if(maxAttempts <= 0):
+        theta_deg = theta_sol * 180 / math.pi
+        theta_deg = np.round(theta_deg, 2)
+        theta_deg = theta_deg % 180
+        print(theta_deg)
+        raise ValueError("CANNOT REACH SPOT")
+    maxAttempts -= 1
 theta_deg = theta_sol * 180/math.pi
 theta_deg = np.round(theta_deg, 2)
+theta_deg = (theta_deg+90)%180 - 90
+pot_x,pot_y,pot_z = theta_deg[0][:3]
+pot_x,pot_y,pot_z = float(pot_x),float(pot_y),float(pot_z)
 
-# theta_deg = (theta_deg + 180) % 360 - 180
+
+"""
+===CHECK THE POT VALUES
+"""
+print(pot_x,pot_y,pot_z)
+theta_home = torch.tensor([pot_x,pot_y,pot_z,108])
+T_home_check = mr.FKinSpace(M, Slist, theta_home)
+print(T_home_check[0])
+print(x,y,z)
+
+
 
 print(f"θ (deg)   : {np.round(theta_deg, 2)}") # np can do math within list easier than list comprehension
 
 # ---------------------------------------------------------------------------
 # 8.  VERIFY — FK with IK solution should reproduce T_desired
 # ---------------------------------------------------------------------------
-T_achieved = mr.FKinSpace(M, Slist, theta_sol)
-print("\n=== FK verification (should match T_desired) ===")
-print(np.round(T_achieved, 5))
-
-pos_err = np.linalg.norm(T_achieved[:3, 3] - T_desired[:3, 3])
-print(f"\nPosition error : {pos_err*1000:.4f} mm")
-
+# T_achieved = mr.FKinSpace(M, Slist, theta_sol)
+# print("\n=== FK verification (should match T_desired) ===")
+# print(np.round(T_achieved, 5))
+#
+# pos_err = np.linalg.norm(T_achieved[:3, 3] - T_desired[:3, 3])
+# print(f"\nPosition error : {pos_err*1000:.4f} mm")
