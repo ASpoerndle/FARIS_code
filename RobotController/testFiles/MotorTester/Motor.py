@@ -77,3 +77,18 @@ class Motor:
         elif(speed == 0):
             self.zeroMotion()
 
+    def __del__(self):
+        self.killMotor()
+i2c = board.I2C()
+pca = PCA9685(i2c)
+pca.frequency = 50
+pin = 12
+side = "r"
+motor = Motor(pca,pin,side)
+try:
+    while(True):
+        speed = input("What speed?")
+        motor.moveMotor(float(speed))
+
+except KeyboardInterrupt:
+    motor.killMotor()
