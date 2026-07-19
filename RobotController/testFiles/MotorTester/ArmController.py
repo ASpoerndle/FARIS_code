@@ -2,7 +2,15 @@
 import math
 
 import torch
-
+import numpy as np
+#import modern_robotics as mr
+import pytorch_mr as mr
+import board
+import Jetson.GPIO as GPIO
+from adafruit_pca9685 import PCA9685
+#import pandas as pd
+#import serial
+import time
 
 class ArmController():
     def __init__(self, armMotors, armServos):
@@ -58,7 +66,7 @@ class ArmController():
             return motor.rotate(angle, speed, debug)
 
     def teleServoIn(self):
-        self.armServos[0].setAngle(60)
+        self.armServos[2].setAngle(60)
 
     """
     Method: teleServoOut()
@@ -66,252 +74,262 @@ class ArmController():
     """
 
     def teleServoOut(self):
-        self.armServos[0].setAngle(120)
+        self.armServos[2].setAngle(120)
 
-"""
-Inverse Kinematics — 5-DOF Robot Arm
-Using the Modern Robotics library (Screw Theory / Space Frame formulation)
+    def setServoAngles(self,Joint):
+        for servo in range(len(self.armServos)):
+            self.armServos[servo].setAngle(Joint[servo])
+    def throwaway(self):
+        """
+        Inverse Kinematics — 5-DOF Robot Arm
+        Using the Modern Robotics library (Screw Theory / Space Frame formulation)
 
-Arm geometry (home config = all joints at 0°, arm pointing straight up):
+        Arm geometry (home config = all joints at 0°, arm pointing straight up):
 
-    EE tip  ← 140 mm ← J5 (wrist, pitch about Y)
-                        ← 95  mm ← J4 (forearm roll, about Z)
-                                    ← 172.5 mm ← J3 (elbow pitch, about Y)
-                                                   ← 221.12 mm ← J2 (shoulder pitch, about Y)
-                                                                   ← 211 mm ← J1 (base yaw, about Z)
-                                                                               ← origin (0,0,0)
+            EE tip  ← 140 mm ← J5 (wrist, pitch about Y)
+                                ← 95  mm ← J4 (forearm roll, about Z)
+                                            ← 172.5 mm ← J3 (elbow pitch, about Y)
+                                                           ← 221.12 mm ← J2 (shoulder pitch, about Y)
+                                                                           ← 211 mm ← J1 (base yaw, about Z)
+                                                                                       ← origin (0,0,0)
 
-All joints lie on the world Z-axis at home config (arm fully vertical).
-Units: METRES throughout (mm values divided by 1000).
+        All joints lie on the world Z-axis at home config (arm fully vertical).
+        Units: METRES throughout (mm values divided by 1000).
 
-Install:
-    pip install modern-robotics numpy
-"""
-import numpy as np
-#import modern_robotics as mr
-import pytorch_mr as mr
-#import pandas as pd
-#import serial
-import time
-def screw_axis(omega, q):
-    """Return the 6-vector screw axis [ω, v] for a revolute joint."""
-    omega = np.array(omega, dtype=float)
-    q     = np.array(q,     dtype=float)
-    v     = -np.cross(omega, q)
-    return np.concatenate([omega, v])
-L1 = .08
-L2 = .312
-L3 = .312
+        Install:
+            pip install modern-robotics numpy
+        """
 
-
-M= [
-    [1,0,0,L2+L3],
-    [0,0,1,0],
-    [0,-1,0,L1],
-    [0,0,0,1]
-    ]
-#omega | q
-S1 = torch.tensor(screw_axis([0,0,1],[0,0,0]))
-S1 = S1.view((6,1))
-S2 = torch.tensor(screw_axis([0,-1,0],[0,0,L1]))
-S2 = S2.view(6,1)
-S3 = torch.tensor(screw_axis([0,-1,0],[L2,0,L1]))
-S3 = S3.view(6,1)
-S4 = torch.tensor(screw_axis([0,1,0],[L2+L3,0,L1]))
-S4 = S4.view(6,1)
+        def screw_axis(omega, q):
+            """Return the 6-vector screw axis [ω, v] for a revolute joint."""
+            omega = np.array(omega, dtype=float)
+            q     = np.array(q,     dtype=float)
+            v     = -np.cross(omega, q)
+            return np.concatenate([omega, v])
+        L1 = .08
+        L2 = .312
+        L3 = .312
 
 
-# S3 = torch.tensor(screw_axis([1,0,0],[L1+L2,0,0]))
-# S3 = S3.view(6,1)
-# S4 = torch.tensor(screw_axis([0,1,0],[L1+L2+L3,0,0]))
-# S4 = S4.view(6,1)
-#Slist = torch.stack([S1.squeeze(), S2.squeeze(), S3.squeeze(), S4.squeeze()], dim=1)
-# Assuming 3-DOF based on S1, S2, S3 definitions
-Slist = torch.stack([S1, S2,S3,S4]).view(4, 6).T  # Transpose to shape (6, 3)
-#print(Slist)
-x_angle = 0
-y_angle = 0
-z_angle = 0
-# Matches the 3 degrees of freedom defined by your screw axes
-thetaList = torch.tensor([math.radians(x_angle),math.radians(y_angle),math.radians(z_angle),0],dtype=torch.float64)
-M = torch.tensor(M, dtype=torch.float64)
+        M= [
+            [1,0,0,L2+L3],
+            [0,0,1,0],
+            [0,-1,0,L1],
+            [0,0,0,1]
+            ]
+        #omega | q
+        S1 = torch.tensor(screw_axis([0,0,1],[0,0,0]))
+        S1 = S1.view((6,1))
+        S2 = torch.tensor(screw_axis([0,-1,0],[0,0,L1]))
+        S2 = S2.view(6,1)
+        S3 = torch.tensor(screw_axis([0,-1,0],[L2,0,L1]))
+        S3 = S3.view(6,1)
+        S4 = torch.tensor(screw_axis([0,1,0],[L2+L3,0,L1]))
+        S4 = S4.view(6,1)
 
 
-output = mr.FKinSpace(M, Slist, thetaList)
-output = torch.round(output,decimals=4)
-print(output)
-
-# ---------------------------------------------------------------------------
-# 4.  SANITY CHECK — Forward Kinematics at home (θ = 0)
-# ---------------------------------------------------------------------------
-# FKinSpace with all-zero joint angles should return M exactly.
-
-theta_home = np.zeros(4)
-#M = torch.from_numpy(M)
-theta_home = torch.from_numpy(theta_home)
-T_home_check = mr.FKinSpace(M, Slist, theta_home)
-print("\n=== FK at home (all θ=0, should equal M) ===")
-print("Check is good")
-print(np.round(T_home_check, 5))
+        # S3 = torch.tensor(screw_axis([1,0,0],[L1+L2,0,0]))
+        # S3 = S3.view(6,1)
+        # S4 = torch.tensor(screw_axis([0,1,0],[L1+L2+L3,0,0]))
+        # S4 = S4.view(6,1)
+        #Slist = torch.stack([S1.squeeze(), S2.squeeze(), S3.squeeze(), S4.squeeze()], dim=1)
+        # Assuming 3-DOF based on S1, S2, S3 definitions
+        Slist = torch.stack([S1, S2,S3,S4]).view(4, 6).T  # Transpose to shape (6, 3)
+        #print(Slist)
+        x_angle = 0
+        y_angle = 0
+        z_angle = 0
+        # Matches the 3 degrees of freedom defined by your screw axes
+        thetaList = torch.tensor([math.radians(x_angle),math.radians(y_angle),math.radians(z_angle),0],dtype=torch.float64)
+        M = torch.tensor(M, dtype=torch.float64)
 
 
-# ---------------------------------------------------------------------------
-# 5.  DEFINE A TARGET POSE  T_desired
-# ---------------------------------------------------------------------------
-# Example: move EE 400 mm forward (along X) and 300 mm up from origin,
-# tilted 45° forward (pitch −45° about Y, i.e. pointing diagonally).
-#
-# Build the rotation matrix for 180° about X:
+        output = mr.FKinSpace(M, Slist, thetaList)
+        output = torch.round(output,decimals=4)
+        print(output)
 
-x, y, z = 0.3676, -0.2122,0.2261  # target coordinates (e.g., in mm)
-pitch_deg = 10            # point gripper downward at 30 degrees
+        # ---------------------------------------------------------------------------
+        # 4.  SANITY CHECK — Forward Kinematics at home (θ = 0)
+        # ---------------------------------------------------------------------------
+        # FKinSpace with all-zero joint angles should return M exactly.
 
-# 2. Calculate angles in radians
-theta_y = np.arctan2(y, x)   # Base yaw is calculated automatically
-theta_p = np.radians(pitch_deg)
-
-# 3. Compute trig values
-cy, sy = np.cos(theta_y), np.sin(theta_y)
-cp, sp = np.cos(theta_p), np.sin(theta_p)
-
-# 4. Construct T_des
-
-# Construct T_desired matching your robot's kinematics
-yaw_matrix = np.array([
-    [cy,-sy,0],
-    [sy,cy,0],
-    [0,0,1]
-
-])
-
-pitch_matrix = np.array([
-    [cp,0,sp],
-    [0,1,0],
-    [-sp,0,cp]
-
-])
-M_rotation = np.array([[1,0,0],
-                        [0,0,1],
-                        [0,-1,0]])
-#base yaw * wrist pitch * the M matrix which is messy bc of axis of rotation
-T_test = yaw_matrix @ pitch_matrix @ M_rotation
-print(T_test, "test")
-# T_desired = np.array([
-#     [cy * cp, -cy * sp, -sy,  x],
-#     [sy * cp, -sy * sp,  cy,  y],
-#     [-sp,     -cp,       0.0, z],
-#     [0.0,      0.0,      0.0, 1.0]
-# ])
-# print(T_desired)
-# input("wait...")
-angle = np.radians(179) # avoiding singularity of 180°
-c, s = np.cos(angle), np.sin(angle)
-
-# T_desired = np.array([
-#     [c,  0,  -s, 0.2],
-#     [0,  1, 0, 0.2],
-#     [s,  0,  c, -.1],
-#     [0,  0,  0, 1.00]
-# ])
-
-print("\n=== Target pose T_desired ===")
-print(np.round(T_test, 4))
-T_desired = np.eye(4)
-T_desired[:3, :3] = T_test
-T_desired[:3, 3] = [x, y, z]
-print(T_desired)
-# ---------------------------------------------------------------------------
-# 6.  INITIAL JOINT ANGLE GUESS
-# ---------------------------------------------------------------------------
-# Starting from a slightly bent pose gives Newton-Raphson a better chance
-# of finding the physically meaningful solution (avoids the degenerate
-# straight-up singularity for this particular target).
-MAX_RAD = np.radians([70, 65, 0, 0])
-MIN_RAD = np.radians([-70, 0, -80, -80])
-def checkSafety(theta_sol):
-    angles = theta_sol.flatten()
-    angles = angles % np.pi/4 - np.pi/8
-
-    for i in range(len(angles)-1):
-        print(f"Joint {i} Normalized Rad: {angles[i]:.4f}")
-        if angles[i] < MIN_RAD[i] or angles[i] > MAX_RAD[i]:
-            return False
-    return True
-# theta_init = np.array([0.0, 0.3, -0.6, 0.0, 0.3])
-theta_init = np.array([0.1, 0.2, -0.2, 0.1])
-
-# ---------------------------------------------------------------------------
-# 7.  SOLVE INVERSE KINEMATICS
-# ---------------------------------------------------------------------------
-eomg = 0.0005   # angular convergence tolerance (rad)
-ev   = 0.0005 # 1e-4   # linear  convergence tolerance (m)
-T_desired = torch.from_numpy(T_desired)
-theta_init = torch.from_numpy(theta_init)
-
-theta_sol, success = mr.IKinSpace( # calls from file w/ 200 iterations rather than default 20
-    Slist,
-    M,
-    T_desired,
-    theta_init,
-    eomg,
-    ev
-)
+        theta_home = np.zeros(4)
+        #M = torch.from_numpy(M)
+        theta_home = torch.from_numpy(theta_home)
+        T_home_check = mr.FKinSpace(M, Slist, theta_home)
+        print("\n=== FK at home (all θ=0, should equal M) ===")
+        print("Check is good")
+        print(np.round(T_home_check, 5))
 
 
+        # ---------------------------------------------------------------------------
+        # 5.  DEFINE A TARGET POSE  T_desired
+        # ---------------------------------------------------------------------------
+        # Example: move EE 400 mm forward (along X) and 300 mm up from origin,
+        # tilted 45° forward (pitch −45° about Y, i.e. pointing diagonally).
+        #
+        # Build the rotation matrix for 180° about X:
 
-print("\n=== IK Result ===")
-print(f"Converged : {success}")
-print(f"θ (rad)   : {np.round(theta_sol, 5)}")
+        x, y, z = 0.3676, -0.2122,0.2261  # target coordinates (e.g., in mm)
+        pitch_deg = 10            # point gripper downward at 30 degrees
 
-maxAttempts = 20
-while(checkSafety(theta_sol.numpy())==False or success == False):
+        # 2. Calculate angles in radians
+        theta_y = np.arctan2(y, x)   # Base yaw is calculated automatically
+        theta_p = np.radians(pitch_deg)
 
-    print("Bad Solution: trying again.")
+        # 3. Compute trig values
+        cy, sy = np.cos(theta_y), np.sin(theta_y)
+        cp, sp = np.cos(theta_p), np.sin(theta_p)
 
-    theta_init = torch.tensor(np.random.uniform(MIN_RAD, MAX_RAD))
+        # 4. Construct T_des
 
-    theta_sol, success = mr.IKinSpace(  # calls from file w/ 200 iterations rather than default 20
-        Slist,
-        M,
-        T_desired,
-        theta_init,
-        eomg,
-        ev
-    )
+        # Construct T_desired matching your robot's kinematics
+        yaw_matrix = np.array([
+            [cy,-sy,0],
+            [sy,cy,0],
+            [0,0,1]
 
-    if(maxAttempts <= 0):
-        theta_deg = theta_sol * 180 / math.pi
+        ])
+
+        pitch_matrix = np.array([
+            [cp,0,sp],
+            [0,1,0],
+            [-sp,0,cp]
+
+        ])
+        M_rotation = np.array([[1,0,0],
+                                [0,0,1],
+                                [0,-1,0]])
+        #base yaw * wrist pitch * the M matrix which is messy bc of axis of rotation
+        T_test = yaw_matrix @ pitch_matrix @ M_rotation
+        print(T_test, "test")
+        # T_desired = np.array([
+        #     [cy * cp, -cy * sp, -sy,  x],
+        #     [sy * cp, -sy * sp,  cy,  y],
+        #     [-sp,     -cp,       0.0, z],
+        #     [0.0,      0.0,      0.0, 1.0]
+        # ])
+        # print(T_desired)
+        # input("wait...")
+        angle = np.radians(179) # avoiding singularity of 180°
+        c, s = np.cos(angle), np.sin(angle)
+
+        # T_desired = np.array([
+        #     [c,  0,  -s, 0.2],
+        #     [0,  1, 0, 0.2],
+        #     [s,  0,  c, -.1],
+        #     [0,  0,  0, 1.00]
+        # ])
+
+        print("\n=== Target pose T_desired ===")
+        print(np.round(T_test, 4))
+        T_desired = np.eye(4)
+        T_desired[:3, :3] = T_test
+        T_desired[:3, 3] = [x, y, z]
+        print(T_desired)
+        # ---------------------------------------------------------------------------
+        # 6.  INITIAL JOINT ANGLE GUESS
+        # ---------------------------------------------------------------------------
+        # Starting from a slightly bent pose gives Newton-Raphson a better chance
+        # of finding the physically meaningful solution (avoids the degenerate
+        # straight-up singularity for this particular target).
+        MAX_RAD = np.radians([70, 65, 0, 0])
+        MIN_RAD = np.radians([-70, 0, -80, -80])
+        def checkSafety(theta_sol):
+            angles = theta_sol.flatten()
+            angles = angles % np.pi/4 - np.pi/8
+
+            for i in range(len(angles)-1):
+                print(f"Joint {i} Normalized Rad: {angles[i]:.4f}")
+                if angles[i] < MIN_RAD[i] or angles[i] > MAX_RAD[i]:
+                    return False
+            return True
+        # theta_init = np.array([0.0, 0.3, -0.6, 0.0, 0.3])
+        theta_init = np.array([0.1, 0.2, -0.2, 0.1])
+
+        # ---------------------------------------------------------------------------
+        # 7.  SOLVE INVERSE KINEMATICS
+        # ---------------------------------------------------------------------------
+        eomg = 0.0005   # angular convergence tolerance (rad)
+        ev   = 0.0005 # 1e-4   # linear  convergence tolerance (m)
+        T_desired = torch.from_numpy(T_desired)
+        theta_init = torch.from_numpy(theta_init)
+
+        theta_sol, success = mr.IKinSpace( # calls from file w/ 200 iterations rather than default 20
+            Slist,
+            M,
+            T_desired,
+            theta_init,
+            eomg,
+            ev
+        )
+
+
+
+        print("\n=== IK Result ===")
+        print(f"Converged : {success}")
+        print(f"θ (rad)   : {np.round(theta_sol, 5)}")
+
+        maxAttempts = 20
+        while(checkSafety(theta_sol.numpy())==False or success == False):
+
+            print("Bad Solution: trying again.")
+
+            theta_init = torch.tensor(np.random.uniform(MIN_RAD, MAX_RAD))
+
+            theta_sol, success = mr.IKinSpace(  # calls from file w/ 200 iterations rather than default 20
+                Slist,
+                M,
+                T_desired,
+                theta_init,
+                eomg,
+                ev
+            )
+
+            if(maxAttempts <= 0):
+                theta_deg = theta_sol * 180 / math.pi
+                theta_deg = np.round(theta_deg, 2)
+                theta_deg = theta_deg % 180
+                print(theta_deg)
+                raise ValueError("CANNOT REACH SPOT")
+            maxAttempts -= 1
+        theta_deg = theta_sol * 180/math.pi
         theta_deg = np.round(theta_deg, 2)
-        theta_deg = theta_deg % 180
-        print(theta_deg)
-        raise ValueError("CANNOT REACH SPOT")
-    maxAttempts -= 1
-theta_deg = theta_sol * 180/math.pi
-theta_deg = np.round(theta_deg, 2)
-theta_deg = (theta_deg+90)%180 - 90
-pot_x,pot_y,pot_z = theta_deg[0][:3]
-pot_x,pot_y,pot_z = float(pot_x),float(pot_y),float(pot_z)
+        theta_deg = (theta_deg+90)%180 - 90
+        pot_x,pot_y,pot_z = theta_deg[0][:3]
+        pot_x,pot_y,pot_z = float(pot_x),float(pot_y),float(pot_z)
 
 
-"""
-===CHECK THE POT VALUES
-"""
-print(pot_x,pot_y,pot_z)
-theta_home = torch.tensor([pot_x,pot_y,pot_z,108])
-T_home_check = mr.FKinSpace(M, Slist, theta_home)
-print(T_home_check[0])
-print(x,y,z)
+        """
+        ===CHECK THE POT VALUES
+        """
+        print(pot_x,pot_y,pot_z)
+        theta_home = torch.tensor([pot_x,pot_y,pot_z,108])
+        T_home_check = mr.FKinSpace(M, Slist, theta_home)
+        print(T_home_check[0])
+        print(x,y,z)
 
 
 
-print(f"θ (deg)   : {np.round(theta_deg, 2)}") # np can do math within list easier than list comprehension
+        print(f"θ (deg)   : {np.round(theta_deg, 2)}") # np can do math within list easier than list comprehension
 
-# ---------------------------------------------------------------------------
-# 8.  VERIFY — FK with IK solution should reproduce T_desired
-# ---------------------------------------------------------------------------
-# T_achieved = mr.FKinSpace(M, Slist, theta_sol)
-# print("\n=== FK verification (should match T_desired) ===")
-# print(np.round(T_achieved, 5))
-#
-# pos_err = np.linalg.norm(T_achieved[:3, 3] - T_desired[:3, 3])
-# print(f"\nPosition error : {pos_err*1000:.4f} mm")
+        # ---------------------------------------------------------------------------
+        # 8.  VERIFY — FK with IK solution should reproduce T_desired
+        # ---------------------------------------------------------------------------
+        # T_achieved = mr.FKinSpace(M, Slist, theta_sol)
+        # print("\n=== FK verification (should match T_desired) ===")
+        # print(np.round(T_achieved, 5))
+        #
+        # pos_err = np.linalg.norm(T_achieved[:3, 3] - T_desired[:3, 3])
+        # print(f"\nPosition error : {pos_err*1000:.4f} mm")
+GPIO.cleanup()
+GPIO.setmode(GPIO.BOARD)
+i2c = board.I2C()
+pca = PCA9685(i2c)
+pca.frequency = 50
+
+servoList = [8,9,10]
+arm = ArmController(None,servoList)
+arm.setServoAngles([30,30,30])
+time.sleep(3)
+arm.setServoAngles([0,0,0])
