@@ -1,6 +1,6 @@
 #from RotationFocusedMotor import RotationFocusedMotor
 import math
-
+from Servo import Servo
 import torch
 import numpy as np
 #import modern_robotics as mr
@@ -79,6 +79,9 @@ class ArmController():
     def setServoAngles(self,Joint):
         for servo in range(len(self.armServos)):
             self.armServos[servo].setAngle(Joint[servo])
+        time.sleep(i)
+        for servo in self.armServos:
+            servo.killServo()
     def throwaway(self):
         """
         Inverse Kinematics — 5-DOF Robot Arm
@@ -329,7 +332,11 @@ pca = PCA9685(i2c)
 pca.frequency = 50
 
 servoList = [8,9,10]
-arm = ArmController(None,servoList)
+servoObj = []
+for i in servoList:
+    servo = Servo(pca,i)
+    servoObj.append(servo)
+arm = ArmController(None,servoObj)
 arm.setServoAngles([30,30,30])
 time.sleep(3)
 arm.setServoAngles([0,0,0])

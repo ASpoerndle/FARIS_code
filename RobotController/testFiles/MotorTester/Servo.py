@@ -33,7 +33,7 @@ class Servo:
         angle /= self.max
         duty = angle * 8750 +1750
         self.servo.duty_cycle = int(duty)
-        print(GPIO.input(15))
+        #print(GPIO.input(15))
     """
     Method: kill_motor()
     Purpose: sets the duty cycle to 0 so that the motor neither moves nor provides resistance to outside forces
