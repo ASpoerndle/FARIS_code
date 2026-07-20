@@ -49,7 +49,7 @@ class Servo:
             time.sleep(2)
     def stopGPIO(self):
         self.stopped = True
- 
+""" 
 GPIO.cleanup()
 GPIO.setmode(GPIO.BOARD)
 i2c = board.I2C()
@@ -79,4 +79,4 @@ except KeyboardInterrupt:
 servo.killServo()
 
 GPIO.cleanup()
-
+"""

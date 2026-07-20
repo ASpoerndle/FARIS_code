@@ -11,7 +11,7 @@ from adafruit_pca9685 import PCA9685
 #import pandas as pd
 #import serial
 import time
-
+from Motor import Motor
 class ArmController():
     def __init__(self, armMotors, armServos):
         self.armMotors = armMotors
@@ -82,6 +82,33 @@ class ArmController():
         time.sleep(i)
         for servo in self.armServos:
             servo.killServo()
+    def motorSpeeds(self):
+        mo1 = self.armMotors[0]
+        mo2 = self.armMotors[1]
+        mo3 = self.armMotors[2]
+        print("ready")
+        """
+        mo1.moveMotor(0.01)
+        time.sleep(1)
+        mo1.moveMotor(-0.01)
+        time.sleep(1)
+        mo1.moveMotor(0)
+        print("mo2")
+        """
+        mo2.moveMotor(0.4)
+        mo3.moveMotor(-0.2)
+        time.sleep(1)
+        mo2.moveMotor(-0.5)
+        mo3.moveMotor(0.1)
+        time.sleep(1)
+        mo2.moveMotor(0)
+        mo3.moveMotor(0)
+        mo1.moveMotor(0.01)
+        time.sleep(1)
+        mo1.moveMotor(-0.01)
+        time.sleep(1)
+        mo1.moveMotor(0)
+        print("done")
     def throwaway(self):
         """
         Inverse Kinematics — 5-DOF Robot Arm
@@ -325,18 +352,33 @@ class ArmController():
         #
         # pos_err = np.linalg.norm(T_achieved[:3, 3] - T_desired[:3, 3])
         # print(f"\nPosition error : {pos_err*1000:.4f} mm")
+    def killMotors(self):
+        for motor in self.armMotors:
+            motor.killMotor()
 GPIO.cleanup()
 GPIO.setmode(GPIO.BOARD)
 i2c = board.I2C()
 pca = PCA9685(i2c)
 pca.frequency = 50
-
+motorList = [
+    [12,"l",0,0],
+    [13,"l",1,0],
+    [14,"l",2,0]
+        ]
+motorObj = []
 servoList = [8,9,10]
 servoObj = []
 for i in servoList:
     servo = Servo(pca,i)
     servoObj.append(servo)
-arm = ArmController(None,servoObj)
-arm.setServoAngles([30,30,30])
-time.sleep(3)
-arm.setServoAngles([0,0,0])
+for i in motorList:
+    motor = Motor(pca,i[0],i[1])
+    motorObj.append(motor)
+arm = ArmController(motorObj,servoObj)
+#arm.setServoAngles([30,30,30])
+#time.sleep(3)
+#arm.setServoAngles([0,0,0])
+try:
+    arm.motorSpeeds()
+except KeyboardInterrupt:
+    arm.killMotors()
