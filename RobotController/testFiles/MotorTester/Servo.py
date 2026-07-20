@@ -49,7 +49,7 @@ class Servo:
             time.sleep(2)
     def stopGPIO(self):
         self.stopped = True
-""" 
+ 
 GPIO.cleanup()
 GPIO.setmode(GPIO.BOARD)
 i2c = board.I2C()
@@ -64,8 +64,19 @@ servo.setAngle(90)
 time.sleep(1)
 servo.setAngle(75)
 time.sleep(1)
-input("...")
+try:
+    while True:
+        servo.setAngle(90)
+        time.sleep(1)
+        servo.setAngle(180)
+        time.sleep(1)
+        servo.setAngle(270)
+        time.sleep(1)
+        servo.setAngle(0)
+        time.sleep(1)
+except KeyboardInterrupt:
+    servo.killServo()
 servo.killServo()
 
 GPIO.cleanup()
-"""
+
