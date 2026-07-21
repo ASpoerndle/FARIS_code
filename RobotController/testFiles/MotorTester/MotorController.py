@@ -11,7 +11,7 @@ from DriveFocusedMotor import DriveFocusedMotor
 from adafruit_pca9685 import PCA9685
 from TeleOperationController import TeleOperationController
 from ArmController import ArmController
-
+from Motor import Motor
 import Jetson.GPIO as GPIO
 
 import time
@@ -79,7 +79,7 @@ class MotorController():
             rotational_motor_list.append(motor)
         armMotors = []
         for i,motor in enumerate(pinListArm):
-            motor = RotationFocusedMotor(pca,motor[0],motor[1],motor[2], motor[3])
+            motor = Motor(pca,motor[0],motor[1])
             armMotors.append(motor)
         print("motors ready!")
         print("readying servos...")
@@ -406,6 +406,7 @@ class MotorController():
     def stopMotors(self):
         self.podController.stopMotors()
         self.wheelController.stopMotors()
+        self.armController.stopMotors()
     def forceJoin(self):
         self.gpsThread.join()
     """

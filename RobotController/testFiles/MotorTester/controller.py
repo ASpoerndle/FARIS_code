@@ -72,7 +72,7 @@ class controller():
                 buttonsXbox["LT"]: self.toPlan,
                 buttonsXbox["START"]:self.endProgram,
                 buttonsXbox["L3"]:self.motorController.createWaypoint,
-                buttonsXbox["R3"]:self.travelToWay
+                buttonsXbox["R3"]:self.toArm
 
 
             },
@@ -94,7 +94,12 @@ class controller():
                 buttonsXbox["X"]: self.toSideways,
                 buttonsXbox["A"]:self.toForward
 
-            }
+            },
+            "arm": {
+                buttonsXbox["A"]:self.toForward,
+                buttonsXbox["LB"]:self.motorController.armController.teleWristPitch,
+                buttonsXbox["LT"]:self.motorController.armController.teleWristRoll
+                }
 
         }
     def travelToWay(self):
@@ -180,7 +185,13 @@ class controller():
         self.allowRX = True
         
         self.motorController.teleOperationController.teleTurn()
-
+    def toArm(self):
+        self.mode = "arm"
+        self.subMode = "arm"
+        print(f"Mode: {self.mode}")
+        self.allowLX = True
+        self.allowLY = True
+        self.allowRY = True
     def handleButtonInput(self, button):
         try:
             mode_buttons = self.controls[self.mode]
@@ -259,6 +270,16 @@ class controller():
                             self.motorController.teleOperationController.teleMoveTurn(joyRX / self.SLOW_DOWN)
                         else:
                             mc.stopMotors()
+                    elif self.mode == "arm":
+                        if(abs(joyLX) >= 0.2 and self.allowLX):
+                            self.motorController.armController.setMotorSpeed(0,joyLX/10)
+                        elif(abs(joyLY)>=0.2 and self.allowLY):
+                            self.motorController.armController.setMotorSpeed(1,-joyLY/1)
+                        elif(abs(joyRX)>= 0.2 and self.allowRX):
+                            self.motorController.armController.setMotorSpeed(2,-joyRX/5)
+                        else:
+                            mc.stopMotors()
+                            
                     else:
                         mc.stopMotors()
 

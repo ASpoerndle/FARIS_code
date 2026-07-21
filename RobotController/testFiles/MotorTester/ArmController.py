@@ -21,13 +21,29 @@ class ArmController():
         Motor 2 = Forearm
         """
 
-        self. armServos = armServos
+        self.armServos = armServos
         """
-        Servo 0 = Twist (roll)
-        Servo 1 = Tilt (pitch)
+        Servo 0 = Tilt (pitch)
+        Servo 1 = Twist (roll)
         Servo 2 = Grab
         """
-
+        self.wristPitchValues = [0,45,90,135,180,225]
+        self.wristRollValues = [0,45,90,135,180,225]
+        self.graspValues = [60,120]
+        self.wristPitchIndex = 0
+        self.wristRollIndex = 0
+        self.graspIndex = 0
+    def teleWristPitch(self):
+        if(self.wristPitchIndex + 1 > len(self.wristPitchValues)):
+            self.wristPitchIndex = 0
+        print(self.wristPitchValues[self.wristPitchIndex])
+        self.armServos[0].setAngle(self.wristPitchValues[self.wristPitchIndex])
+        self.wristPitchIndex +=1
+    def teleWristRoll(self):
+        if(self.wristRollIndex + 1 > len(self.wristRollValues)):
+            self.wristRollIndex = 0
+        self.armServos[1].setAngle(self.wristRollValues[self.wristRollIndex])
+        self.wristRollIndex += 1
     def beginIK(self, intendedDestination):
         x = intendedDestination[0]
         y = intendedDestination[1]
@@ -82,6 +98,13 @@ class ArmController():
         time.sleep(i)
         for servo in self.armServos:
             servo.killServo()
+    def setMotorSpeed(self,motor,speed):
+        try:
+            if(motor > 2):
+                return
+            self.armMotors[motor].moveMotor(speed)
+        except:
+            print("ERR finding motor")
     def motorSpeeds(self):
         mo1 = self.armMotors[0]
         mo2 = self.armMotors[1]
@@ -355,6 +378,10 @@ class ArmController():
     def killMotors(self):
         for motor in self.armMotors:
             motor.killMotor()
+    def stopMotors(self):
+        for motor in self.armMotors:
+            motor.moveMotor(0)
+"""
 GPIO.cleanup()
 GPIO.setmode(GPIO.BOARD)
 i2c = board.I2C()
@@ -382,3 +409,4 @@ try:
     arm.motorSpeeds()
 except KeyboardInterrupt:
     arm.killMotors()
+"""
