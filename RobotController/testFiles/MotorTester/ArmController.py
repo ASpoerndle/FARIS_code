@@ -44,6 +44,11 @@ class ArmController():
             self.wristRollIndex = 0
         self.armServos[1].setAngle(self.wristRollValues[self.wristRollIndex])
         self.wristRollIndex += 1
+    def teleGrasp(self):
+        if(self.graspIndex + 1 > len(self.graspValues)):
+            self.graspIndex = 0
+        self.armServos[2].setAngle(self.graspValues[self.graspIndex])
+        self.graspIndex += 1
     def beginIK(self, intendedDestination):
         x = intendedDestination[0]
         y = intendedDestination[1]

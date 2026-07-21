@@ -65,7 +65,7 @@ class controller():
                 buttonsXbox["X"]:self.toSideways,
                 buttonsXbox["A"]:self.toForward,
                 buttonsXbox["B"]:self.toTurn,
-                buttonsXbox["RT"]:self.servoControl,
+                #buttonsXbox["RT"]:self.servoControl,
                 buttonsXbox["SELECT"]:print(self.motorController.getHeading()),
                 buttonsXbox["LB"]:self.slowDown,
                 buttonsXbox["RB"]:self.speedUp,
@@ -98,7 +98,8 @@ class controller():
             "arm": {
                 buttonsXbox["A"]:self.toForward,
                 buttonsXbox["LB"]:self.motorController.armController.teleWristPitch,
-                buttonsXbox["LT"]:self.motorController.armController.teleWristRoll
+                buttonsXbox["LT"]:self.motorController.armController.teleWristRoll,
+                buttonsXbox["A"]:self.motorController.armController.teleGrasp
                 }
 
         }
@@ -127,12 +128,7 @@ class controller():
         print("Path Saved")
         self.allowLX = True
         self.allowLY = True
-    def servoControl(self):
-        self.servoState = not self.servoState #true = in False = out
-        if(self.servoState == True):
-            self.motorController.teleOperationController.teleServoIn()
-        else:
-            self.motorController.teleOperationController.teleServoOut()
+
     def toPlan(self):
         self.mode = "planning"
         print(f"Mode: {self.mode}")
