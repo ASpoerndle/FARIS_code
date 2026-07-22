@@ -3,7 +3,8 @@ import time
 import busio
 from adafruit_pca9685 import PCA9685
 import Jetson.GPIO as GPIO
-import Threading
+import threading
+from ADS1015 import GripperADS
 """
 Class: Motor
 @Author: Aidan Spoerndle
@@ -21,17 +22,22 @@ class Servo:
         self.ADS = False
         if(ifADS):
             print("ADS")
+            self.GripperADS = GripperADS()
             self.ADS = True
-            #ADS = ADS(stuff)
-            #Create - ADS thread, daemon, start thread
+            self.crushThread = threading.Thread(target=self.checkCrush())
+            self.crushThread.daemon = True
+            print("Crush Thread Started!")
+            self.crushThread.start()
+
     def checkCrush(self):
         while True:
-            #currentVoltage = ADS.readVoltage()
-            if(currentVoltage > Servo.PREDICTEDVOLTAGE):
-                currentAngle = (self.servo.duty_cycle/8750)-1750
-                betterAngle = currentAngle - 10
-                self.setAngle(betterAngle)
-            
+            currentVoltage = self.GripperADS.getGripperVoltage()
+            print(currentVoltage)
+            # if(currentVoltage > self.predictedVoltage):
+            #     currentAngle = (self.servo.duty_cycle/8750)-1750
+            #     betterAngle = currentAngle - 10
+            #     self.setAngle(betterAngle)
+            #
     """
     Method: setAngle(angle)
     Purpose: sets the duty cycle to between values of 1750 and 10500 depending on the ratio between the user given angle and the max angle the servo can 
