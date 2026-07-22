@@ -3,6 +3,7 @@ import time
 import busio
 from adafruit_pca9685 import PCA9685
 import Jetson.GPIO as GPIO
+import Threading
 """
 Class: Motor
 @Author: Aidan Spoerndle
@@ -10,17 +11,27 @@ Purpose: The Motor class is the most basic version of the code required to move 
          motors attached to the robot. 
 """
 class Servo:
-    
-    def __init__(self,pca, pin,GPIO_pin = None, maxi=270):
+    PREDICTEDVOLTAGE = 5
+    def __init__(self,pca, pin,ifADS = False, maxi=270):
         self.servo = pca.channels[pin]
         #max = 10500
         #min = 1750
         self.stopped = False
         self.max = maxi
-        if(GPIO_pin != None):
-            GPIO.setmode(GPIO.BOARD)
-            GPIO.setup(15, GPIO.IN)
-    
+        self.ADS = False
+        if(ifADS):
+            print("ADS")
+            self.ADS = True
+            #ADS = ADS(stuff)
+            #Create - ADS thread, daemon, start thread
+    def checkCrush(self):
+        while True:
+            #currentVoltage = ADS.readVoltage()
+            if(currentVoltage > Servo.PREDICTEDVOLTAGE):
+                currentAngle = (self.servo.duty_cycle/8750)-1750
+                betterAngle = currentAngle - 10
+                self.setAngle(betterAngle)
+            
     """
     Method: setAngle(angle)
     Purpose: sets the duty cycle to between values of 1750 and 10500 depending on the ratio between the user given angle and the max angle the servo can 
@@ -57,23 +68,9 @@ pca = PCA9685(i2c)
 pca.frequency = 60
          
         
-servo = Servo(pca,8)
-servo.setAngle(180)
-time.sleep(1)
-servo.setAngle(90)
-time.sleep(1)
-servo.setAngle(75)
-time.sleep(1)
+servo = Servo(pca,10)
 try:
-    while True:
-        servo.setAngle(90)
-        time.sleep(1)
-        servo.setAngle(180)
-        time.sleep(1)
-        servo.setAngle(270)
-        time.sleep(1)
-        servo.setAngle(0)
-        time.sleep(1)
+    i = 0
 except KeyboardInterrupt:
     servo.killServo()
 servo.killServo()

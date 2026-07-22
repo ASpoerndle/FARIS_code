@@ -99,7 +99,8 @@ class controller():
                 buttonsXbox["A"]:self.toForward,
                 buttonsXbox["LB"]:self.motorController.armController.teleWristPitch,
                 buttonsXbox["LT"]:self.motorController.armController.teleWristRoll,
-                buttonsXbox["A"]:self.motorController.armController.teleGrasp
+                buttonsXbox["A"]:self.motorController.armController.teleGrasp,
+                buttonsXbox["R3"]:self.toForward
                 }
 
         }
@@ -275,6 +276,7 @@ class controller():
                             self.motorController.armController.setMotorSpeed(2,-joyRX/5)
                         else:
                             mc.stopMotors()
+                            
                             
                     else:
                         mc.stopMotors()

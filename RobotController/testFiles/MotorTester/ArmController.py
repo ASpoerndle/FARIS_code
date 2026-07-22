@@ -27,8 +27,8 @@ class ArmController():
         Servo 1 = Twist (roll)
         Servo 2 = Grab
         """
-        self.wristPitchValues = [0,45,90,135,180,225]
-        self.wristRollValues = [0,45,90,135,180,225]
+        self.wristPitchValues = [0,45,90,135]
+        self.wristRollValues = [0,45]
         self.graspValues = [60,120]
         self.wristPitchIndex = 0
         self.wristRollIndex = 0
@@ -86,16 +86,12 @@ class ArmController():
     def checkRotate(self, motor, angle, speed, debug=False):
             return motor.rotate(angle, speed, debug)
 
-    def teleServoIn(self):
-        self.armServos[2].setAngle(60)
 
     """
     Method: teleServoOut()
     Purpose: Opens gripper
     """
 
-    def teleServoOut(self):
-        self.armServos[2].setAngle(120)
 
     def setServoAngles(self,Joint):
         for servo in range(len(self.armServos)):
