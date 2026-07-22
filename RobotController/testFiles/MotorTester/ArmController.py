@@ -29,7 +29,7 @@ class ArmController():
         """
         self.wristPitchValues = [0,45,90,135]
         self.wristRollValues = [0,45]
-        self.graspValues = [60,120]
+        self.graspValues = [100,160]
         self.wristPitchIndex = 0
         self.wristRollIndex = 0
         self.graspIndex = 0
@@ -48,7 +48,9 @@ class ArmController():
         if(self.graspIndex + 1 > len(self.graspValues)):
             self.graspIndex = 0
         self.armServos[2].setAngle(self.graspValues[self.graspIndex])
+        #print(self.graspValues[self.graspIndex])
         self.graspIndex += 1
+        
     def beginIK(self, intendedDestination):
         x = intendedDestination[0]
         y = intendedDestination[1]

@@ -12,7 +12,7 @@ Purpose: The Motor class is the most basic version of the code required to move 
          motors attached to the robot. 
 """
 class Servo:
-    PREDICTEDVOLTAGE = 5
+    PREDICTEDVOLTAGE = 5.4
     def __init__(self,pca, pin,ifADS = False, maxi=270):
         self.servo = pca.channels[pin]
         #max = 10500
@@ -24,20 +24,21 @@ class Servo:
             print("ADS")
             self.GripperADS = GripperADS()
             self.ADS = True
-            self.crushThread = threading.Thread(target=self.checkCrush())
+            self.crushThread = threading.Thread(target=self.checkCrush)
             self.crushThread.daemon = True
             print("Crush Thread Started!")
             self.crushThread.start()
 
     def checkCrush(self):
-        while True:
+        while self.stopped == False:
             currentVoltage = self.GripperADS.getGripperVoltage()
-            print(currentVoltage)
-            # if(currentVoltage > self.predictedVoltage):
-            #     currentAngle = (self.servo.duty_cycle/8750)-1750
-            #     betterAngle = currentAngle - 10
-            #     self.setAngle(betterAngle)
-            #
+            predictedVoltage = Servo.PREDICTEDVOLTAGE
+            currentAngle = ((self.servo.duty_cycle - 1750)/8750) * self.max
+            print(f"Current Voltage: {currentVoltage} currentAngle {currentAngle}") 
+            if(currentVoltage > predictedVoltage and currentAngle < 160):
+                 betterAngle = currentAngle + 15
+                 #self.setAngle(betterAngle)
+            
     """
     Method: setAngle(angle)
     Purpose: sets the duty cycle to between values of 1750 and 10500 depending on the ratio between the user given angle and the max angle the servo can 
@@ -58,7 +59,8 @@ class Servo:
     """ 
     def killServo(self):
         self.servo.duty_cycle = 0
-    
+        if(self.ADS):
+            self.crushThread.join()
 
     def getGPIOOutput(self):
         while self.stopped == False:
@@ -66,7 +68,7 @@ class Servo:
             time.sleep(2)
     def stopGPIO(self):
         self.stopped = True
-""" 
+"""
 GPIO.cleanup()
 GPIO.setmode(GPIO.BOARD)
 i2c = board.I2C()
@@ -76,7 +78,11 @@ pca.frequency = 60
         
 servo = Servo(pca,10)
 try:
-    i = 0
+    while(True):
+        servo.setAngle(180)
+        time.sleep(1)
+        servo.setAngle(120)
+        time.sleep(1)
 except KeyboardInterrupt:
     servo.killServo()
 servo.killServo()
