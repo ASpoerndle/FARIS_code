@@ -165,12 +165,13 @@ class ArmController():
         L1 = .08
         L2 = .312
         L3 = .312
+        L4 = .06
 
 
         M= [
-            [1,0,0,L2+L3],
-            [0,0,1,0],
-            [0,-1,0,L1],
+            [1,0,0,L2],
+            [0,-1,0,L3+L4],
+            [0,0,-1,L1],
             [0,0,0,1]
             ]
         #omega | q
@@ -180,8 +181,12 @@ class ArmController():
         S2 = S2.view(6,1)
         S3 = torch.tensor(screw_axis([0,-1,0],[L2,0,L1]))
         S3 = S3.view(6,1)
-        S4 = torch.tensor(screw_axis([0,1,0],[L2+L3,0,L1]))
+        S4 = torch.tensor(screw_axis([0,0,-1],[L2,L3,L1]))
         S4 = S4.view(6,1)
+        S5 = torch.tensor(screw_axis([0, -1, 0], [L2, L3+L4, L1]))
+        S5 = S5.view(6, 1)
+        S6 = torch.tensor(screw_axis([0, 0, -1], [L2, L3+L4, L1]))
+        S6 = S6.view(6, 1)
 
 
         # S3 = torch.tensor(screw_axis([1,0,0],[L1+L2,0,0]))
@@ -190,7 +195,7 @@ class ArmController():
         # S4 = S4.view(6,1)
         #Slist = torch.stack([S1.squeeze(), S2.squeeze(), S3.squeeze(), S4.squeeze()], dim=1)
         # Assuming 3-DOF based on S1, S2, S3 definitions
-        Slist = torch.stack([S1, S2,S3,S4]).view(4, 6).T  # Transpose to shape (6, 3)
+        Slist = torch.stack([S1, S2,S3,S4,S5,S6]).view(6, 6).T  # Transpose to shape (6, 3)
         #print(Slist)
         x_angle = 0
         y_angle = 0
@@ -209,7 +214,7 @@ class ArmController():
         # ---------------------------------------------------------------------------
         # FKinSpace with all-zero joint angles should return M exactly.
 
-        theta_home = np.zeros(4)
+        theta_home = np.zeros(6)
         #M = torch.from_numpy(M)
         theta_home = torch.from_numpy(theta_home)
         T_home_check = mr.FKinSpace(M, Slist, theta_home)
@@ -257,7 +262,7 @@ class ArmController():
                                 [0,0,1],
                                 [0,-1,0]])
         #base yaw * wrist pitch * the M matrix which is messy bc of axis of rotation
-        T_test = yaw_matrix @ pitch_matrix @ M_rotation
+        T_test = yaw_matrix @ yaw_matrix @ M_rotation
         print(T_test, "test")
         # T_desired = np.array([
         #     [cy * cp, -cy * sp, -sy,  x],
