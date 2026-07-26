@@ -3,7 +3,6 @@ from MotorWithEncoder import MotorWithEncoder
 class RotationFocusedMotor():
    def __init__(self, pca, pin, side, enc, fVal):
        self.motor = MotorWithEncoder(pca, pin, side, enc, fVal)
-
    def rotate(self, angle, speed, debug=False):
        speed = abs(speed)
        current = self.motor.encoder.getEncoderPosition()
@@ -47,9 +46,11 @@ class RotationFocusedMotor():
    def getCurrentAngle(self):
       currentPos = self.motor.encoder.getEncoderPosition()
       currentDeg = (currentPos-1)/1023 * 360
-      forward = (self.motor.forwardValue-1)/1023 * 360 % 360
+      forward = ((self.motor.forwardValue-1)/1023 * 360) % 360
       currentDeg -= forward
       #print(f"Encoder: {self.encoder} | fVal {forward} | current {currentDeg}")
       return currentDeg
    def setSpeed(self,speed):
       self.motor.setSpeed(speed)
+   def killMotor(self):
+       self.motor.killMotor()

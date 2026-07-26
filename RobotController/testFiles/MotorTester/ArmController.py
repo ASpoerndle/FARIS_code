@@ -11,7 +11,7 @@ from adafruit_pca9685 import PCA9685
 #import pandas as pd
 #import serial
 import time
-from Motor import Motor
+from RotationFocusedMotor import RotationFocusedMotor
 class ArmController():
     def __init__(self, armMotors, armServos):
         self.armMotors = armMotors
@@ -20,7 +20,6 @@ class ArmController():
         Motor 1 = Arm
         Motor 2 = Forearm
         """
-
         self.armServos = armServos
         """
         Servo 0 = Tilt (pitch)
@@ -60,25 +59,16 @@ class ArmController():
     Purpose: the matrix tells the motors how far they should rotate. This should rotate all of the motors
              to the correct position
     """
-    def setRotationArm(self, rotationMatrix,debug=False):
-        motorList = self.armMotors.copy()
+    def setRotationArm(self, angle,debug=False):
+        motorList = [self.armMotors[1]]
         #rotation matrix = 3 x 4
-        matrix = [
-            [1,0,0,0], #motor 0
-            [0,1,0,0], #motor 1
-            [0,0,1,0]  #motor 2
-        ]
-        angleList = []
-        for i in range(len(matrix)):
-            for j in matrix[i]:
-                if(j != 0):
-                    angleList.append(j)
-                    break
+        print(angle)
         stopCond = len(motorList) == 0
-        speed = 0.5
-        while(stopCond):
+        speed = 0.6
+
+        while(not stopCond):
             for i, motor in enumerate(motorList):
-                isAligned = self.checkRotate(motor, angleList[i], speed, debug)
+                isAligned = self.checkRotate(motor, angle, speed, debug)
                 if (isAligned):
                     motorList.pop(i)
         for motor in motorList:
@@ -389,16 +379,16 @@ class ArmController():
     def stopMotors(self):
         for motor in self.armMotors:
             motor.moveMotor(0)
-"""
+
 GPIO.cleanup()
 GPIO.setmode(GPIO.BOARD)
 i2c = board.I2C()
 pca = PCA9685(i2c)
 pca.frequency = 50
 motorList = [
-    [12,"l",0,0],
-    [13,"l",1,0],
-    [14,"l",2,0]
+    [12,"l",4,1],
+    [13,"l",5,1],
+    [14,"l",6,1]
         ]
 motorObj = []
 servoList = [8,9,10]
@@ -407,14 +397,22 @@ for i in servoList:
     servo = Servo(pca,i)
     servoObj.append(servo)
 for i in motorList:
-    motor = Motor(pca,i[0],i[1])
+    motor = RotationFocusedMotor(pca,i[0],i[1],i[2],i[3])
     motorObj.append(motor)
 arm = ArmController(motorObj,servoObj)
+
 #arm.setServoAngles([30,30,30])
 #time.sleep(3)
 #arm.setServoAngles([0,0,0])
 try:
-    arm.motorSpeeds()
+    #arm.motorSpeeds()
+    #while True:
+    #    print(arm.armMotors[1].encoder.getCurrentAngle())
+    #    time.sleep(1)
+    print("e")
+    arm.armMotors[1].motor.moveMotor(0) 
+    arm.setRotationArm(arm.armMotors[1].motor.encoder.getCurrentAngle() + 10,True)
+    #arm.killMotors()
 except KeyboardInterrupt:
     arm.killMotors()
-"""
+

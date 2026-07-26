@@ -235,8 +235,12 @@ while (checkSafety(theta_sol.numpy()) == False or success == False):
 theta_deg = theta_sol * 180 / math.pi
 theta_deg = np.round(theta_deg, 2)
 # theta_deg = theta_deg % 180
+for i in range(len(theta_deg[0])):
+    theta_deg[0][i] = ((theta_deg[0][i] + 180) %360) - 180
+    theta_deg[0][i] = float(theta_deg[0][i])
 J1,J2,J3,J4,J5,J6 = theta_deg[0][:6]
-J1,J2,J3,J4,J5,J6 = float(J1),float(J2),float(J3),float(J4),float(J5),float(J6)
+
+#J1,J2,J3,J4,J5,J6 = float(J1),float(J2),float(J3),float(J4),float(J5),float(J6)
 """
 ===CHECK THE POT VALUES
 """

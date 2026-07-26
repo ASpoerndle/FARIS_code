@@ -167,7 +167,7 @@ class controller():
         self.allowLY = True
         self.allowRX = True
         self.allowRY = True
-        self.motorController.teleOperationController.adjustForward(False)
+        self.motorController.teleOperationController.adjustForward(True)
         print("Forward")
 
     def toTurn(self):
@@ -285,6 +285,7 @@ class controller():
             except KeyboardInterrupt:
                 pygame.quit()
                 #self.motorController.forceJoin()
+                self.motorController.stopMotors()
                 del self.motorController
 
 mc = MotorController()
