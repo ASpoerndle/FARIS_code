@@ -34,7 +34,7 @@ def screw_axis(omega, q):
 L1 = .08
 L2 = .312
 L3 = .312
-L4 = .06
+L4 = .01
 
 M = [
     [1, 0, 0, L2],
@@ -101,7 +101,7 @@ print(np.round(T_home_check, 5))
 #
 # Build the rotation matrix for 180° about X:
 
-x, y, z = 0.306, .177, -0.031  # target coordinates (e.g., in mm)
+x, y, z = 0.232, -0.214, 0.099  # target coordinates (e.g., in mm)
 pitch_deg = 10  # point gripper downward at 30 degrees
 
 # 2. Calculate angles in radians
