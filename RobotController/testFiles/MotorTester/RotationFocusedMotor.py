@@ -28,10 +28,10 @@ class RotationFocusedMotor():
        control_signal = self.motor.pid(current_degrees)
 
        # Absolute safety check
-       if angle > 91  or angle < -91:
-           self.motor.moveMotor(0)
-           print("ERR: Cord limit reached!")
-           return True
+       #if angle > 91  or angle < -91:
+       #    self.motor.moveMotor(0)
+       #    print("ERR: Cord limit reached!", angle)
+       #    return True
        if abs(error) < 4:
            self.motor.moveMotor(0)
            if (debug or True):
@@ -48,6 +48,7 @@ class RotationFocusedMotor():
       currentDeg = (currentPos-1)/1023 * 360
       forward = ((self.motor.forwardValue-1)/1023 * 360) % 360
       currentDeg -= forward
+      currentDeg = ((currentDeg + 180) % 360) - 180
       #print(f"Encoder: {self.encoder} | fVal {forward} | current {currentDeg}")
       return currentDeg
    def setSpeed(self,speed):

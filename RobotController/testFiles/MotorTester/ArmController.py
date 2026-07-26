@@ -62,10 +62,10 @@ class ArmController():
     def setRotationArm(self, angle,debug=False):
         motorList = [self.armMotors[1]]
         #rotation matrix = 3 x 4
-        print(angle)
         stopCond = len(motorList) == 0
-        speed = 0.6
-
+        speed = 0.5
+        angle = ((angle + 180) % 360) - 180
+        print(angle)
         while(not stopCond):
             for i, motor in enumerate(motorList):
                 isAligned = self.checkRotate(motor, angle, speed, debug)
@@ -410,8 +410,9 @@ try:
     #    print(arm.armMotors[1].encoder.getCurrentAngle())
     #    time.sleep(1)
     print("e")
+    
     arm.armMotors[1].motor.moveMotor(0) 
-    arm.setRotationArm(arm.armMotors[1].motor.encoder.getCurrentAngle() + 10,True)
+    arm.setRotationArm(arm.armMotors[1].motor.encoder.getCurrentAngle() - 10,True)
     #arm.killMotors()
 except KeyboardInterrupt:
     arm.killMotors()
