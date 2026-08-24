@@ -2,9 +2,9 @@ from MotorWithEncoder import MotorWithEncoder
 
 class DriveFocusedMotor():
 
-    def __init__(self, pca, pin, side, enc, fVal):
+    def __init__(self, pca, pin, side, enc, fVal,i2c_bus):
         self.enc = enc
-        self.motor = MotorWithEncoder(pca, pin, side, enc, fVal)
+        self.motor = MotorWithEncoder(pca, pin, side, enc, fVal,i2c_bus)
 
     """
       Method: driveForward(angle {degrees} ,speed)

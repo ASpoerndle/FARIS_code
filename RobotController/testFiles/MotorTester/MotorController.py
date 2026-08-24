@@ -73,9 +73,9 @@ class MotorController():
         print("readying motors...")
         for i,motor in enumerate(pin_list_rotational):
             if(i > 3):
-                motor = DriveFocusedMotor(pca, motor[0], motor[1], motor[2], motor[3])
+                motor = DriveFocusedMotor(pca, motor[0], motor[1], motor[2], motor[3],1)
             else:
-                motor = RotationFocusedMotor(pca,motor[0],motor[1], motor[2], motor[3])
+                motor = RotationFocusedMotor(pca,motor[0],motor[1], motor[2], motor[3],1)
             rotational_motor_list.append(motor)
         armMotors = []
         for i,motor in enumerate(pinListArm):

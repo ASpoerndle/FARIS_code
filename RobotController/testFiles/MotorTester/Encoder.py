@@ -7,13 +7,15 @@ import math
 
 class Encoder():
     I2C_ADDR = 0x30
-    I2C_BUS = 1
-    bus = smbus2.SMBus(1)
 
-    def __init__(self,enc, forwardVal):
+
+
+    def __init__(self,enc, forwardVal, bus):
         self.encoder = enc
         self.initHardware()
         self.forwardValue = forwardVal
+        self.I2C_BUS = bus
+        self.bus = smbus2.SMBus(self.I2C_BUS)
     def initHardware(self):
             # ===Format for manipulating registers===
             """
@@ -26,16 +28,16 @@ class Encoder():
 
             """
             # Allow wrapping (0x05) of all absolute encoders (0xF0)
-            Encoder.bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, 0xF0])
+            self.bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, 0xF0])
 
             # Set bank mode for encoders to 2 to allow ports 4-7 to be abs and 0-3 to be quadrature
-            Encoder.bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x02, 2])
+            self.bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x02, 2])
 
             # set min and max values for abs encoders (from 1-1024 based on REV ThroughBore encoder specs)
             if (self.encoder >= 4):
                 # [Cmd, ParamID, Channel, Min_L, Min_H, Max_L, Max_H]
-                Encoder.bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x04, self.encoder, 1, 0, 0, 4])
-                Encoder.bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, 0xF0])
+                self.bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x04, self.encoder, 1, 0, 0, 4])
+                self.bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, 0xF0])
                 # bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, self.encoder, 0])
 
 
@@ -52,7 +54,7 @@ class Encoder():
         # Read 32 bytes (8 channels * 4 bytes each)
         write = i2c_msg.write(0x30, [0x1C])
         read = i2c_msg.read(0x30, 32)
-        Encoder.bus.i2c_rdwr(write, read)
+        self.bus.i2c_rdwr(write, read)
 
         # Unpack as 8 signed 32-bit integers
         positions = struct.unpack('<8i', bytes(list(read)))
@@ -67,7 +69,7 @@ class Encoder():
         return currentDeg
 
     def getCurrentHeading(self):
-        data = Encoder.bus.read_i2c_block_data(0x30, 0x18, 2)
+        data = self.bus.read_i2c_block_data(0x30, 0x18, 2)
         raw_heading = struct.unpack('<h', bytes(data))[0]
         headingRad = raw_heading / 5000.0
         headingDeg = headingRad * 180 / math.pi
@@ -77,4 +79,4 @@ class Encoder():
     Purpose: resets the relative quadrature encoder values for the wheel motors
     """
     def resetEncoder(self):
-        Encoder.bus.write_i2c_block_data(0x30, 0x04, [0x15, 0x0F])
+        self.bus.write_i2c_block_data(0x30, 0x04, [0x15, 0x0F])

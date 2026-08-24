@@ -23,11 +23,11 @@ class MotorWithEncoder(Motor):
 
   I2C_BUS = 1
 
-  def __init__(self, pca, pin, side, enc, fVal):
+  def __init__(self, pca, pin, side, enc, fVal,i2c_bus):
     Motor.__init__(self,pca,pin,side)
 
 
-    self.encoder = Encoder(enc,fVal)
+    self.encoder = Encoder(enc,fVal,i2c_bus)
 
     
     if(side == "r"):
