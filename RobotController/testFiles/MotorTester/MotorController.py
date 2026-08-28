@@ -57,9 +57,9 @@ class MotorController():
          [6, 'r', 3, 0],   #FR - Wheel-2
          [7, 'r', 0, 0]]   #BR - Wheel-3
         pinListArm = [
-            [12, 'l', 0,0],
-            [13,'l',1,0],
-            [14,'l',2,0]
+            [12, 'l', 4,0],
+            [13,'l',5,0],
+            [14,'l',6,0]
 
         ]
         """
@@ -85,7 +85,7 @@ class MotorController():
         #TODO -----------------> Change default value from 0 to a safe value per each motor
         """
         for i,motor in enumerate(pinListArm):
-            motor = MotorWithEncoder(pca,motor[0],motor[1],motor[2], motor[3],0)
+            motor = MotorWithEncoder(pca,motor[0],motor[1],motor[2], motor[3],7)
             armMotors.append(motor)
         print("motors ready!")
         print("readying servos...")

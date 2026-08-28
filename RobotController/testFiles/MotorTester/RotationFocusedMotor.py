@@ -4,7 +4,7 @@ class RotationFocusedMotor():
    def __init__(self, pca, pin, side, enc, fVal,i2c_bus):
        self.motor = MotorWithEncoder(pca, pin, side, enc, fVal,i2c_bus)
    def rotate(self, angle, speed, debug=False):
-       speed = abs(speed)
+       speed = speed
        current = self.motor.encoder.getEncoderPosition()
 
        # forward = ((self.motor.forwardValue - 1) / 1023) * 360 % 360

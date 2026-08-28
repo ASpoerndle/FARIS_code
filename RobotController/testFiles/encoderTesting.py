@@ -61,7 +61,7 @@ OCTOQUAD_REG_ENC0 = 0x1C
 OCTOQUAD_REG_VEL0 = 0x3C
 
 I2C_BUS_NUM = 1
-bus = smbus2.SMBus(1)
+bus = smbus2.SMBus(7)
 
 #----------------------------------------------------------------
 #                      HELPER FUNCTIONS

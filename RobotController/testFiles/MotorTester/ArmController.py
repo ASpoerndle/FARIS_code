@@ -397,22 +397,28 @@ for i in servoList:
     servo = Servo(pca,i)
     servoObj.append(servo)
 for i in motorList:
-    motor = RotationFocusedMotor(pca,i[0],i[1],i[2],i[3])
+    motor = RotationFocusedMotor(pca,i[0],i[1],i[2],i[3],7)
     motorObj.append(motor)
 arm = ArmController(motorObj,servoObj)
 
 #arm.setServoAngles([30,30,30])
 #time.sleep(3)
 #arm.setServoAngles([0,0,0])
+
 try:
     #arm.motorSpeeds()
     #while True:
     #    print(arm.armMotors[1].encoder.getCurrentAngle())
     #    time.sleep(1)
-
+    input("Pause")
     arm.armMotors[1].motor.moveMotor(0) 
     angle = arm.armMotors[1].motor.encoder.getCurrentAngle() - 10
-    arm.setRotationArm(angle,True)
+    #arm.setRotationArm(-10,True)
+    while (not arm.armMotors[1].rotate(45,-0.3,True)):
+    #while (arm.armMotors[1].motor.encoder.getCurrentAngle() > angle):
+        #arm.armMotors[1].motor.moveMotor(0.3)
+        print(arm.armMotors[1].motor.encoder.getCurrentAngle(), angle)
+    arm.armMotors[1].motor.moveMotor(0)
     print(f"Angle switched from {angle - 10} to {angle}")
     #arm.killMotors()
     input("Pause")

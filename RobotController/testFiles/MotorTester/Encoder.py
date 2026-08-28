@@ -12,10 +12,10 @@ class Encoder():
 
     def __init__(self,enc, forwardVal, bus):
         self.encoder = enc
-        self.initHardware()
         self.forwardValue = forwardVal
         self.I2C_BUS = bus
         self.bus = smbus2.SMBus(self.I2C_BUS)
+        self.initHardware()
     def initHardware(self):
             # ===Format for manipulating registers===
             """
@@ -40,8 +40,9 @@ class Encoder():
                 self.bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, 0xF0])
                 # bus.write_i2c_block_data(0x30, 0x04, [0x01, 0x05, self.encoder, 0])
 
-
-
+        # isave settings to octoquad
+            #self.bus.write_byte_data(0x30, 0x04, 0x03)
+            
             print(f"Encoder Port {self.encoder} Ready!")
 
     """
