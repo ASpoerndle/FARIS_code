@@ -409,11 +409,15 @@ try:
     #while True:
     #    print(arm.armMotors[1].encoder.getCurrentAngle())
     #    time.sleep(1)
-    print("e")
-    
+
     arm.armMotors[1].motor.moveMotor(0) 
-    arm.setRotationArm(arm.armMotors[1].motor.encoder.getCurrentAngle() - 10,True)
+    angle = arm.armMotors[1].motor.encoder.getCurrentAngle() - 10
+    arm.setRotationArm(angle,True)
+    print(f"Angle switched from {angle - 10} to {angle}")
     #arm.killMotors()
+    input("Pause")
 except KeyboardInterrupt:
     arm.killMotors()
+
+arm.killMotors()
 

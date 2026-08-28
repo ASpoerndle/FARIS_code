@@ -78,8 +78,14 @@ class MotorController():
                 motor = RotationFocusedMotor(pca,motor[0],motor[1], motor[2], motor[3],1)
             rotational_motor_list.append(motor)
         armMotors = []
+
+
+        """
+        ARM MOTOR INIT
+        #TODO -----------------> Change default value from 0 to a safe value per each motor
+        """
         for i,motor in enumerate(pinListArm):
-            motor = Motor(pca,motor[0],motor[1])
+            motor = MotorWithEncoder(pca,motor[0],motor[1],motor[2], motor[3],0)
             armMotors.append(motor)
         print("motors ready!")
         print("readying servos...")
