@@ -18,7 +18,7 @@ class ArmMotor():
                 control_signal = self.motor.motor.pid(current_degrees)
 
                 # Check if target is reached (deadband of 4 degrees)
-                if abs(error) < 4:
+                if abs(error) < 2:
                     self.motor.motor.moveMotor(0)
                     if debug:
                         print(f"Centered at {current_degrees} | kP: {self.motor.motor.pid.Kp}")

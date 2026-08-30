@@ -427,7 +427,7 @@ try:
     #arm.armMotors[1].motor.moveMotor(0)
     #while(True):
     #    print(arm.armMotors[2].motor.encoder.getCurrentAngle())
-    arm.setRotationArm([-360,-100],True)
+    arm.setRotationArm([-345+(-90+135),-80-45-90],True)
     print(f"Angle switched from {angle - 10} to {angle}")
     #arm.killMotors()
     input("Pause")
