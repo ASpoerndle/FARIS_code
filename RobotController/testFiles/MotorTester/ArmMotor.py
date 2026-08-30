@@ -5,7 +5,7 @@ class ArmMotor():
         self.motor = RotationFocusedMotor(pca,pin,side,enc,fval,i2c_bus)
     def rotate(self, angle,speed, debug=False):
 
-                current_degrees = self.motor.getCurrentAngle()
+                current_degrees = self.motor.motor.encoder.getCurrentAngle()
 
                 # Calculate shortest directional path (-180 to 180 degrees)
                 error = angle - current_degrees
@@ -34,3 +34,5 @@ class ArmMotor():
                     print(f"Error: {error:.2f} | Target: {target:.2f} | Power: {power:.2f}")
 
                 return False
+    def killMotor(self):
+        self.motor.motor.killMotor()

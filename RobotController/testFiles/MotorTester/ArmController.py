@@ -61,24 +61,24 @@ class ArmController():
              to the correct position
     """
     def setRotationArm(self, angle,debug=False):
-        motorList = [self.armMotors[2]]
+        motorList = [self.armMotors[1],self.armMotors[2]]
+
         #rotation matrix = 3 x 4
         stopCond = len(motorList) == 0
         speed = 0.3
         #angle = ((angle + 180) % 360) - 180
         #print(angle)
-        while(not stopCond):
+        for i in range(len(motorList)):
+            while(True):
          
-            stopCond = len(motorList) == 0
-            for i, motor in enumerate(motorList):
-                isAligned = self.checkRotate(motor, angle, 0, debug)
+                isAligned = self.checkRotate(motorList[i], angle[i], 0.3, debug)
                 #isAligned = motor.motor.encoder.getCurrentAngle() < angle
                 if (isAligned):
-                    motorList.pop(i)
-                else:
-                    motor.motor.moveMotor(speed)
+                    break
+                    #else:
+                #    motor.motor.motor.moveMotor(speed)
         for motor in motorList:
-            motor.stopMotor()
+            motor.motor.motor.stopMotor()
 
 
     def checkRotate(self, motor, angle, speed, debug=False):
@@ -417,8 +417,8 @@ try:
     #    print(arm.armMotors[1].encoder.getCurrentAngle())
     #    time.sleep(1)
     input("Pause")
-    arm.armMotors[2].motor.moveMotor(0) 
-    angle = arm.armMotors[2].motor.encoder.getCurrentAngle() - 10
+    arm.armMotors[1].motor.motor.moveMotor(0) 
+    angle = arm.armMotors[1].motor.motor.encoder.getCurrentAngle() - 10
     #arm.setRotationArm(-10,True)
     #while (not arm.armMotors[1].rotate(-55,-0.3,True)):
     #while (arm.armMotors[1].motor.encoder.getCurrentAngle() > angle):
@@ -427,7 +427,7 @@ try:
     #arm.armMotors[1].motor.moveMotor(0)
     #while(True):
     #    print(arm.armMotors[2].motor.encoder.getCurrentAngle())
-    arm.setRotationArm(450,True)
+    arm.setRotationArm([-360,-100],True)
     print(f"Angle switched from {angle - 10} to {angle}")
     #arm.killMotors()
     input("Pause")
