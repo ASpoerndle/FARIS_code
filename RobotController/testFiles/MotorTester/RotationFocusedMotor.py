@@ -15,7 +15,7 @@ class RotationFocusedMotor():
        # target = (forward + angle) % 360
        target = angle
        speed *= 0.75
-       error = (target - current_degrees + 180) % 360 - 180
+       error = (target - (current_degrees % 360) + 180) % 360 - 180
        if (error > 90):
            error -= 180
 
