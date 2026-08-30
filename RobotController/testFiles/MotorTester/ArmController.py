@@ -414,7 +414,7 @@ try:
     arm.armMotors[1].motor.moveMotor(0) 
     angle = arm.armMotors[1].motor.encoder.getCurrentAngle() - 10
     #arm.setRotationArm(-10,True)
-    while (not arm.armMotors[1].rotate(45,-0.3,True)):
+    while (not arm.armMotors[1].rotate(-55,-0.3,True)):
     #while (arm.armMotors[1].motor.encoder.getCurrentAngle() > angle):
         #arm.armMotors[1].motor.moveMotor(0.3)
         print(arm.armMotors[1].motor.encoder.getCurrentAngle(), angle)
