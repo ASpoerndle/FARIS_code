@@ -35,7 +35,7 @@ class RotationFocusedMotor():
        if abs(error) < 4:
            self.motor.moveMotor(0)
            if (debug or True):
-                print(f"Centered at {current} kP: {self.motor.pid.Kp} kI: {self.motor.pid.Ki} kD: {self.motor.pid.Kd}")
+                print(f"Centered at {current_degrees} kP: {self.motor.pid.Kp} kI: {self.motor.pid.Ki} kD: {self.motor.pid.Kd}")
                 return True
        else:
             self.motor.moveMotor(control_signal * speed)
@@ -48,7 +48,7 @@ class RotationFocusedMotor():
       currentDeg = (currentPos-1)/1023 * 360
       forward = ((self.motor.forwardValue-1)/1023 * 360) % 360
       currentDeg -= forward
-      currentDeg = ((currentDeg + 180) % 360) - 180
+      #currentDeg = ((currentDeg + 180) % 360) - 180
       #print(f"Encoder: {self.encoder} | fVal {forward} | current {currentDeg}")
       return currentDeg
    def setSpeed(self,speed):
