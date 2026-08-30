@@ -100,7 +100,7 @@ class PodController():
 
         stopCond = False
         MotorList = self.podMotors.copy()
-        angle += self.getPodAngle()
+
         while (not stopCond):
             for i, motor in enumerate(MotorList):
                 isAligned = self.checkRotate(motor, angle, speed, debug)
