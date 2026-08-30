@@ -5,7 +5,7 @@ class RotationFocusedMotor():
        self.motor = MotorWithEncoder(pca, pin, side, enc, fVal,i2c_bus)
    def rotate(self, angle, speed, debug=False):
        speed = speed
-       current = self.motor.encoder.getEncoderPosition()
+       #current = self.motor.encoder.getEncoderPosition()
 
        # forward = ((self.motor.forwardValue - 1) / 1023) * 360 % 360
 
@@ -18,12 +18,12 @@ class RotationFocusedMotor():
        error = (target - current_degrees + 180) % 360 - 180
        if (error > 90):
            error -= 180
-           speed *= -1
+
        if (error < -90):
            error += 180
-           speed *= -1
+
        target = current_degrees + error
-       speed *= -1
+
        self.motor.pid.setpoint = target
        control_signal = self.motor.pid(current_degrees)
 
