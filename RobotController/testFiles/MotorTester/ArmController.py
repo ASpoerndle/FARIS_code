@@ -8,6 +8,7 @@ import pytorch_mr as mr
 import board
 import Jetson.GPIO as GPIO
 from adafruit_pca9685 import PCA9685
+from ArmMotor import ArmMotor
 #import pandas as pd
 #import serial
 import time
@@ -402,7 +403,7 @@ for i in servoList:
     servo = Servo(pca,i)
     servoObj.append(servo)
 for i in motorList:
-    motor = RotationFocusedMotor(pca,i[0],i[1],i[2],i[3],7)
+    motor = ArmMotor(pca,i[0],i[1],i[2],i[3],7)
     motorObj.append(motor)
 arm = ArmController(motorObj,servoObj)
 
