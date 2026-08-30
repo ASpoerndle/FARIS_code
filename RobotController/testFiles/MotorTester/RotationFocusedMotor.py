@@ -16,12 +16,12 @@ class RotationFocusedMotor():
        target = angle
        speed *= 0.75
        error = (target - (current_degrees % 360) + 180) % 360 - 180
-       if (error > 90):
-           error -= 180
-
-       if (error < -90):
-           error += 180
-
+       # if (error > 90):
+       #     error -= 180
+       #
+       # if (error < -90):
+       #     error += 180
+       speed = -speed
        target = current_degrees + error
 
        self.motor.pid.setpoint = target
