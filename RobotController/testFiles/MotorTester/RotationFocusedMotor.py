@@ -15,18 +15,18 @@ class RotationFocusedMotor():
        # target = (forward + angle) % 360
        target = angle
        speed *= 0.75
-       error = (target - (current_degrees % 360) + 180) % 360 - 180
+       error = target - current_degrees
        # if (error > 90):
        #     error -= 180
        #
        # if (error < -90):
        #     error += 180
-       speed = -speed
+       speed = speed
        target = current_degrees + error
-
+        
        self.motor.pid.setpoint = target
        control_signal = self.motor.pid(current_degrees)
-
+            
        # Absolute safety check
        #if angle > 91  or angle < -91:
        #    self.motor.moveMotor(0)
