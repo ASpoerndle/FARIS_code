@@ -70,8 +70,8 @@ class ArmController():
          
             stopCond = len(motorList) == 0
             for i, motor in enumerate(motorList):
-                #isAligned = self.checkRotate(motor, angle, speed, debug)
-                isAligned = motor.motor.encoder.getCurrentAngle() < angle
+                isAligned = self.checkRotate(motor, angle, 0, debug)
+                #isAligned = motor.motor.encoder.getCurrentAngle() < angle
                 if (isAligned):
                     motorList.pop(i)
                 else:
