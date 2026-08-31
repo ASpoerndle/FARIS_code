@@ -1,10 +1,13 @@
 from RotationFocusedMotor import RotationFocusedMotor
 
 class ArmMotor():
-    def __init__(self,pca,pin,side,enc,fval,i2c_bus):
+    def __init__(self,low,high,offset,pca,pin,side,enc,fval,i2c_bus):
         self.motor = RotationFocusedMotor(pca,pin,side,enc,fval,i2c_bus)
+        self.low = low
+        self.high = high
+        self.offset = offset
     def rotate(self, angle,speed, debug=False):
-
+                angle = self.low + (self.offset+angle)
                 current_degrees = self.motor.motor.encoder.getCurrentAngle()
 
                 # Calculate shortest directional path (-180 to 180 degrees)

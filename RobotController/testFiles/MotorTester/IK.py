@@ -101,7 +101,7 @@ print(np.round(T_home_check, 5))
 #
 # Build the rotation matrix for 180° about X:
 
-x, y, z = 0.255, -0.01, 0.353  # target coordinates (e.g., in mm)
+x, y, z = 0.311, -0.01, 0.1  # target coordinates (e.g., in mm)
 pitch_deg = 10  # point gripper downward at 30 degrees
 
 # 2. Calculate angles in radians
@@ -170,8 +170,8 @@ print(T_desired)
 # Starting from a slightly bent pose gives Newton-Raphson a better chance
 # of finding the physically meaningful solution (avoids the degenerate
 # straight-up singularity for this particular target).
-MAX_RAD = np.radians([70, 180, 90, 0,90,60])
-MIN_RAD = np.radians([-70, -10, -40, -30,-45,120])
+MAX_RAD = np.radians([70, 135, 245, 0,90,60])
+MIN_RAD = np.radians([-70, 45, -45, -30,-45,120])
 
 
 def checkSafety(theta_sol):
@@ -232,7 +232,8 @@ while (checkSafety(theta_sol.numpy()) == False or success == False):
         print(theta_deg)
         raise ValueError("CANNOT REACH SPOT")
     maxAttempts -= 1
-theta_deg = theta_sol * 180 / math.pi
+print(theta_sol)
+theta_deg = np.degrees(theta_sol)
 theta_deg = np.round(theta_deg, 2)
 # theta_deg = theta_deg % 180
 for i in range(len(theta_deg[0])):
