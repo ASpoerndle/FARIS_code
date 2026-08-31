@@ -8,8 +8,9 @@ class ArmMotor():
         self.offset = offset
     def rotate(self, angle,speed, debug=False):
                 mid = (self.low + self.high)//2
-                angle = mid  + (self.offset-angle)
-                if(abs(angle) > abs(self.high) or abs(angle) < abs(self.low)):
+                angle = mid  + (angle) + self.offset
+                print(angle)
+                if(angle > self.high or angle < self.low):
                     print("ERR: Angle too high or too low")
                     self.motor.motor.moveMotor(0)
                     return True
