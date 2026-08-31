@@ -393,8 +393,8 @@ pca = PCA9685(i2c)
 pca.frequency = 50
 motorList = [
     [12,"l",4,1,0,0,0],
-    [13,"l",5,1,-345,-410,90],
-    [14,"l",6,1,-200,80,90]
+    [13,"l",5,1,-280,-410,90],
+    [14,"l",6,1,-240,80,90]
         ]
 motorObj = []
 servoList = [8,9,10]
@@ -427,7 +427,7 @@ try:
     #arm.armMotors[1].motor.moveMotor(0)
     #while(True):
     #    print(arm.armMotors[2].motor.encoder.getCurrentAngle())
-    arm.setRotationArm([135,-45],True)
+    arm.setRotationArm([-45,-45],True)
 
     #arm.killMotors()
 

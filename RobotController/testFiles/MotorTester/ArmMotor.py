@@ -7,7 +7,12 @@ class ArmMotor():
         self.high = high
         self.offset = offset
     def rotate(self, angle,speed, debug=False):
-                angle = self.low + (self.offset+angle)
+                mid = (self.low + self.high)//2
+                angle = mid  + (self.offset-angle)
+                if(abs(angle) > abs(self.high) or abs(angle) < abs(self.low)):
+                    print("ERR: Angle too high or too low")
+                    self.motor.motor.moveMotor(0)
+                    return True
                 current_degrees = self.motor.motor.encoder.getCurrentAngle()
 
                 # Calculate shortest directional path (-180 to 180 degrees)
