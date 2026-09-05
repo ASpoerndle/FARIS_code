@@ -24,8 +24,8 @@ import pytorch_mr as mr
 
 class IK():
     def __init__(self):
-        self.MAX_RAD = np.radians([70, 135, 245, 0, 90, 60])
-        self.MIN_RAD = np.radians([-70, 45, -45, -30, -45, 120])
+        self.MAX_RAD = np.radians([120, 155, 250, 90, 180, 180])
+        self.MIN_RAD = np.radians([-120, 25, -70, -90, -180, -180])
 
 
     def screw_axis(self,omega, q):
@@ -37,9 +37,9 @@ class IK():
 
     def checkSafety(self,theta_sol):
             angles = theta_sol.flatten()
-            angles = angles % np.pi / 4 - np.pi / 8
-
+            angles = np.arctan2(np.sin(angles), np.cos(angles))
             for i in range(len(angles) - 1):
+                print(angles[i], self.MIN_RAD[i],self.MAX_RAD[i])
                 print(f"Joint {i} Normalized Rad: {angles[i]:.4f}")
                 if angles[i] < self.MIN_RAD[i] or angles[i] > self.MAX_RAD[i]:
                     return False
@@ -205,12 +205,13 @@ class IK():
         print(f"Converged : {success}")
         print(f"θ (rad)   : {np.round(theta_sol, 5)}")
 
-        maxAttempts = 20
+        maxAttempts = 50
         while (self.checkSafety(theta_sol.numpy()) == False or success == False):
 
             print("Bad Solution: trying again.")
 
             theta_init = torch.tensor(np.random.uniform(self.MIN_RAD, self.MAX_RAD))
+            print(f"Theta_init: {theta_init}")
 
             theta_sol, success = mr.IKinSpace(  # calls from file w/ 200 iterations rather than default 20
                 Slist,
@@ -250,3 +251,8 @@ class IK():
         print(f"θ (deg)   : {np.round(theta_deg, 2)}")  # np can do math within list easier than list comprehension
         return([J1,J2,J3,J4,J5,J6])
 
+
+ik = IK()
+#[-0.01043669693171978, -0.0668681189417839, 0.37400001287460327]
+joints = ik.performIK(-0.01043669693171978,-0.0668681189417839, 0.37400001287460327)
+print(joints)
