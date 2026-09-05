@@ -30,7 +30,7 @@ class ArmController():
         """
         self.wristPitchValues = [0,45,90,135]
         self.wristRollValues = [0,45]
-        self.graspValues = [100,160]
+        self.graspValues = [155,200]
         self.wristPitchIndex = 0
         self.wristRollIndex = 0
         self.graspIndex = 0

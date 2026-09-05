@@ -12,7 +12,7 @@ Purpose: The Motor class is the most basic version of the code required to move 
          motors attached to the robot. 
 """
 class Servo:
-    PREDICTEDVOLTAGE = 5.4
+    PREDICTEDVOLTAGE = 2.69
     def __init__(self,pca, pin,ifADS = False, maxi=270):
         self.servo = pca.channels[pin]
         #max = 10500
@@ -35,9 +35,9 @@ class Servo:
             predictedVoltage = Servo.PREDICTEDVOLTAGE
             currentAngle = ((self.servo.duty_cycle - 1750)/8750) * self.max
             print(f"Current Voltage: {currentVoltage} currentAngle {currentAngle}") 
-            if(currentVoltage > predictedVoltage and currentAngle < 160):
-                 betterAngle = currentAngle + 15
-                 #self.setAngle(betterAngle)
+            if(currentVoltage > predictedVoltage and currentAngle < 200):
+                 betterAngle = currentAngle + 4
+                 self.setAngle(betterAngle)
             
     """
     Method: setAngle(angle)
