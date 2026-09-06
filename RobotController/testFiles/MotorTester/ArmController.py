@@ -28,8 +28,8 @@ class ArmController():
         Servo 1 = Twist (roll)
         Servo 2 = Grab
         """
-        self.wristPitchValues = [0,45,90,135]
-        self.wristRollValues = [0,45]
+        self.wristPitchValues = [0,45,90,135,160]
+        self.wristRollValues = [0,45,90,120,200]
         self.graspValues = [155,200]
         self.wristPitchIndex = 0
         self.wristRollIndex = 0
@@ -45,6 +45,7 @@ class ArmController():
         if(self.wristRollIndex + 1 > len(self.wristRollValues)):
             self.wristRollIndex = 0
         self.armServos[1].setAngle(self.wristRollValues[self.wristRollIndex])
+        print((self.wristRollValues[self.wristRollIndex]))
         self.wristRollIndex += 1
     def teleGrasp(self):
         if(self.graspIndex + 1 > len(self.graspValues)):
@@ -152,17 +153,17 @@ try:
     arm.armMotors[1].motor.motor.moveMotor(0) 
 
     #Set J2 to 45 degrees and J3 to -30 degrees
-    arm.setRotationArm([45,-30],True)
+    #arm.setRotationArm([45,-30],True)
 
     # Set J2 to -45 degrees and J3 to -30 degrees
-    arm.setRotationArm([-45,-30],True)
+    #arm.setRotationArm([-45,-30],True)
 
-    input("Pause")
+    #input("Pause")
     # Set J2 to 45 degrees and J3 to -65 degrees (this can be used as a "default" position)
-    arm.setRotationArm([45,-65],True)
+    #arm.setRotationArm([45,-65],True)
 
-    arm.travelArm(0,0,0)
-
+    #arm.travelArm(0,0,0)
+    
 
 except KeyboardInterrupt:
     arm.killMotors()

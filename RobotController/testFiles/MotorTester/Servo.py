@@ -34,7 +34,7 @@ class Servo:
             currentVoltage = self.GripperADS.getGripperVoltage()
             predictedVoltage = Servo.PREDICTEDVOLTAGE
             currentAngle = ((self.servo.duty_cycle - 1750)/8750) * self.max
-            print(f"Current Voltage: {currentVoltage} currentAngle {currentAngle}") 
+            #print(f"Current Voltage: {currentVoltage} currentAngle {currentAngle}") 
             if(currentVoltage > predictedVoltage and currentAngle < 200):
                  betterAngle = currentAngle + 4
                  self.setAngle(betterAngle)
