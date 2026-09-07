@@ -24,8 +24,8 @@ import pytorch_mr as mr
 
 class IK():
     def __init__(self):
-        self.MAX_RAD = np.radians([120, 155, 250, 90, 180, 180])
-        self.MIN_RAD = np.radians([-120, 25, -70, -90, -180, -180])
+        self.MAX_RAD = np.radians([120, 155, 180, 90, 180]) #J3 = 250
+        self.MIN_RAD = np.radians([-120, 25, -140, -90, -180]) #J3 = -70
 
 
     def screw_axis(self,omega, q):
@@ -37,9 +37,14 @@ class IK():
 
     def checkSafety(self,theta_sol):
             angles = theta_sol.flatten()
-            angles = np.arctan2(np.sin(angles), np.cos(angles))
-            for i in range(len(angles) - 1):
-                print(angles[i], self.MIN_RAD[i],self.MAX_RAD[i])
+            # Wrap angle to [-pi, pi]
+            #theta_sol[0][1] = (theta_sol[0][1] + np.pi) % (2 * np.pi) - np.pi
+            #angles = np.arctan2(np.sin(angles), np.cos(angles))
+            #angles[1] = (angles[1] + np.pi) % (2*np.pi) - np.pi
+            for i in range(len(angles)):
+
+                angles[i] = np.arctan2(np.sin(angles[i]),np.cos(angles[i]))
+                print(angles[i], self.MIN_RAD[i], self.MAX_RAD[i])
                 print(f"Joint {i} Normalized Rad: {angles[i]:.4f}")
                 if angles[i] < self.MIN_RAD[i] or angles[i] > self.MAX_RAD[i]:
                     return False
@@ -49,45 +54,72 @@ class IK():
         L2 = .312
         L3 = .312
         L4 = .01
+        L5 = 0.01
+
+        # M = [
+        #     [1, 0, 0, L2],
+        #     [0, 1, 0, 0],
+        #     [0, 0, 1, L1-L3-L4],
+        #     [0, 0, 0, 1]
+        # ]
 
         M = [
-            [1, 0, 0, L2],
+            [1, 0, 0, L2+L3+L4],
             [0, 1, 0, 0],
-            [0, 0, 1, L1-L3-L4],
+            [0, 0, 1, L1],
             [0, 0, 0, 1]
         ]
-        # omega | q
-        S1 = torch.tensor(self.screw_axis([0, 0, 1], [0, 0, 0]))
-        S1 = S1.view((6, 1))
-        S2 = torch.tensor(self.screw_axis([0, -1, 0], [0, 0, L1]))
-        S2 = S2.view(6, 1)
-        S3 = torch.tensor(self.screw_axis([0, -1, 0], [L2, 0, L1]))
-        S3 = S3.view(6, 1)
-        S4 = torch.tensor(self.screw_axis([0, 0, -1], [L2, 0, L1-L3]))
-        S4 = S4.view(6, 1)
-        S5 = torch.tensor(self.screw_axis([0, -1, 0], [L2, 0, L1-L3]))
-        S5 = S5.view(6, 1)
-        S6 = torch.tensor(self.screw_axis([0, 0, -1], [L2, 0, L1-L3 - L4]))
-        S6 = S6.view(6, 1)
 
-        # S3 = torch.tensor(screw_axis([1,0,0],[L1+L2,0,0]))
-        # S3 = S3.view(6,1)
-        # S4 = torch.tensor(screw_axis([0,1,0],[L1+L2+L3,0,0]))
-        # S4 = S4.view(6,1)
-        # Slist = torch.stack([S1.squeeze(), S2.squeeze(), S3.squeeze(), S4.squeeze()], dim=1)
+
+
+        # omega | q
+        # S1 = torch.tensor(self.screw_axis([0, 0, 1], [0, 0, 0]))
+        # S1 = S1.view((6, 1))
+        # S2 = torch.tensor(self.screw_axis([0, -1, 0], [0, 0, L1]))
+        # S2 = S2.view(6, 1)
+        # S3 = torch.tensor(self.screw_axis([0, -1, 0], [L2, 0, L1]))
+        # S3 = S3.view(6, 1)
+        # S4 = torch.tensor(self.screw_axis([0, -1, 0], [L2, 0, L1-L3]))
+        # S4 = S4.view(6, 1)
+        # S5 = torch.tensor(self.screw_axis([0, 0, 1], [L2, 0, L1-L3 -L4]))
+        # S5 = S5.view(6, 1)
+        # S6 = torch.tensor(self.screw_axis([0, 0, -1], [L2, 0, L1-L3 - L4]))
+        # S6 = S6.view(6, 1)
+
+        # Home Matrix M (Arm fully extended vertically)
+        M = torch.tensor([
+            [1.0, 0.0, 0.0, L2 + L3 + L4 + L5],
+            [0.0, -1.0, 0.0, 0.0],
+            [0.0, 0.0, -1.0, L1 ],
+            [0.0, 0.0, 0.0, 1.0]
+        ], dtype=torch.float64)
+
+        # Screw Axes
+        # Updated Screw Axes definitions based on vertically stacked home config:
+        S1 = torch.tensor(self.screw_axis([0, 0, 1], [0, 0, 0]))  # Base Yaw
+        S2 = torch.tensor(self.screw_axis([0, -1, 0], [0, 0, L1]))  # Shoulder Pitch
+        S3 = torch.tensor(self.screw_axis([0, -1, 0], [L2, 0, L1]))  # Elbow Pitch
+        S4 = torch.tensor(self.screw_axis([0, -1, 0], [L3 + L2, 0, L1]))  # Wrist Pitch
+        S5 = torch.tensor(self.screw_axis([0, 0, 1], [L2 + L3 + L4, 0, L1]))  # Wrist Roll
+
+        Slist = torch.stack([S1, S2, S3, S4, S5], dim=1)  # Shape: (6, 5)
+
+
+
         # Assuming 3-DOF based on S1, S2, S3 definitions
-        Slist = torch.stack([S1, S2, S3, S4, S5, S6]).view(6, 6).T  # Transpose to shape (6, 3)
-        # print(Slist)
+       # Slist = torch.stack([S1, S2, S3, S4, S5]).view(5, 6).T  # Shape: (6, 5)        # print(Slist)
         J1_angle = -133
         J2_angle = 101
         J3_angle = 179
         J4_angle = -46
         J5_angle = 16
-        J6_angle = -58
+        #J6_angle = -58
 
 
         # Matches the 3 degrees of freedom defined by your screw axes
-        thetaList = torch.tensor([math.radians(J1_angle), math.radians(J2_angle), math.radians(J3_angle),math.radians(J4_angle),math.radians(J5_angle),math.radians(J6_angle) ], dtype=torch.float64)
+        #thetaList = torch.tensor([math.radians(J1_angle), math.radians(J2_angle), math.radians(J3_angle),math.radians(J4_angle),math.radians(J5_angle),math.radians(J6_angle) ], dtype=torch.float64)
+        thetaList = torch.tensor([math.radians(J1_angle), math.radians(J2_angle), math.radians(J3_angle),math.radians(J4_angle),math.radians(J5_angle) ], dtype=torch.float64)
+
         M = torch.tensor(M, dtype=torch.float64)
 
         output = mr.FKinSpace(M, Slist, thetaList)
@@ -99,7 +131,7 @@ class IK():
         # ---------------------------------------------------------------------------
         # FKinSpace with all-zero joint angles should return M exactly.
 
-        theta_home = np.zeros(6)
+        theta_home = np.zeros(5)
         # M = torch.from_numpy(M)
         theta_home = torch.from_numpy(theta_home)
         T_home_check = mr.FKinSpace(M, Slist, theta_home)
@@ -121,11 +153,11 @@ class IK():
         # 2. Calculate angles in radians
         theta_y = np.arctan2(y, x)  # Base yaw is calculated automatically
         theta_p = np.radians(pitch_deg)
-
+        theta_r = np.radians(pitch_deg)
         # 3. Compute trig values
         cy, sy = np.cos(theta_y), np.sin(theta_y)
         cp, sp = np.cos(theta_p), np.sin(theta_p)
-        cr,sr = np.cos(np.radians(45)), np.sin(np.radians(45))
+        cr,sr = np.cos(theta_r), np.sin(theta_r)
         # 4. Construct T_des
 
         # Construct T_desired matching your robot's kinematics
@@ -142,17 +174,23 @@ class IK():
             [-sp, 0, cp]
 
         ])
-        roll_matrix = np.array([
-            [1,0,0],
-            [0,cr,-sr],
-            [0,sr,cr]
-        ])
-
+        # roll_matrix = np.array([
+        #     [1,0,0],
+        #     [0,cr,-sr],
+        #     [0,sr,cr]
+        # ])
+        # Roll around Z-axis matching Joint 5
+        # roll_matrix = np.array([
+        #     [cr, -sr, 0],
+        #     [sr, cr, 0],
+        #     [0, 0, 1]
+        # ])
+        roll_matrix = np.eye(3)
         M_rotation = np.array([[1, 0, 0],
                                [0, 1, 0],
                                [0, 0, 1]])
         # base yaw * wrist pitch * the M matrix which is messy bc of axis of rotation
-        T_test = yaw_matrix @ pitch_matrix @ roll_matrix @ M_rotation
+        T_test = yaw_matrix @ pitch_matrix @ roll_matrix #@ M_rotation
         print(T_test, "test")
         # T_desired = np.array([
         #     [cy * cp, -cy * sp, -sy,  x],
@@ -182,15 +220,25 @@ class IK():
         # straight-up singularity for this particular target).
 
         # theta_init = np.array([0.0, 0.3, -0.6, 0.0, 0.3])
-        theta_init = np.array([0.1, 0.2, -0.2, 0.1,0.1,0.1])
+        # CHANGE THIS (6 values):
+        # theta_init = np.array([0.1, 0.2, -0.2, 0.1, 0.1, 0.1])
+
+        # TO THIS (5 values):
+        theta_init = torch.tensor([
+            np.arctan2(y, x),
+            np.radians(30),  # J2: 30° (above min threshold)
+            np.radians(-50),  # J3: -50°
+            np.radians(20),  # J4: 20°
+            np.radians(0)  # J5: 0°
+        ], dtype=torch.float64)
 
         # ---------------------------------------------------------------------------
         # 7.  SOLVE INVERSE KINEMATICS
         # ---------------------------------------------------------------------------
-        eomg = 0.0005  # angular convergence tolerance (rad)
-        ev = 0.0005  # 1e-4   # linear  convergence tolerance (m)
+        eomg = 1e-5  # Angular convergence tolerance (rad)
+        ev = 1e-6  # Linear convergence tolerance (m = 1 micrometer)
         T_desired = torch.from_numpy(T_desired)
-        theta_init = torch.from_numpy(theta_init)
+        #theta_init = torch.from_numpy(theta_init)
 
         theta_sol, success = mr.IKinSpace(  # calls from file w/ 200 iterations rather than default 20
             Slist,
@@ -210,7 +258,10 @@ class IK():
 
             print("Bad Solution: trying again.")
 
-            theta_init = torch.tensor(np.random.uniform(self.MIN_RAD, self.MAX_RAD))
+            theta_init = torch.tensor(
+                np.random.uniform(self.MIN_RAD, self.MAX_RAD, size=5),
+                dtype=torch.float64
+            )
             print(f"Theta_init: {theta_init}")
 
             theta_sol, success = mr.IKinSpace(  # calls from file w/ 200 iterations rather than default 20
@@ -229,30 +280,34 @@ class IK():
                 print(theta_deg)
                 raise ValueError("CANNOT REACH SPOT")
             maxAttempts -= 1
-        print(theta_sol)
-        theta_deg = np.degrees(theta_sol)
-        theta_deg = np.round(theta_deg, 2)
-        # theta_deg = theta_deg % 180
-        for i in range(len(theta_deg[0])):
-            theta_deg[0][i] = ((theta_deg[0][i] + 180) %360) - 180
-            theta_deg[0][i] = float(theta_deg[0][i])
-        J1,J2,J3,J4,J5,J6 = theta_deg[0][:6]
 
-        #J1,J2,J3,J4,J5,J6 = float(J1),float(J2),float(J3),float(J4),float(J5),float(J6)
-        """
-        ===CHECK THE POT VALUES
-        """
-        print(J1,J2,J3,J4,J5,J6)
-        theta_home = torch.tensor([J1,J2,J3,J4,J5,J6])
-        T_home_check = mr.FKinSpace(M, Slist, theta_home)
-        print(T_home_check[0])
-        print(x, y, z)
 
-        print(f"θ (deg)   : {np.round(theta_deg, 2)}")  # np can do math within list easier than list comprehension
-        return([J1,J2,J3,J4,J5,J6])
+
+        theta_sol_rad = theta_sol.flatten()
+
+        # Sanity Check FK directly in Radians
+        T_check = mr.FKinSpace(M, Slist, theta_sol_rad)
+        achieved_pos = T_check[:3, 3].numpy()
+
+        #pos_error_mm = np.linalg.norm(achieved_pos - np.array([x, y, z])) * 1000
+
+        # Convert to degrees only for final human-readable display
+        theta_deg = np.degrees(theta_sol_rad.numpy())
+        theta_deg = np.round(((theta_deg + 180) % 360) - 180, 2)
+        J1, J2, J3, J4, J5 = theta_deg[:6]
+        print("=== Precision Kinematics Results ===")
+        print(f"Target Position (m)   : {[x, y, z]}")
+        print(f"Achieved Position (m) : {T_check[0][0][3],T_check[0][1][3],T_check[0][2][3]}")
+        #print(f"Position Error        : {pos_error_mm:.4f} mm")
+        print(f"Joint Angles (deg)    : {theta_deg.tolist()}")
+        return([J1,J2,J3,J4,J5])
 
 
 ik = IK()
 #[-0.01043669693171978, -0.0668681189417839, 0.37400001287460327]
-joints = ik.performIK(-0.01043669693171978,-0.0668681189417839, 0.37400001287460327)
+x,y,z = 0.01,.06,.3
+#x,y,z = x*1.11,y*1.11,z*1.11
+#x * 1.08673, y * 1.0885333333333333333333333333333, z * 1.1000416666666666666666666666667
+#Real: 8.516057,38.450123,56.927524,34.767765,-0.322585
+joints = ik.performIK(x,y,z)
 print(joints)
