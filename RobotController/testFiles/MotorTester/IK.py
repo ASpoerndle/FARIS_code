@@ -235,8 +235,8 @@ class IK():
         # ---------------------------------------------------------------------------
         # 7.  SOLVE INVERSE KINEMATICS
         # ---------------------------------------------------------------------------
-        eomg = 1e-5  # Angular convergence tolerance (rad)
-        ev = 1e-6  # Linear convergence tolerance (m = 1 micrometer)
+        eomg = 1e-7  # Angular convergence tolerance (rad)
+        ev = 1e-10  # Linear convergence tolerance (m = 1 micrometer)
         T_desired = torch.from_numpy(T_desired)
         #theta_init = torch.from_numpy(theta_init)
 
@@ -293,7 +293,7 @@ class IK():
 
         # Convert to degrees only for final human-readable display
         theta_deg = np.degrees(theta_sol_rad.numpy())
-        theta_deg = np.round(((theta_deg + 180) % 360) - 180, 2)
+        theta_deg = np.round(((theta_deg + 180) % 360) - 180, 4)
         J1, J2, J3, J4, J5 = theta_deg[:6]
         print("=== Precision Kinematics Results ===")
         print(f"Target Position (m)   : {[x, y, z]}")
@@ -303,11 +303,11 @@ class IK():
         return([J1,J2,J3,J4,J5])
 
 
-ik = IK()
-#[-0.01043669693171978, -0.0668681189417839, 0.37400001287460327]
-x,y,z = 0.01,.06,.3
-#x,y,z = x*1.11,y*1.11,z*1.11
-#x * 1.08673, y * 1.0885333333333333333333333333333, z * 1.1000416666666666666666666666667
-#Real: 8.516057,38.450123,56.927524,34.767765,-0.322585
-joints = ik.performIK(x,y,z)
-print(joints)
+# ik = IK()
+# #[-0.01043669693171978, -0.0668681189417839, 0.37400001287460327]
+# x,y,z = 0.,.4,.1
+# #x,y,z = x*1.11,y*1.11,z*1.11
+# #x * 1.08673, y * 1.0885333333333333333333333333333, z * 1.1000416666666666666666666666667
+# #Real: 8.516057,38.450123,56.927524,34.767765,-0.322585
+# joints = ik.performIK(x,y,z)
+# print(joints)

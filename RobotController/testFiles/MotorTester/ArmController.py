@@ -73,8 +73,8 @@ class ArmController():
              to the correct position
     """
     def setRotationArm(self, angle,debug=False):
-        motorList = [self.armMotors[1],self.armMotors[2]]
-
+        motorList = [self.armMotors[0],self.armMotors[1],self.armMotors[2]]
+        servoList = [self.armServos[0],self.armServos[1]]
         #rotation matrix = 3 x 4
         stopCond = len(motorList) == 0
         speed = 0.3
@@ -89,9 +89,13 @@ class ArmController():
                     break
                     #else:
                 #    motor.motor.motor.moveMotor(speed)
+
         for motor in motorList:
             motor.motor.motor.stopMotor()
-
+        i = 0
+        for servo in servoList:
+            servo.setAngle(angle[i+3])
+            i+=1
 
     def checkRotate(self, motor, angle, speed, debug=False):
             return motor.rotate(angle, speed, debug)
