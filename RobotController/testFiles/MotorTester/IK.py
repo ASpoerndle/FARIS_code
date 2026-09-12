@@ -227,7 +227,7 @@ class IK():
         theta_init = torch.tensor([
             np.arctan2(y, x),
             np.radians(30),  # J2: 30° (above min threshold)
-            np.radians(-50),  # J3: -50°
+            np.radians(-30),  # J3: -50°
             np.radians(20),  # J4: 20°
             np.radians(0)  # J5: 0°
         ], dtype=torch.float64)
@@ -235,8 +235,8 @@ class IK():
         # ---------------------------------------------------------------------------
         # 7.  SOLVE INVERSE KINEMATICS
         # ---------------------------------------------------------------------------
-        eomg = 1e-7  # Angular convergence tolerance (rad)
-        ev = 1e-10  # Linear convergence tolerance (m = 1 micrometer)
+        eomg = 1e-3  # Angular convergence tolerance (rad)
+        ev = 1e-4  # Linear convergence tolerance (m = 1 micrometer)
         T_desired = torch.from_numpy(T_desired)
         #theta_init = torch.from_numpy(theta_init)
 

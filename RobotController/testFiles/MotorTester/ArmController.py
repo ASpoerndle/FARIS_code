@@ -55,12 +55,12 @@ class ArmController():
         self.graspIndex += 1
         
     def obtainJointAngles(self, x,y,z):
-        angleList = IK.performIK(x,y,z)
+        angleList = self.IK.performIK(x , y, z)
         return angleList
     def travelArm(self,x,y,z,debug=False):
         jointAngles = self.obtainJointAngles(x,y,z)
         #TODO Uncomment to allow for arm to auto rotate
-        #self.setRotationArm(jointAngles,debug)
+        self.setRotationArm(jointAngles,debug)
         if(debug):
             print(f"Arm traveled: \n Real World Position: \n \t {x} \n \t {y} \n \t {z}")
             print(f"Joint Angles:")
@@ -157,7 +157,7 @@ try:
     arm.armMotors[1].motor.motor.moveMotor(0) 
 
     #Set J2 to 45 degrees and J3 to -30 degrees
-    #arm.setRotationArm([45,-30],True)
+    #arm.setRotationArm([0,124.1,104.7312,0,0],True)
 
     # Set J2 to -45 degrees and J3 to -30 degrees
     #arm.setRotationArm([-45,-30],True)
@@ -166,7 +166,7 @@ try:
     # Set J2 to 45 degrees and J3 to -65 degrees (this can be used as a "default" position)
     #arm.setRotationArm([45,-65],True)
 
-    #arm.travelArm(0,0,0)
+    arm.travelArm(0.4,-0.02,0.3,False)
     
 
 except KeyboardInterrupt:
