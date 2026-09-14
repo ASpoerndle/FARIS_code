@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+<robot name="FARIS">
+
+    <!-- Link 0: ground -->
+    <link name="ground"/>
+
+    <!-- Joint 1: Shoulder yaw -->
+    <joint name="ShoulderYaw" type="revolute">
+        <parent link="ground"/>
+        <child link="Shoulder"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <axis xyz="0 0 1"/>
+        <limit lower="-2.094395" upper="2.094395" effort="10.0" velocity="1.0"/>
+    </joint>
+
+    <!-- Link 1: Shoulder  -->
+    <link name="Shoulder">
+        <visual>
+            
+            <origin xyz="0 0 0.04" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="0.08" radius="0.01"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <!-- Joint 2: Upper Arm Pitch -->
+    <joint name="UpperArmPitch" type="revolute">
+        <parent link="Shoulder"/>
+        <child link="UpperArm"/>
+        <origin xyz="0 0 0.08" rpy="0 0 0"/> <!-- Placed at Z = 0.08m -->
+        <axis xyz="0 -1 0"/>
+        <limit lower="0.47123" upper="2.61799" effort="10.0" velocity="1.0"/>
+    </joint>
+
+    <!-- Link 2: Upper Arm  -->
+    <link name="UpperArm">
+        <visual>
+            <!-- Visual extends along +X, centered at half length -->
+            <origin xyz="0.156 0 0" rpy="0 1.5708 0"/>
+            <geometry>
+                <cylinder length="0.312" radius="0.01"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <!-- Joint 3: Forearm Pitch -->
+    <joint name="ForearmPitch" type="revolute">
+        <parent link="UpperArm"/>
+        <child link="Forearm"/>
+        <origin xyz="0.312 0 0" rpy="0 0 0"/>
+        <axis xyz="0 -1 0"/>
+        <limit lower="-2.9670597" upper="2.9670597" effort="10.0" velocity="1.0"/>
+    </joint>
+
+    <!-- Link 3: Forearm  -->
+    <link name="Forearm">
+        <visual>
+            <origin xyz="0.156 0 0" rpy="0 1.5708 0"/>
+            <geometry>
+                <cylinder length="0.312" radius="0.01"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <!-- Joint 4: Wrist Pitch  -->
+    <joint name="WristPitch" type="revolute">
+        <parent link="Forearm"/>
+        <child link="Wrist"/>
+        <origin xyz="0.312 0 0" rpy="0 0 0"/>
+        <axis xyz="0 -1 0"/>
+        <limit lower="-1.570796" upper="1.570796" effort="10.0" velocity="1.0"/>
+    </joint>
+
+    <!-- Link 4: Wrist  -->
+    <link name="Wrist">
+        <visual>
+            <origin xyz="0.005 0 0" rpy="0 1.5708 0"/>
+            <geometry>
+                <cylinder length="0.01" radius="0.01"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <!-- Joint 5: Wrist Roll  -->
+    <joint name="Wrist_roll" type="revolute">
+        <parent link="Wrist"/>
+        <child link="Gripper"/>
+        <origin xyz="0.01 0 0" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-3.14159" upper="3.14159" effort="10.0" velocity="1.0"/>
+    </joint>
+
+    <!-- Link 5: Gripper -->
+    <link name="Gripper">
+        <visual>
+            <origin xyz="0.005 0 0" rpy="0 1.5708 0"/>
+            <geometry>
+                <cylinder length="0.01" radius="0.01"/>
+            </geometry>
+        </visual>
+    </link>
+
+</robot>
