@@ -111,12 +111,12 @@ if __name__ == "__main__":
     ik_solver = AnalyticalIK5DOF()
 
     # Target: 30cm forward, 10cm left, 5cm down (relative to base)
-    target_x = 0.30
-    target_y = 0.10
-    target_z = -0.05
+    target_x = 0.3
+    target_y = 0.3
+    target_z = .3
 
     # We want the gripper to point downward at a 30-degree angle to grab the crop
-    target_pitch = -30.0
+    target_pitch = 45
 
     try:
         angles_rad = ik_solver.solve(target_x, target_y, target_z, target_pitch, elbow_up=True)

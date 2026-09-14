@@ -24,8 +24,8 @@ import pytorch_mr as mr
 
 class IK():
     def __init__(self):
-        self.MAX_RAD = np.radians([120, 155, 180, 90, 180]) #J3 = 250
-        self.MIN_RAD = np.radians([-120, 25, -140, -90, -180]) #J3 = -70
+        self.MAX_RAD = np.radians([120, 155, 180, 90, 180,180]) #J3 = 250
+        self.MIN_RAD = np.radians([-120, 25, -140, -90, -180,-180]) #J3 = -70
 
 
     def screw_axis(self,omega, q):
@@ -55,6 +55,7 @@ class IK():
         L3 = .312
         L4 = .01
         L5 = 0.01
+        L6= 0.01
 
         # M = [
         #     [1, 0, 0, L2],
@@ -89,20 +90,21 @@ class IK():
         # Home Matrix M (Arm fully extended vertically)
         M = torch.tensor([
             [1.0, 0.0, 0.0, L2 + L3 + L4 + L5],
-            [0.0, -1.0, 0.0, 0.0],
-            [0.0, 0.0, -1.0, L1 ],
+            [0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, L1 ],
             [0.0, 0.0, 0.0, 1.0]
         ], dtype=torch.float64)
 
         # Screw Axes
         # Updated Screw Axes definitions based on vertically stacked home config:
         S1 = torch.tensor(self.screw_axis([0, 0, 1], [0, 0, 0]))  # Base Yaw
-        S2 = torch.tensor(self.screw_axis([0, -1, 0], [0, 0, L1]))  # Shoulder Pitch
-        S3 = torch.tensor(self.screw_axis([0, -1, 0], [L2, 0, L1]))  # Elbow Pitch
-        S4 = torch.tensor(self.screw_axis([0, -1, 0], [L3 + L2, 0, L1]))  # Wrist Pitch
-        S5 = torch.tensor(self.screw_axis([0, 0, 1], [L2 + L3 + L4, 0, L1]))  # Wrist Roll
+        S2 = torch.tensor(self.screw_axis([0, 1, 0], [0, 0, L1]))  # Shoulder Pitch
+        S3 = torch.tensor(self.screw_axis([0, 1, 0], [L2, 0, L1]))  # Elbow Pitch
+        S4 = torch.tensor(self.screw_axis([0, 0, 1], [L3 + L2, 0, L1]))  # Wrist roll
+        S5 = torch.tensor(self.screw_axis([0, 1, 0], [L2 + L3 + L4, 0, L1]))  # Wrist pitch
+        S6 = torch.tensor(self.screw_axis([1, 0, 0], [L2 + L3 + L4+L5, 0, L1]))  # Wrist yaw
 
-        Slist = torch.stack([S1, S2, S3, S4, S5], dim=1)  # Shape: (6, 5)
+        Slist = torch.stack([S1, S2, S3, S4, S5,S6], dim=1)  # Shape: (6, 5)
 
 
 
@@ -113,12 +115,12 @@ class IK():
         J3_angle = 179
         J4_angle = -46
         J5_angle = 16
-        #J6_angle = -58
+        J6_angle = -58
 
 
         # Matches the 3 degrees of freedom defined by your screw axes
         #thetaList = torch.tensor([math.radians(J1_angle), math.radians(J2_angle), math.radians(J3_angle),math.radians(J4_angle),math.radians(J5_angle),math.radians(J6_angle) ], dtype=torch.float64)
-        thetaList = torch.tensor([math.radians(J1_angle), math.radians(J2_angle), math.radians(J3_angle),math.radians(J4_angle),math.radians(J5_angle) ], dtype=torch.float64)
+        thetaList = torch.tensor([math.radians(J1_angle), math.radians(J2_angle), math.radians(J3_angle),math.radians(J4_angle),math.radians(J5_angle),J6_angle ], dtype=torch.float64)
 
         M = torch.tensor(M, dtype=torch.float64)
 
@@ -174,18 +176,18 @@ class IK():
             [-sp, 0, cp]
 
         ])
-        # roll_matrix = np.array([
-        #     [1,0,0],
-        #     [0,cr,-sr],
-        #     [0,sr,cr]
-        # ])
-        # Roll around Z-axis matching Joint 5
+        roll_matrix = np.array([
+            [1,0,0],
+            [0,cr,-sr],
+            [0,sr,cr]
+        ])
+        # # Roll around Z-axis matching Joint 5
         # roll_matrix = np.array([
         #     [cr, -sr, 0],
         #     [sr, cr, 0],
         #     [0, 0, 1]
         # ])
-        roll_matrix = np.eye(3)
+        # roll_matrix = np.eye(3)
         M_rotation = np.array([[1, 0, 0],
                                [0, 1, 0],
                                [0, 0, 1]])
@@ -229,7 +231,8 @@ class IK():
             np.radians(30),  # J2: 30° (above min threshold)
             np.radians(-30),  # J3: -50°
             np.radians(20),  # J4: 20°
-            np.radians(0)  # J5: 0°
+            np.radians(0),  # J5: 0°
+            np.radians(0)
         ], dtype=torch.float64)
 
         # ---------------------------------------------------------------------------
@@ -259,7 +262,7 @@ class IK():
             print("Bad Solution: trying again.")
 
             theta_init = torch.tensor(
-                np.random.uniform(self.MIN_RAD, self.MAX_RAD, size=5),
+                np.random.uniform(self.MIN_RAD, self.MAX_RAD, size=6),
                 dtype=torch.float64
             )
             print(f"Theta_init: {theta_init}")
@@ -294,7 +297,7 @@ class IK():
         # Convert to degrees only for final human-readable display
         theta_deg = np.degrees(theta_sol_rad.numpy())
         theta_deg = np.round(((theta_deg + 180) % 360) - 180, 4)
-        J1, J2, J3, J4, J5 = theta_deg[:6]
+        J1, J2, J3, J4, J5,J6 = theta_deg[:6]
         print("=== Precision Kinematics Results ===")
         print(f"Target Position (m)   : {[x, y, z]}")
         print(f"Achieved Position (m) : {T_check[0][0][3],T_check[0][1][3],T_check[0][2][3]}")
@@ -303,11 +306,11 @@ class IK():
         return([J1,J2,J3,J4,J5])
 
 
-# ik = IK()
+ik = IK()
 # #[-0.01043669693171978, -0.0668681189417839, 0.37400001287460327]
-# x,y,z = 0.,.4,.1
+x,y,z = 0.31,.083,.105
 # #x,y,z = x*1.11,y*1.11,z*1.11
 # #x * 1.08673, y * 1.0885333333333333333333333333333, z * 1.1000416666666666666666666666667
 # #Real: 8.516057,38.450123,56.927524,34.767765,-0.322585
-# joints = ik.performIK(x,y,z)
-# print(joints)
+joints = ik.performIK(x,y,z)
+print(joints)
