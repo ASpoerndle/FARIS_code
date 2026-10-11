@@ -4,6 +4,7 @@ import time
 import board
 
 from adafruit_pca9685 import PCA9685
+from RotationFocusedMotor import RotationFocusedMotor
 
 import Jetson.GPIO as GPIO
 
@@ -20,9 +21,14 @@ Purpose: This class controls the main functions of rotating the swerve pods on t
 
 
 class PodController():
-    def __init__(self, rotMotors):
+    def __init__(self,motorData,pca):
+        self.rotMotors = []
+        for i in range(len(motorData)):
+            motor = RotationFocusedMotor(pca, motorData[0], motorData[1], motorData[2], motorData[3], 1)
+            self.rotMotors.append(motor)
 
-        self.podMotors = rotMotors.copy()
+
+
 
 
 
@@ -69,6 +75,15 @@ class PodController():
         if(debug):
             print(f"Angle of Pod Motor 0: {angle}")
         return angle
+    """
+    Method: getAllPodAngles()
+    Purpose: returns the angle of all of the swerve pods
+    """
+    def getAllPodAngles(self,debug=False):
+        angles = self.podMotors[:4].getCurrentAngle()
+        if(debug):
+            print(f"All Angles: \n\tBL: {angles[0]} \n\tBR: {angles[1]}\n\tFR: {angles[2]}\n\tFL: {angles[3]}")
+            return angles
 
     """
     Method: adjustForward(debug)

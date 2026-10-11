@@ -8,6 +8,7 @@ import pytorch_mr as mr
 import board
 import Jetson.GPIO as GPIO
 from adafruit_pca9685 import PCA9685
+from MotorWithEncoder import MotorWithEncoder
 from ArmMotor import ArmMotor
 from IK import IK
 #import pandas as pd
@@ -15,14 +16,24 @@ from IK import IK
 import time
 from RotationFocusedMotor import RotationFocusedMotor
 class ArmController():
-    def __init__(self, armMotors, armServos):
-        self.armMotors = armMotors
+    def __init__(self, motorData, servoData,pca):
+        self.armMotors = []
+        self.armServos = []
+        for i, motor in enumerate(motorData):
+            motor = MotorWithEncoder(pca, motor[0], motor[1], motor[2], motor[3], 7)
+            self.armMotors.append(motor)
+        for i in servoData:
+            if (i == 10):
+                servo = Servo(pca, i, True)
+            else:
+                servo = Servo(pca, i)
+            self.servoList.append(servo)
         """
         Motor 0 = Shoulder
         Motor 1 = Arm
         Motor 2 = Forearm
         """
-        self.armServos = armServos
+
         """
         Servo 0 = Tilt (pitch)
         Servo 1 = Twist (roll)

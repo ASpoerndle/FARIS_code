@@ -10,7 +10,7 @@ import Jetson.GPIO as GPIO
 import time
 from simple_pid import PID
 import math
-
+from DriveFocusedMotor import DriveFocusedMotor
 # 50.9:1 and 71.2:1
 
 """
@@ -22,8 +22,12 @@ Purpose: This class contains the necessary functions to move the Wheel Motors at
 
 
 class WheelController():
-    def __init__(self,wheelMotors):
-        self.wheelMotors = wheelMotors.copy()
+    def __init__(self,motorData,pca):
+        self.wheelMotors = []
+        for i in range(len(motorData)):
+            motor = DriveFocusedMotor(pca, motorData[0], motorData[1], motorData[2], motorData[3], 1)
+            self.wheelMotors.append(motor)
+
 
     """
         Method: getHeading()
