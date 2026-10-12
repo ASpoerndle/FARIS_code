@@ -24,7 +24,7 @@ class PodController():
     def __init__(self,motorData,pca):
         self.rotMotors = []
         for i in range(len(motorData)):
-            motor = RotationFocusedMotor(pca, motorData[0], motorData[1], motorData[2], motorData[3], 1)
+            motor = RotationFocusedMotor(pca, motorData[i][0], motorData[i][1], motorData[i][2], motorData[i][3], 1)
             self.rotMotors.append(motor)
 
 
@@ -80,10 +80,12 @@ class PodController():
     Purpose: returns the angle of all of the swerve pods
     """
     def getAllPodAngles(self,debug=False):
-        angles = self.podMotors[:4].getCurrentAngle()
+        angles = []
+        for i in range(len(self.rotMotors)):
+            angles.append(self.rotMotors[i].getCurrentAngle())
         if(debug):
             print(f"All Angles: \n\tBL: {angles[0]} \n\tBR: {angles[1]}\n\tFR: {angles[2]}\n\tFL: {angles[3]}")
-            return angles
+        return angles
 
     """
     Method: adjustForward(debug)

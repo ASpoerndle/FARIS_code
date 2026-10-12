@@ -24,6 +24,7 @@ class MotorWithEncoder(Motor):
   I2C_BUS = 1
 
   def __init__(self, pca, pin, side, enc, fVal,i2c_bus):
+    
     Motor.__init__(self,pca,pin,side)
 
 
