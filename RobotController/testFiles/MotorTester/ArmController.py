@@ -27,7 +27,7 @@ class ArmController():
                 servo = Servo(pca, i, True)
             else:
                 servo = Servo(pca, i)
-            self.servoList.append(servo)
+            self.armServos.append(servo)
         """
         Motor 0 = Shoulder
         Motor 1 = Arm
@@ -139,7 +139,7 @@ class ArmController():
     def stopMotors(self):
         for motor in self.armMotors:
             motor.moveMotor(0)
-
+"""
 GPIO.cleanup()
 GPIO.setmode(GPIO.BOARD)
 i2c = board.I2C()
@@ -184,4 +184,4 @@ except KeyboardInterrupt:
     arm.killMotors()
 
 arm.killMotors()
-
+"""

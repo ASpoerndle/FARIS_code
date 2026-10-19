@@ -47,25 +47,25 @@ class MotorController():
         
         pin_list_rotational = [
          #PodMotors
-         [0, "l", 4, 563] , #BL - Pod-0
-         [1, "l", 5, 236], #BR - Pod-1
-         [2, "l", 6, 577], #FR - Pod-2
+         [7, "l", 4, 563] , #BL - Pod-0
+         [14, "l", 5, 236], #BR - Pod-1
+         [1, "l", 6, 577], #FR - Pod-2
          [3, "l", 7, 384], #FL - Pod-3
          #WheelMotors
          [4, 'l', 2, 0],   #FL - Wheel-0
          [5, 'l', 1, 0],   #BL - Wheel-1
-         [6, 'r', 3, 0],   #FR - Wheel-2
-         [7, 'r', 0, 0]]   #BR - Wheel-3
+         [0, 'r', 3, 0],   #FR - Wheel-2
+         [15, 'r', 0, 0]]   #BR - Wheel-3
         pinListArm = [
             [12, 'l', 4,0],
             [13,'l',5,0],
-            [14,'l',6,0]
+            [8,'l',6,0]
 
         ]
         """
         Init Servos
         """
-        pin_list_servos = [8,9,10]
+        pin_list_servos = [2,3,10]
             
 
 

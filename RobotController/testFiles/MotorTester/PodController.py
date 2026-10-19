@@ -22,10 +22,10 @@ Purpose: This class controls the main functions of rotating the swerve pods on t
 
 class PodController():
     def __init__(self,motorData,pca):
-        self.rotMotors = []
+        self.podMotors = []
         for i in range(len(motorData)):
             motor = RotationFocusedMotor(pca, motorData[i][0], motorData[i][1], motorData[i][2], motorData[i][3], 1)
-            self.rotMotors.append(motor)
+            self.podMotors.append(motor)
 
 
 

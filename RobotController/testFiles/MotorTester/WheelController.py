@@ -25,7 +25,7 @@ class WheelController():
     def __init__(self,motorData,pca):
         self.wheelMotors = []
         for i in range(len(motorData)):
-            motor = DriveFocusedMotor(pca, motorData[0], motorData[1], motorData[2], motorData[3], 1)
+            motor = DriveFocusedMotor(pca, motorData[i][0], motorData[i][1], motorData[i][2], motorData[i][3], 1)
             self.wheelMotors.append(motor)
 
 
