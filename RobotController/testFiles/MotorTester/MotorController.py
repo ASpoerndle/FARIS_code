@@ -57,15 +57,15 @@ class MotorController():
          [0, 'r', 3, 0],   #FR - Wheel-2
          [15, 'r', 0, 0]]   #BR - Wheel-3
         pinListArm = [
-            [8, 'l', 4,0],
-            [9,'l',5,0],
-            [10,'l',6,0]
+            [8, 'l', 4,0], #Shoulder
+            [9,'l',5,0], #Upper arm
+            [10,'l',6,0] #Fore arm
 
         ]
         """
         Init Servos
         """
-        pin_list_servos = [2,3,11]
+        pin_list_servos = [2,3,6] #Servo 0, Servo 1, Gripper
             
 
 
