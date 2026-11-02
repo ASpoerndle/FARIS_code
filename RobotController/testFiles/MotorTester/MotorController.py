@@ -66,35 +66,13 @@ class MotorController():
         Init Servos
         """
         pin_list_servos = [2,3,6] #Servo 0, Servo 1, Gripper
-            
-
-
-        
-        print("readying motors...")
-        # for i,motor in enumerate(pin_list_rotational):
-        #     if(i > 3):
-        #         motor = DriveFocusedMotor(pca, motor[0], motor[1], motor[2], motor[3],1)
-        #     # else:
-        #     #     motor = RotationFocusedMotor(pca,motor[0],motor[1], motor[2], motor[3],1)
-        #     rotational_motor_list.append(motor)
-        # armMotors = []
 
 
         """
         ARM MOTOR INIT
         #TODO -----------------> Change default value from 0 to a safe value per each motor
         """
-        # for i,motor in enumerate(pinListArm):
-        #     motor = MotorWithEncoder(pca,motor[0],motor[1],motor[2], motor[3],7)
-        #     armMotors.append(motor)
-        print("motors ready!")
-        print("readying servos...")
-        # for i in pin_list_servos:
-        #     if(i == 10):
-        #         servo = Servo(pca,i,True)
-        #     else:
-        #         servo = Servo(pca,i)
-        #     self.servoList.append(servo)
+
 
         self.armController = ArmController(pinListArm, pin_list_servos,pca)
         self.wheelController = WheelController(pin_list_rotational[4:8],pca)
@@ -102,9 +80,7 @@ class MotorController():
         self.heading = self.getHeading()
         self.podController = PodController(pin_list_rotational[0:4],pca)
         self.teleOperationController = TeleOperationController(self.podController,self.wheelController,self.armController)
-        #self.servoThread = threading.Thread(target=self.servoList[0].getGPIOOutput)
-        #self.servoThread.daemon = True
-        #self.servoThread.start()
+
 
     """
     ===PATH PLANNING METHODS===

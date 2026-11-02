@@ -24,6 +24,7 @@ Purpose: This class contains the necessary functions to move the Wheel Motors at
 class WheelController():
     def __init__(self,motorData,pca):
         self.wheelMotors = []
+
         for i in range(len(motorData)):
             motor = DriveFocusedMotor(pca, motorData[i][0], motorData[i][1], motorData[i][2], motorData[i][3], 1)
             self.wheelMotors.append(motor)
@@ -39,22 +40,50 @@ class WheelController():
         if(heading < 0):
             heading += 360
         return heading
-
+    """
+    Method: setTeleHeading()
+    Purpose: makes sure we have a consistent heading for the robot so that it doesn't drift in teleop
+    """
+    def setTeleHeading(self):
+        self.targetHeading = self.getHeading()
     """
     Method: teleforward(speed)
     Purpose: For the TeleOp controller, allows for the controller to move the robot forward and backward
     """
 
     def teleForward(self, speed):
-        for motor in self.wheelMotors:
-            motor.setSpeed(speed)
+        current_heading = self.getHeading()
+        error = self.targetHeading - current_heading
+        if error > 180:
+            current_heading += 360
+        elif error < -180:
+            current_heading -= 360
+        kP = .15
+        correction = kP * error
+        for i,motor in enumerate(self.wheelMotors):
+
+            if(i>1 and speed+correction <= 1.0):
+                motor.setSpeed(speed+correction)
+            elif(speed - correction > 0):
+                motor.setSpeed(speed-correction)
 
     def teleSideways(self, speed):
+        current_heading = self.getHeading()
+        error = self.targetHeading - current_heading
+        if error > 180:
+            current_heading += 360
+        elif error < -180:
+            current_heading -= 360
+        kP = .15
+        correction = kP * error
         for i, motor in enumerate(self.wheelMotors):
-            if (i==1 or i ==2):
-                motor.setSpeed(speed)
+            if(i!=1 or i != 2):
+                speed = -speed
+            if (i%2 == 1):
+                motor.setSpeed(speed+correction)
             else:
-                motor.setSpeed(-speed)
+                motor.setSpeed(speed-correction)
+
 
     """
     Method: teleMoveTurn(Speed)

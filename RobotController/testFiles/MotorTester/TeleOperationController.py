@@ -78,3 +78,10 @@ class TeleOperationController:
         # self.podController.rotatePods(-90,debug)
     def adjustForward(self,debug=False):
         self.podController.adjustForward()
+
+    """
+    Method: setTeleForward()
+    Purpose: sets the forward heading for teleop controls
+    """
+    def setTeleHeading(self):
+        self.wheelController.setTeleHeading()
