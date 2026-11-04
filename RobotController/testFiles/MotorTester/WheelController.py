@@ -28,6 +28,7 @@ class WheelController():
         for i in range(len(motorData)):
             motor = DriveFocusedMotor(pca, motorData[i][0], motorData[i][1], motorData[i][2], motorData[i][3], 1)
             self.wheelMotors.append(motor)
+        self.targetHeading = self.getHeading()
 
 
     """
