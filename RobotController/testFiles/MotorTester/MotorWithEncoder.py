@@ -43,7 +43,7 @@ class MotorWithEncoder(Motor):
 
 
 
-    self.pid = PID(0.05,0.000003,0.000002, setpoint=(fVal)) 
+    self.pid = PID(0.05,0.000005,0.000002, setpoint=(fVal)) 
     self.pid.output_limits=(-.6,.6)
 
 

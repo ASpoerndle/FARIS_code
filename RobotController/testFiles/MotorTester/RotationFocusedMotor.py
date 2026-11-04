@@ -36,7 +36,7 @@ class RotationFocusedMotor():
        target = current_degrees + error
        self.motor.pid.setpoint = target
        control_signal = self.motor.pid(current_degrees)
-       if abs(error) < 4:
+       if abs(error) < 6:
 
         self.motor.moveMotor(0)
 
