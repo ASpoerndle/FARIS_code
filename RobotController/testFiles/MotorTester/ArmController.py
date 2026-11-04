@@ -23,7 +23,7 @@ class ArmController():
             motor = MotorWithEncoder(pca, motor[0], motor[1], motor[2], motor[3], 7)
             self.armMotors.append(motor)
         for i in servoData:
-            if (i == 10):
+            if (i == 6):
                 servo = Servo(pca, i, True)
             else:
                 servo = Servo(pca, i)
@@ -39,8 +39,8 @@ class ArmController():
         Servo 1 = Twist (roll)
         Servo 2 = Grab
         """
-        self.wristPitchValues = [0,45,90,135,160]
-        self.wristRollValues = [0,45,90,120,200]
+        self.wristPitchValues = [90,160,180,210]
+        self.wristRollValues = [0,45,90,120,160]
         self.graspValues = [155,200]
         self.wristPitchIndex = 0
         self.wristRollIndex = 0
