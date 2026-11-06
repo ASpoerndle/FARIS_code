@@ -12,7 +12,7 @@ Purpose: The Motor class is the most basic version of the code required to move 
          motors attached to the robot. 
 """
 class Servo:
-    PREDICTEDVOLTAGE = 2.69
+    PREDICTEDVOLTAGE = 10
     def __init__(self,pca, pin,ifADS = False, maxi=270):
         self.servo = pca.channels[pin]
         #max = 10500

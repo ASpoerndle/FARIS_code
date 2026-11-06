@@ -53,20 +53,28 @@ class WheelController():
     """
 
     def teleForward(self, speed):
-        current_heading = self.getHeading()
+        current_heading = self.getHeading() % 360
         error = self.targetHeading - current_heading
-        if error > 180:
-            current_heading += 360
-        elif error < -180:
-            current_heading -= 360
-        kP = .15
+        kP = .00001
         correction = kP * error
+        
+        print(f"ERR: {error} | target: {self.targetHeading} | Current: {current_heading} CORR: {correction}\n CORR+: {speed + correction} CORR-: {speed - correction}")
+        speedP = speed + correction
+        speedN = speed - correction
+        if error > 180:
+                current_heading -= 360
+        elif error < -180:
+                current_heading += 360
         for i,motor in enumerate(self.wheelMotors):
 
-            if(i>1 and speed+correction <= 1.0):
-                motor.setSpeed(speed+correction)
-            elif(speed - correction > 0):
-                motor.setSpeed(speed-correction)
+            #if((i>1 and speed+correction <= 1.0 and speed > 0) or (speed < 0 and speed+correction < 0 and i <= 1)):
+              #  motor.setSpeed(speedP)
+            #elif((speed - correction > 0 and speed > 0 and i <= 1) or (speed-correction>=1.0 and speed <0 and i > 1)):
+             #   motor.setSpeed(speedN)
+            if(i%2==0):
+                motor.setSpeed(speed)
+            else:
+                motor.setSpeed(speed)
 
     def teleSideways(self, speed):
         current_heading = self.getHeading()

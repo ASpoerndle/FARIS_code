@@ -110,6 +110,7 @@ class controller():
     def adjustForward(self):
         self.motorController.teleOperationController.adjustForward(False)
         self.subMode = "normal"
+        self.motorController.teleOperationController.setTeleHeading()
         self.allowLY = True
         self.allowLX = True
         
