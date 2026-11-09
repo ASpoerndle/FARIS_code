@@ -31,7 +31,7 @@ for i in range(4):
 try:
     while(True):
         angles = podController.getAllPodAngles(True)
-        for motor in podController.rotMotors:
+        for motor in podController.podMotors:
             print(f"{motor.motor.encoder.encoder}|{motor.motor.encoder.getEncoderPosition()}")
         inp = input("")
 except KeyboardInterrupt:

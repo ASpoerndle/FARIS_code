@@ -81,8 +81,8 @@ class PodController():
     """
     def getAllPodAngles(self,debug=False):
         angles = []
-        for i in range(len(self.rotMotors)):
-            angles.append(self.rotMotors[i].getCurrentAngle())
+        for i in range(len(self.podMotors)):
+            angles.append(self.podMotors[i].getCurrentAngle())
         if(debug):
             print(f"All Angles: \n\tBL: {angles[0]} \n\tBR: {angles[1]}\n\tFR: {angles[2]}\n\tFL: {angles[3]}")
         return angles

@@ -10,7 +10,7 @@ class GripperADS():
 
     # Config register values for Single-ended A0, +/-6.144V range, 1600 SPS
     # OS[15]=1 (Start conversion), MUX[14:12]=100 (A0), PGA[11:9]=000 (+/-6.144V), MODE[8]=0 (Continuous)
-    CONFIG_HIGH = 0xC4
+    CONFIG_HIGH = 0xD1
     CONFIG_LOW = 0x83
     def getGripperVoltage(self):
         with SMBus(GripperADS.I2CBUS) as bus: #check bus 1 because thats where the ADS1015 is

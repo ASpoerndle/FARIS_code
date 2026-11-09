@@ -283,12 +283,16 @@ class controller():
                         mc.stopMotors()
 
                     pygame.time.wait(10) # Prevent 100% CPU usage
-            except KeyboardInterrupt:
+            except Exception as e:
                 pygame.quit()
+                print(f"Exception: {e}")
                 #self.motorController.forceJoin()
                 self.motorController.stopMotors()
                 del self.motorController
-
-mc = MotorController()
-controller = controller(mc)
-controller.use_controller()
+try:
+    mc = MotorController()
+    controller = controller(mc)
+    controller.use_controller()
+except Exception as e:
+    mc.stopMotors()
+    print(f"Exception: {e}")

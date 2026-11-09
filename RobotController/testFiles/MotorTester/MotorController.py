@@ -47,10 +47,10 @@ class MotorController():
         
         pin_list_rotational = [
          #PodMotors
-         [12, "l", 4, 563] , #BL - Pod-0
-         [14, "l", 5, 236], #BR - Pod-1
-         [1, "l", 6, 577], #FR - Pod-2
-         [4, "l", 7, 384], #FL - Pod-3
+         [12, "l", 4, 569] , #BL - Pod-0
+         [14, "l", 5, 233], #BR - Pod-1
+         [1, "l", 6, 573], #FR - Pod-2
+         [4, "l", 7, 386], #FL - Pod-3
          #WheelMotors
          [5, 'l', 2, 0],   #FL - Wheel-0
          [13, 'l', 1, 0],   #BL - Wheel-1
