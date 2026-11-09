@@ -46,14 +46,14 @@ class WheelController():
     Purpose: makes sure we have a consistent heading for the robot so that it doesn't drift in teleop
     """
     def setTeleHeading(self):
-        self.targetHeading = self.getHeading()
+        self.targetHeading = self.getHeading() % 360
     """
     Method: teleforward(speed)
     Purpose: For the TeleOp controller, allows for the controller to move the robot forward and backward
     """
 
     def teleForward(self, speed):
-        current_heading = self.getHeading() % 360
+        current_heading = self.getHeading() % 360 #instead of -180 to 180 its 0 to 360
         error = self.targetHeading - current_heading
         kP = .00001
         correction = kP * error
@@ -61,20 +61,16 @@ class WheelController():
         print(f"ERR: {error} | target: {self.targetHeading} | Current: {current_heading} CORR: {correction}\n CORR+: {speed + correction} CORR-: {speed - correction}")
         speedP = speed + correction
         speedN = speed - correction
-        if error > 180:
-                current_heading -= 360
-        elif error < -180:
-                current_heading += 360
         for i,motor in enumerate(self.wheelMotors):
 
-            #if((i>1 and speed+correction <= 1.0 and speed > 0) or (speed < 0 and speed+correction < 0 and i <= 1)):
-              #  motor.setSpeed(speedP)
-            #elif((speed - correction > 0 and speed > 0 and i <= 1) or (speed-correction>=1.0 and speed <0 and i > 1)):
-             #   motor.setSpeed(speedN)
-            if(i%2==0):
-                motor.setSpeed(speed)
-            else:
-                motor.setSpeed(speed)
+            if((i>1 and speed+correction <= 1.0 and speed > 0) or (speed < 0 and speed+correction < 0 and i <= 1)):
+                motor.setSpeed(speedP)
+            elif((speed - correction > 0 and speed > 0 and i <= 1) or (speed-correction>=1.0 and speed <0 and i > 1)):
+                motor.setSpeed(speedN)
+           # if(i%2==0):
+            #    motor.setSpeed(speed)
+           # else:
+             #   motor.setSpeed(speed)
 
     def teleSideways(self, speed):
         current_heading = self.getHeading()
