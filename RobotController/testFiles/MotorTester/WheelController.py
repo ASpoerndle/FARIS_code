@@ -11,6 +11,7 @@ import time
 from simple_pid import PID
 import math
 from DriveFocusedMotor import DriveFocusedMotor
+
 # 50.9:1 and 71.2:1
 
 """
@@ -22,7 +23,7 @@ Purpose: This class contains the necessary functions to move the Wheel Motors at
 
 
 class WheelController():
-    def __init__(self,motorData,pca):
+    def __init__(self, motorData, pca):
         self.wheelMotors = []
 
         for i in range(len(motorData)):
@@ -30,65 +31,73 @@ class WheelController():
             self.wheelMotors.append(motor)
         self.targetHeading = self.getHeading()
 
-
-    """
+        """
         Method: getHeading()
         Purpose: to retrieve the current heading of the Octoquad
         """
 
     def getHeading(self):
         heading = self.wheelMotors[0].motor.encoder.getCurrentHeading()
-        if(heading < 0):
+        if (heading < 0):
             heading += 360
         return heading
+
     """
     Method: setTeleHeading()
     Purpose: makes sure we have a consistent heading for the robot so that it doesn't drift in teleop
     """
+
     def setTeleHeading(self):
         self.targetHeading = self.getHeading() % 360
+
     """
     Method: teleforward(speed)
     Purpose: For the TeleOp controller, allows for the controller to move the robot forward and backward
     """
 
     def teleForward(self, speed):
-        current_heading = self.getHeading() % 360 #instead of -180 to 180 its 0 to 360
+        current_heading = self.getHeading() % 360  # instead of -180 to 180 its 0 to 360
         error = self.targetHeading - current_heading
         kP = .00001
         correction = kP * error
-        
-        print(f"ERR: {error} | target: {self.targetHeading} | Current: {current_heading} CORR: {correction}\n CORR+: {speed + correction} CORR-: {speed - correction}")
+
+        print(
+            f"ERR: {error} | target: {self.targetHeading} | Current: {current_heading} CORR: {correction}\n CORR+: {speed + correction} CORR-: {speed - correction}")
         speedP = speed + correction
         speedN = speed - correction
-        for i,motor in enumerate(self.wheelMotors):
+        for i, motor in enumerate(self.wheelMotors):
 
-            if((i>1 and speed+correction <= 1.0 and speed > 0) or (speed < 0 and speed+correction < 0 and i <= 1)):
+            if (self.checkAddCorr(i, speed, correction)):
                 motor.setSpeed(speedP)
-            elif((speed - correction > 0 and speed > 0 and i <= 1) or (speed-correction>=1.0 and speed <0 and i > 1)):
+            elif (self.checkSubCorr(i, speed, correction)):
                 motor.setSpeed(speedN)
-           # if(i%2==0):
-            #    motor.setSpeed(speed)
-           # else:
-             #   motor.setSpeed(speed)
+        # if(i%2==0):
+        #    motor.setSpeed(speed)
+        # else:
+        #   motor.setSpeed(speed)
+
+    def checkAddCorr(self, i, speed, correction):
+        return ((i > 1 and speed + correction <= 1.0) or (speed < 0 and speed + correction < 0 and i <= 1))
+
+    def checkSubCorr(self, i, speed, correction):
+        return ((speed - correction > 0 and speed > 0 and i <= 1) or (
+                    speed - correction >= 1.0 and speed < 0 and i > 1))
 
     def teleSideways(self, speed):
-        current_heading = self.getHeading()
+        current_heading = self.getHeading() % 360
         error = self.targetHeading - current_heading
-        if error > 180:
-            current_heading += 360
-        elif error < -180:
-            current_heading -= 360
-        kP = .15
-        correction = kP * error
-        for i, motor in enumerate(self.wheelMotors):
-            if(i!=1 or i != 2):
-                speed = -speed
-            if (i%2 == 1):
-                motor.setSpeed(speed+correction)
-            else:
-                motor.setSpeed(speed-correction)
 
+        kP = .0001
+        correction = kP * error
+        print(
+            f"ERR: {error} | target: {self.targetHeading} | Current: {current_heading} CORR: {correction}\n CORR+: {speed + correction} CORR-: {speed - correction}")
+        for i, motor in enumerate(self.wheelMotors):
+            if (i != 1 or i != 2):
+                speed = -speed
+            if (i % 2 == 1):
+                motor.setSpeed(speed + correction)
+            else:
+                motor.setSpeed(speed - correction)
 
     """
     Method: teleMoveTurn(Speed)
@@ -102,21 +111,24 @@ class WheelController():
                 motor.setSpeed(speed)
             if (i >= 2):
                 motor.setSpeed(-speed)
+
     """
     Method: getWheelTicks()
     Purpose: When the user pushes LSB, the robot should save how many ticks the wheel motors have run so far. We can take this value as well as some unit
              conversion to determine how far the robot traveled in both the x and y direction, very useful for saving and loading paths
     """
+
     def getWheelTicks(self):
         return self.wheelMotors[0].motor.encoder.getEncoderPosition()
-
 
     """
     Method: resetEncoder()
     Purpose: resets the encoder of the wheel motors so that accurate forward and backward data can be recorded
     """
+
     def resetEncoder(self):
         self.wheelMotors[0].motor.encoder.resetEncoder()
+
     """
     Method: rampSpeedPos(motor, ticks, speed)
     Purpose: taking in speed input and current tick count, the method ramps the speed up and down. For moving forward
@@ -157,10 +169,12 @@ class WheelController():
         if (debug):
             print(f"Ticks: {ticks} | Speed: {speed}")
         return motor.driveForward(ticks, speed, isGoingBackwards, debug)
+
     """
     Method: driveForward(ticks,debug,inPlace, podHeading)
     Purpose: controls the necessary logic to drive the robot either in the forward direction or to turn in place
     """
+
     def driveForward(self, ticks, inPlace, currentMotorAngle, debug=False):
         motor_speed = .5
         if (ticks < 0 and inPlace > 0):
@@ -168,14 +182,14 @@ class WheelController():
             speed = -.5
             isGoingBackwards = True
             isTurning = False
-        elif(ticks > 0 and inPlace < 0):
+        elif (ticks > 0 and inPlace < 0):
             isTurning = True
             speed = 0.5
             polar = 1
             isGoingBackwards = False
-            if(debug):
+            if (debug):
                 print("===isRight===")
-        elif(ticks<0 and inPlace < 0):
+        elif (ticks < 0 and inPlace < 0):
             polar = -1
             speed = .5
             isGoingBackwards = True
@@ -186,29 +200,30 @@ class WheelController():
             speed = .5
             isGoingBackwards = False
         target_heading = self.getHeading()
-        if(debug):
-            print(f"Init Speed: {speed} | isTurning: {isTurning} | Polar: {polar} | isGoingBackawrds: {isGoingBackwards} | InPlace: {inPlace} | Current Motor Angle (degrees): {currentMotorAngle}")
+        if (debug):
+            print(
+                f"Init Speed: {speed} | isTurning: {isTurning} | Polar: {polar} | isGoingBackawrds: {isGoingBackwards} | InPlace: {inPlace} | Current Motor Angle (degrees): {currentMotorAngle}")
 
-        #pid = PID(Kp=.1, Ki=0.0, Kd=0, setpoint=target_heading)
-        #pid.output_limits = (-.6, .6)
+        # pid = PID(Kp=.1, Ki=0.0, Kd=0, setpoint=target_heading)
+        # pid.output_limits = (-.6, .6)
 
         # Alter logic for determing ramp up and ramp down
         MotorList = self.wheelMotors.copy()
-        stopCond  = False
+        stopCond = False
         isThere = False
         if (debug):
             print(f"Polar: {polar}")
 
         self.resetEncoder()
         time.sleep(0.05)
-        if(debug):
+        if (debug):
             print(f"Reset encoder {MotorList[0]}")
         motor_speedB = 0.4
         motor_speedF = 0.4
         while (not stopCond):
             stopCond = len(MotorList) <= 3
             current_heading = self.getHeading()
-            if(debug):
+            if (debug):
                 print(f"Current heading: {current_heading} | Target Heading: {target_heading}")
             error = target_heading - current_heading
             if error > 180:
@@ -216,59 +231,64 @@ class WheelController():
             elif error < -180:
                 current_heading -= 360
 
-            #correction = pid(current_heading)
+            # correction = pid(current_heading)
             kP = .15
             correction = kP * error
-            if(debug):
+            if (debug):
                 print(f"PID Correction: {correction}")
             for i, motor in enumerate(MotorList):
                 print(f"Motor {i} is encoder {motor.motor.encoder.encoder}")
-                if(not isTurning):
-                    if(currentMotorAngle > -80 and currentMotorAngle < 80):
+                if (not isTurning):
+                    if (currentMotorAngle > -80 and currentMotorAngle < 80):
                         if (i > 1 and abs(speed) <= 1):  # Adjust rightside
-                                 motor_speedR = speed + correction
+                            motor_speedR = speed + correction
                         elif (i <= 1 and abs(speed) <= 1):  # Adjust leftside
-                                 motor_speedL = speed - correction
-                            # else:
-                            #     motor_speedL = speed
-                            #     motor_speedR = speed
-                        if(debug):
-                                print(f"IMU Error: {error} ")
+                            motor_speedL = speed - correction
+                        # else:
+                        #     motor_speedL = speed
+                        #     motor_speedR = speed
+                        if (debug):
+                            print(f"IMU Error: {error} ")
                         if (i > 1):
-                            isThere = self.checkDriveForward(motor, -ticks*inPlace*motor.motor.polarity, motor_speedR, isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
+                            isThere = self.checkDriveForward(motor, -ticks * inPlace * motor.motor.polarity,
+                                                             motor_speedR, isGoingBackwards,
+                                                             debug)  # CHANGE: -ticks * inPlace
                         elif (i <= 1):
-                            isThere = self.checkDriveForward(motor, ticks * motor.motor.polarity, motor_speedL, isGoingBackwards, debug)
+                            isThere = self.checkDriveForward(motor, ticks * motor.motor.polarity, motor_speedL,
+                                                             isGoingBackwards, debug)
 
-                    elif((currentMotorAngle < -80 and currentMotorAngle > -100) or currentMotorAngle > 80 and currentMotorAngle <  100): #when the wheels are facing sideways -90 degrees
-                        if((i == 2 or i == 0) and abs(speed) <=1): #adjust forward motors
+                    elif ((
+                                  currentMotorAngle < -80 and currentMotorAngle > -100) or currentMotorAngle > 80 and currentMotorAngle < 100):  # when the wheels are facing sideways -90 degrees
+                        if ((i == 2 or i == 0) and abs(speed) <= 1):  # adjust forward motors
                             motor_speedF = speed + correction
-                        if((i == 1 or i == 3) and abs(speed) <=1): #adjust backward motors
+                        if ((i == 1 or i == 3) and abs(speed) <= 1):  # adjust backward motors
                             motor_speedB = speed - correction
                         if (i == 1):
-                           isThere = self.checkDriveForward(motor, ticks, motor_speedB,isGoingBackwards, debug)  # CHANGE: -ticks * inPlace
-                        elif(i==2):
-                           isThere = self.checkDriveForward(motor,ticks,motor_speedF,isGoingBackwards,debug)
-                        elif(i==0):
-                           isthere = self.checkDriveForward(motor,-ticks,motor_speedF,not isGoingBackwards,debug)
-                        elif (i==3):
-                            isThere = self.checkDriveForward(motor, -ticks, motor_speedB,not isGoingBackwards, debug)
+                            isThere = self.checkDriveForward(motor, ticks, motor_speedB, isGoingBackwards,
+                                                             debug)  # CHANGE: -ticks * inPlace
+                        elif (i == 2):
+                            isThere = self.checkDriveForward(motor, ticks, motor_speedF, isGoingBackwards, debug)
+                        elif (i == 0):
+                            isthere = self.checkDriveForward(motor, -ticks, motor_speedF, not isGoingBackwards, debug)
+                        elif (i == 3):
+                            isThere = self.checkDriveForward(motor, -ticks, motor_speedB, not isGoingBackwards, debug)
                 if (isThere):
                     MotorList.pop(i)
                     break
-                #if (debug):
-                    #print(f"Loop: {i} | Ticks {ticks} | Current Motor Tick: {motor.motor.encoder.getEncoderPosition()}")
+                # if (debug):
+                # print(f"Loop: {i} | Ticks {ticks} | Current Motor Tick: {motor.motor.encoder.getEncoderPosition()}")
                 stopCond = len(MotorList) <= 3
 
                 if (debug):
                     print(f'Ticks: {ticks} + Speed: {speed}')
-                
+
                     print(f"IMU Error: {error} ")
                 if (polar > 0 and inPlace > 0):
-                    if(debug):
+                    if (debug):
                         print("Ramping forward")
                     speed = self.rampSpeedPos(MotorList[0], ticks, speed)
-                elif(polar < 0 and inPlace > 0):
-                    if(debug):
+                elif (polar < 0 and inPlace > 0):
+                    if (debug):
                         print("Ramping backward")
                     speed = self.rampSpeedNeg(MotorList[0], ticks, speed)
                 time.sleep(0.02)
@@ -292,7 +312,6 @@ class WheelController():
             polar = -1
             isGoingBackwards = True
 
-
         if (debug):
             print(
                 f"Init Speed: {speed}  | Polar: {polar} | isGoingBackawrds: {isGoingBackwards} ")
@@ -301,10 +320,10 @@ class WheelController():
         stopCond = False
         isThere = False
         if (debug):
-                print(f"Polar: {polar}")
+            print(f"Polar: {polar}")
         self.resetEncoder()
         if (debug):
-                print(f"Reset encoder {MotorList[0]}")
+            print(f"Reset encoder {MotorList[0]}")
         while (not stopCond):
             stopCond = len(MotorList) <= 3
             for i, motor in enumerate(MotorList):
@@ -318,22 +337,21 @@ class WheelController():
                     MotorList.pop(i)
                     break
                 if (debug):
-                    print(f"Loop: {i} | Desired Ticks {ticks} | Current Motor Tick: {motor.motor.encoder.getEncoderPosition()}")
-
+                    print(
+                        f"Loop: {i} | Desired Ticks {ticks} | Current Motor Tick: {motor.motor.encoder.getEncoderPosition()}")
 
                 if (debug):
                     print(f'Ticks: {ticks} + Speed: {speed}')
-
 
                 time.sleep(0.02)
 
         self.stopMotors()
 
-
     """
     Method: stopMotors()
     Purpose: sets the motor speed to 0, stopping the motor whilst not killing it
     """
+
     def stopMotors(self):
         for motor in self.wheelMotors:
             motor.motor.stopMotor()
@@ -343,8 +361,7 @@ class WheelController():
     Purpose: kills all power to the motors allowing them to move freely, used mostly when MotorController
              obj gets deleted
     """
+
     def killMotors(self):
         for motor in self.wheelMotors:
             motor.motor.killMotor()
-
-

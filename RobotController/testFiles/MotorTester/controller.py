@@ -29,7 +29,7 @@ class controller():
     def __init__(self, MC):
         self.motorController = MC
         os.environ["SDL_VIDEODRIVER"] = "dummy"
-        self.SLOW_DOWN = 1.5
+        self.SLOW_DOWN = 1.0
         pygame.init()
         pygame.joystick.init()
         self.joy = None
@@ -96,7 +96,7 @@ class controller():
 
             },
             "arm": {
-                buttonsXbox["A"]:self.toForward,
+
                 buttonsXbox["LB"]:self.motorController.armController.teleWristPitch,
                 buttonsXbox["LT"]:self.motorController.armController.teleWristRoll,
                 buttonsXbox["A"]:self.motorController.armController.teleGrasp,
@@ -254,6 +254,8 @@ class controller():
                             self.motorController.teleOperationController.teleMoveTurn(joyRX / self.SLOW_DOWN)
                         elif abs(joyLX) >= 0.2 and self.allowLX and self.subMode == "sideways":
                             self.motorController.teleOperationController.teleSideways(-joyLX/self.SLOW_DOWN)
+                        elif(abs(joyLY) < 1 and abs(joyLY) >= 0.2):
+                            self.motorController.teleOperationController.setTeleHeading()
                         else:
                             mc.stopMotors()
 
