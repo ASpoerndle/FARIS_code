@@ -29,7 +29,7 @@ class controller():
     def __init__(self, MC):
         self.motorController = MC
         os.environ["SDL_VIDEODRIVER"] = "dummy"
-        self.SLOW_DOWN = 1.0
+        self.SLOW_DOWN = 1.75
         pygame.init()
         pygame.joystick.init()
         self.joy = None
@@ -254,10 +254,11 @@ class controller():
                             self.motorController.teleOperationController.teleMoveTurn(joyRX / self.SLOW_DOWN)
                         elif abs(joyLX) >= 0.2 and self.allowLX and self.subMode == "sideways":
                             self.motorController.teleOperationController.teleSideways(-joyLX/self.SLOW_DOWN)
-                        elif(abs(joyLY) < 1 and abs(joyLY) >= 0.2):
-                            self.motorController.teleOperationController.setTeleHeading()
                         else:
                             mc.stopMotors()
+                        if(abs(joyLY) < .5 and abs(joyLY) >= 0.2):
+                            print("reset heading")
+                            self.motorController.teleOperationController.setTeleHeading()
 
                     elif self.mode == "sideways":
                         if abs(joyLX) >= 0.2 and self.allowLX:

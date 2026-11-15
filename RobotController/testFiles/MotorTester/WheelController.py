@@ -58,18 +58,20 @@ class WheelController():
     def teleForward(self, speed):
         current_heading = self.getHeading() % 360  # instead of -180 to 180 its 0 to 360
         error = self.targetHeading - current_heading
-        kP = .00001
+        kP = .1
         correction = kP * error
 
-        print(
-            f"ERR: {error} | target: {self.targetHeading} | Current: {current_heading} CORR: {correction}\n CORR+: {speed + correction} CORR-: {speed - correction}")
+        #print(
+         #   f"ERR: {error} | target: {self.targetHeading} | Current: {current_heading} CORR: {correction}\n CORR+: {speed + correction} CORR-: {speed - correction}")
         speedP = speed + correction
         speedN = speed - correction
         for i, motor in enumerate(self.wheelMotors):
-
-            if (self.checkAddCorr(i, speed, correction)):
+            
+            if (self.checkAddCorr(i, speed, correction) and ((i<=1 and speed < 0) or (i>1 and speed > 0))):
+                print(f"Motor: {i} | speed: {speedP}")
                 motor.setSpeed(speedP)
             elif (self.checkSubCorr(i, speed, correction)):
+                print(f"Motor: {i} | speed: {speedN}")
                 motor.setSpeed(speedN)
         # if(i%2==0):
         #    motor.setSpeed(speed)
@@ -77,11 +79,11 @@ class WheelController():
         #   motor.setSpeed(speed)
 
     def checkAddCorr(self, i, speed, correction):
-        return ((i > 1 and speed + correction <= 1.0) or (speed < 0 and speed + correction < 0 and i <= 1))
+        return ((i > 1 and speed + correction < 1.0) or (speed < 0 and speed + correction < 0 and i <= 1))
 
     def checkSubCorr(self, i, speed, correction):
         return ((speed - correction > 0 and speed > 0 and i <= 1) or (
-                    speed - correction >= 1.0 and speed < 0 and i > 1))
+                    speed - correction > -1.0 and speed < 0 and i > 1))
 
     def teleSideways(self, speed):
         current_heading = self.getHeading() % 360
@@ -89,15 +91,16 @@ class WheelController():
 
         kP = .0001
         correction = kP * error
+        #correction = 0
         print(
             f"ERR: {error} | target: {self.targetHeading} | Current: {current_heading} CORR: {correction}\n CORR+: {speed + correction} CORR-: {speed - correction}")
         for i, motor in enumerate(self.wheelMotors):
-            if (i != 1 or i != 2):
-                speed = -speed
-            if (i % 2 == 1):
+            #if (i != 1 or i != 2):
+            #    speed = -speed
+            if (i == 1 or i == 2):
                 motor.setSpeed(speed + correction)
             else:
-                motor.setSpeed(speed - correction)
+                motor.setSpeed(-speed - correction)
 
     """
     Method: teleMoveTurn(Speed)
