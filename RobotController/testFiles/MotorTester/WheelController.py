@@ -58,16 +58,19 @@ class WheelController():
     def teleForward(self, speed):
         current_heading = self.getHeading() % 360  # instead of -180 to 180 its 0 to 360
         error = self.targetHeading - current_heading
-        kP = .1
+        kP = .05
         correction = kP * error
-
+         
         #print(
          #   f"ERR: {error} | target: {self.targetHeading} | Current: {current_heading} CORR: {correction}\n CORR+: {speed + correction} CORR-: {speed - correction}")
         speedP = speed + correction
+        speedP = min(speedP, 1.0)
         speedN = speed - correction
+        speedN = max(speedN,-1)
+
         for i, motor in enumerate(self.wheelMotors):
             
-            if (self.checkAddCorr(i, speed, correction) and ((i<=1 and speed < 0) or (i>1 and speed > 0))):
+            if (self.checkAddCorr(i, speed, correction)):
                 print(f"Motor: {i} | speed: {speedP}")
                 motor.setSpeed(speedP)
             elif (self.checkSubCorr(i, speed, correction)):
