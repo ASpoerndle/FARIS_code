@@ -248,7 +248,7 @@ class controller():
                         elif abs(joyLY) >= 0.2 and self.allowLY:
                             self.motorController.teleOperationController.teleForward(-joyLY / self.SLOW_DOWN)
                             self.motorController.teleOperationController.teleRotate(0)
-                        elif abs(joyLX) >= 0.2 and self.allowLX and self.subMode != "sideways":
+                        elif abs(joyLX) >= 0.3 and self.allowLX and self.subMode != "sideways":
                             self.motorController.teleOperationController.teleRotate(joyLX / self.SLOW_DOWN)
                         elif abs(joyRX) >= 0.2 and self.allowRX:
                             self.motorController.teleOperationController.teleMoveTurn(joyRX / self.SLOW_DOWN)
@@ -257,7 +257,6 @@ class controller():
                         else:
                             mc.stopMotors()
                         if(abs(joyLY) < .5 and abs(joyLY) >= 0.2):
-                            print("reset heading")
                             self.motorController.teleOperationController.setTeleHeading()
 
                     elif self.mode == "sideways":

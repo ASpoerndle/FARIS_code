@@ -56,37 +56,33 @@ class WheelController():
     """
 
     def teleForward(self, speed):
+    
         current_heading = self.getHeading() % 360  # instead of -180 to 180 its 0 to 360
         error = self.targetHeading - current_heading
-        kP = .05
+        kP = .1
         correction = kP * error
-         
+
+        if(speed < 0):
+            correction = -correction
         #print(
          #   f"ERR: {error} | target: {self.targetHeading} | Current: {current_heading} CORR: {correction}\n CORR+: {speed + correction} CORR-: {speed - correction}")
         speedP = speed + correction
         speedP = min(speedP, 1.0)
         speedN = speed - correction
         speedN = max(speedN,-1)
-
         for i, motor in enumerate(self.wheelMotors):
-            
-            if (self.checkAddCorr(i, speed, correction)):
-                print(f"Motor: {i} | speed: {speedP}")
-                motor.setSpeed(speedP)
-            elif (self.checkSubCorr(i, speed, correction)):
-                print(f"Motor: {i} | speed: {speedN}")
-                motor.setSpeed(speedN)
-        # if(i%2==0):
-        #    motor.setSpeed(speed)
-        # else:
-        #   motor.setSpeed(speed)
-
-    def checkAddCorr(self, i, speed, correction):
-        return ((i > 1 and speed + correction < 1.0) or (speed < 0 and speed + correction < 0 and i <= 1))
-
-    def checkSubCorr(self, i, speed, correction):
-        return ((speed - correction > 0 and speed > 0 and i <= 1) or (
-                    speed - correction > -1.0 and speed < 0 and i > 1))
+            if(speed > 0): 
+                if (i>1):
+            #         print(f"Motor: {i} | speed: {speedP}")
+                    motor.setSpeed(speedP)
+                elif (i<=1):
+             #       print(f"Motor: {i} | speed: {speedN}")
+                    motor.setSpeed(speedN)
+            else:
+                    if(i>1):
+                        motor.setSpeed(speedN)
+                    else:
+                        motor.setSpeed(speedP)
 
     def teleSideways(self, speed):
         current_heading = self.getHeading() % 360
